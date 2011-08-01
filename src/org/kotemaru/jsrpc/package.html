@@ -1,0 +1,100 @@
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+		<style>
+xmp {
+	font-size: 70%;
+	border: 1px solid #888844;
+	background: #eeeeaa;
+}
+		</style>
+		
+	</head>
+	<body>
+<h2>JavaScriptからJavaを呼び出すWebAPI</h2>
+
+<h3>Hello world</h3>
+
+サーバ側Javaコード：
+<xmp>
+package hoge;
+import org.kotemaru.jsrpc.annotation.JsRpc;
+
+@JsRpc()
+public class Foo {
+	public static String bar(String myname) {
+		return "Hello "+myname;
+	}
+}
+</xmp>
+
+クライアント側JavaScriptコード：
+<xmp>
+<script src="/stub/hoge/Foo.js" ></script>
+
+<script>
+alert(Foo.bar("Taro"));
+</script>
+</xmp>
+
+これで「Hello Taro」のダイアログが表示される。
+
+<h3>APIの制限</h3>
+<h4>メソッド</h4>
+<ul>
+<li>現状、public static のみ。</li>
+</ul>
+
+<h4>引数</h4>
+<ul>
+<li>int,long,double,boolean,String,Map,List 型のみ。</li>
+<li>Map,List は Json オブジェクトで渡す。
+<li>Map,List はネストしていても良い。
+<li>引数に MultiPartMap を１つ取る場合は MultiPart のリクエストを受け取る。
+</ul>
+
+<h4>戻り値</h4>
+<ul>
+<li>戻り値は任意。JSONデータに変換して返す。
+<li>プリミティブ型は数値、boolean、文字列、nullのいずれかに変換する。
+<li>Map,List は JSONオブジェクト、配列に変換する。
+<li>その他のオブジェクトは Bean とみなして JSONオブジェクトに変換する。
+</ul>
+
+<h3>URLから直接呼び出し</h3>
+定義したJavaのメソッドを直接呼び出す場合、以下の書式に従う。
+
+<xmp>http://host:port/classes/package/Class.method?a0=引数１&a1=引数２&...
+</xmp>
+
+<ul>
+<li>引数の省略は不可。a3=null 等とする。
+<li>文字列は「"」不要。
+<li>Map,List は JSON形式の {}、[] で記述。
+<li>戻り値は JSON-RPC 互換とする。{"result": 戻り値} の形式。
+</ul>
+
+
+
+<h3>web.xml設定</h3>
+<xmp>
+	<servlet>
+		<servlet-name>Calljava</servlet-name>
+		<servlet-class>org.kotemaru.jsrpc.CalljavaServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Calljava</servlet-name>
+		<url-pattern>/classes/*</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>Stub</servlet-name>
+		<servlet-class>org.kotemaru.jsrpc.ResourceServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Stub</servlet-name>
+		<url-pattern>/stub/*</url-pattern>
+	</servlet-mapping>
+</xmp>
+</body>
+</html>
