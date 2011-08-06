@@ -13,20 +13,21 @@ import com.google.appengine.api.datastore.Key;
 
 @Model
 public class IchiMemoModel extends ModelBase {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
 	private String username;
 	private Date createDate;
 	private Date updateDate;
 	private Double lat;
 	private Double lng;
+	private String area;
 	private String address;
 	private String comment;
 	private List<String> tags;
 	private Integer level;
 	private Integer appraise = -1;
 	private List<Long> images;
-	
+
 	public long getId() {
 		return getKey().getId();
 	}
@@ -69,6 +70,16 @@ public class IchiMemoModel extends ModelBase {
 
 	public void setLng(Double lng) {
 		this.lng = lng;
+	}
+
+
+
+	public String getArea() {
+		return area;
+	}
+
+	public void setArea(String area) {
+		this.area = area;
 	}
 
 	public String getAddress() {
@@ -119,6 +130,4 @@ public class IchiMemoModel extends ModelBase {
 		this.images = images;
 	}
 
-
-	
 }

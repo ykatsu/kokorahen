@@ -19,7 +19,7 @@ import com.google.appengine.api.datastore.Key;
 
 @JsRpc()
 public class IchiMemo {
-	
+
 	public static String register(MultiPartMap params) {
 		IchiMemoModel model = null;
 		Long id = params.getLong("id");
@@ -41,12 +41,13 @@ public class IchiMemo {
 			images = new ArrayList<Long>(1);
 			images.add(imgKey.getId());
 		}
-		
+
 		model.setUsername(null); // TODO:
 		model.setCreateDate(new Date());
 		model.setUpdateDate(new Date());
 		model.setLat(params.getDouble("lat"));
 		model.setLng(params.getDouble("lng"));
+		model.setArea(toArea(model.getLat(), model.getLng()));
 		model.setAddress(params.getString("address"));
 		model.setComment(params.getString("comment"));
 		model.setLevel(params.getInteger("level"));
@@ -58,6 +59,18 @@ public class IchiMemo {
 		return "Register "+key.getId();
 	}
 
+	private static String toArea(double lat, double lng) {
+		// Note:日本列島ではざっくり１度=100Kmで考える。
+		System.out.println("->"+lat+","+lng);
+		lat = Math.floor(lat*100)/100;
+		lng = Math.floor(lng*100)/100;
+		String area = String.format("%06.2f,%06.2f", lat, lng);
+//System.out.println("area="+area+":"+lat+","+lng);
+		return area;
+	}
+
+
+
 	public static ImageModel getImage(long id) {
 		try {
 			Key key = Datastore.createKey(ImageModel.class, id);
@@ -67,8 +80,8 @@ public class IchiMemo {
 			return null;
 		}
 	}
-	
-	public static List<IchiMemoModel> list(Map params){
+
+	public static List<IchiMemoModel> listOld(Map params){
 		double minLat = (Double) params.get("minLat");
 		double minLng = (Double) params.get("minLng");
 		double maxLat = (Double) params.get("maxLat");
@@ -93,4 +106,34 @@ public class IchiMemo {
 		}
 		return array;
 	}
+
+	public static List<String> getAreas(Map params){
+		double minLat = (Double) params.get("minLat");
+		double minLng = (Double) params.get("minLng");
+		double maxLat = (Double) params.get("maxLat");
+		double maxLng = (Double) params.get("maxLng");
+
+		List<String> list = new ArrayList<String>();
+		for (double lat = minLat; lat<maxLat; lat += 0.01) {
+			for (double lng = minLng; lng<maxLng; lng += 0.01) {
+				list.add(toArea(lat,lng));
+			}
+		}
+		// TODO:センターに近い順にソートはクライアントでやるべき？
+		System.out.println("areas="+list+"\n"+params);
+		return list;
+	}
+
+
+	public static List<IchiMemoModel> list(Map params){
+		String area = (String) params.get("area");
+
+		IchiMemoModelMeta e = IchiMemoModelMeta.get();
+		ModelQuery q = Datastore.query(e);
+		q.filter(e.area.equal(area));
+		List<IchiMemoModel> list = q.asList();
+		System.out.println("datas="+list+"\n"+params);
+		return list;
+	}
+
 }

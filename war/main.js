@@ -24,7 +24,7 @@ var pinShadowImage = new google.maps.MarkerImage(
 );
 
 var map;
-var marker; // 現在位置マーカー 
+var marker; // 現在位置マーカー
 var center;
 var balloon; // バルーン
 var balloonMarker; // バルーンを出してるマーカー
@@ -64,7 +64,7 @@ $("<div id='menuButton'>検索条件</div>")[0]);
 	google.maps.event.addListener(balloon, 'domready', onLoadBalloon);
 
 	// GPSから現在位置取得、
-	navigator.geolocation.watchPosition(geoUpdate, 
+	navigator.geolocation.watchPosition(geoUpdate,
 			function(e){waitingIcon(false);});
 	//waitingIcon(true);
 }
@@ -106,13 +106,22 @@ function onMapClick(ev) {
 	var lngSW = rect.getSouthWest().lng();
 
 	// サーバーから表示範囲内のマーカー取得。非同期。
-	IchiMemo.listAsync(protMarkers, {
-		username:"kotemaru27@gmail.com",
+	IchiMemo.getAreasAsync({
+		send: function(areas) {
+			for(var i=0; i<areas.length; i++) {
+				IchiMemo.listAsync(protMarkers, {area: areas[i]});
+			}
+		},
+		_throw: function (e) {
+			alert(e);
+		}
+	}, {
 		maxLat: Math.max(latNE, latSW),
 		minLat: Math.min(latNE, latSW),
 		maxLng: Math.max(lngNE, lngSW),
 		minLng: Math.min(lngNE, lngSW),
 	});
+
 };
 
 /**
@@ -207,7 +216,7 @@ function onImageSelect(_this, ev) {
 		var img = document.getElementById("balloonImg");
 		img.src = reader.result;
 	};
-	reader.readAsDataURL(_this.files[0]); 	
+	reader.readAsDataURL(_this.files[0]);
 }
 
 
