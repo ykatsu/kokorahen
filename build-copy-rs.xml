@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+
+<project default="copy-resource" basedir=".">
+
+	<property name="target.jar" value="${basedir}/apt-helper-1.0.jar"/>
+	<property name="source" value="${basedir}/src"/>
+	<property name="classes" value="${basedir}/war/WEB-INF/classes"/>
+	<property name="lib" value="${basedir}/war/WEB-INF/lib"/>
+	<property name="apt_gen" value="${basedir}/.apt_generated"/>
+	
+	<property name="pre" value="${basedir}/pre"/>
+	<property name="pre.source" value="${source}"/>
+	<property name="pre.classes" value="${pre}/classes"/>
+	<property name="pre.apt_gen" value="${pre}/.apt_generated"/>
+
+
+
+	<target name="copy-resource">
+
+		<copy todir="${classes}">
+			<fileset dir="${apt_gen}">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+
+	</target>
+	
+</project>
