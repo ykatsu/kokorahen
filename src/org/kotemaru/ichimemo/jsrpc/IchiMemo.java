@@ -64,7 +64,7 @@ public class IchiMemo {
 		System.out.println("->"+lat+","+lng);
 		lat = Math.floor(lat*100)/100;
 		lng = Math.floor(lng*100)/100;
-		String area = String.format("%06.2f,%06.2f", lat, lng);
+		String area = String.format("%06.2f,%06.2f", lat, lng); // TODO:マイナス
 //System.out.println("area="+area+":"+lat+","+lng);
 		return area;
 	}
