@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta id="viewport" name="viewport"
+		content="width=320; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+	<title>Headers</title>
+	<link rel="stylesheet" href="/UiUIKit/stylesheets/iphone.css" />
+	<link rel="apple-touch-icon" href="/UiUIKit/images/apple-touch-icon.png" />
+<style>
+html {
+	width: 320px;
+}
+body {
+	margin: 0;
+	padding: 0;
+}
+
+.Tabs {
+	margin: 0;
+	padding: 0;
+	clear: both;
+	text-align: center;
+	margin-left:4%;
+}
+.Tab {
+	border-right: 1px solid #666666;
+	border-left: 1px solid #cccccc;
+	border-top: 1px solid #dddddd;
+	border-bottom: 0;
+	float: left;
+					color: #fff;
+					font: bold 20px/30px Helvetica;
+					text-shadow: #2d3642 0 -1px 0;
+					text-align: center;
+					white-space: nowrap;
+					overflow: hidden;
+					width: 24%;
+
+	-webkit-border-radius: 8px;
+/*
+	-moz-border-radius:8px 8px 0px 0px;
+*/
+	-webkit-border-top-left-radius: 8px;
+	-webkit-border-bottom-left-radius: 0px;
+	-webkit-border-top-right-radius: 8px;
+	-webkit-border-bottom-right-radius: 0px;
+}
+
+.Frame {
+	display: none;
+	margin-left: 8px;
+}
+#mapFrame {
+	display: block;
+	height: 376px;
+	margin: 0;
+}
+
+
+</style>
+
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.js" ></script>
+	<script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript" ></script>
+
+	<script type="text/javascript" charset="utf-8">
+		//window.onload = function() {
+		//  setTimeout(function(){window.scrollTo(0, 1);}, 100);
+		//}
+
+		$(function(){
+			initMap();
+			showFrame($("#mapTab")[0],"map");
+		});
+
+		var map;
+
+		function initMap() {
+			// デフォルト中心、皇居
+			var center = new google.maps.LatLng(35.684699,139.753897);
+
+			// マップ生成
+			var mapopts = {
+				zoom: 14,
+				center: center,
+				scaleControl: true,
+				mapTypeId: google.maps.MapTypeId.ROADMAP
+			}
+			map = new google.maps.Map(document.getElementById("mapFrame"),mapopts);
+		}
+
+
+		function showFrame(Tab, name) {
+			$(".Frame").hide();
+			$(".Tab").css({color: "gray"});
+
+			$("#"+name+"Frame").show();
+			Tab.style.color = "white";
+		}
+
+		function doEdit(_this, id) {
+			$("#"+id).show().focus();
+		}
+		function onEdit(_this, id) {
+			$("#"+id).html(_this.value);
+			$(_this).hide();
+		}
+
+	</script>
+</head>
+
+<body>
+
+	<div id="header" >
+		<div class="Tabs">
+			<div class="Tab" onclick="showFrame(this,'map')" id="mapTab" >Map</div>
+			<div class="Tab" onclick="showFrame(this,'spot')" >Spot</div>
+			<div class="Tab" onclick="showFrame(this,'memo')" >Memo</div>
+			<div class="Tab" onclick="showFrame(this,'setting')" >設定</div>
+		</div>
+
+	</div>
+
+	<div id="frames">
+
+<div id="mapFrame" class="Frame">
+地図
+</div>
+<div id="spotFrame" class="Frame">
+			<form id="spotForm" name="spotForm"
+				action="/classes/org/kotemaru/kokorahen/Kokorahen.writeSpot" >
+				<input name="id" type="hidden"/>
+				<input name="lat" type="hidden"/>
+				<input name="lng" type="hidden"/>
+
+
+<h1>Spot infometion</h1>
+
+<ul class="profile">
+	<li class="picture">
+		<a href="/profile">Julio Alonso Picture</a>
+	</li>
+	<li class="clearfix">
+		<input  name="name" type="text" />
+	</li>
+</ul>
+
+<ul class="field">
+	<li><h3>住所</h3>
+		<span id="viewAddr" onclick="doEdit(this,'inputAddr')">サンプル</span>
+		<input id="inputAddr" onchange="onEdit(this,'viewAddr')" style="display:none;" name="address" type="text" size="1"/>
+	</li>
+	<li><h3>タグ</h3>
+		<input  name="Tabs" type="text" />
+	</li>
+	<li><h3>評価</h3>
+		<img src="star3.png" />
+	</li>
+	<li><h3>営業時間</h3>
+		<input  name="activeTime" type="text" />
+	</li>
+	<li><h3>定休日</h3>
+		<input  name="" type="text" />
+	</li>
+	<li><h3>E-mail</h3>
+		<input  name="email" type="text" />
+	</li>
+	<li class="arrow"><h3>URL</h3> <small>Web</small>
+		<input  name="url" type="text" />
+	</li>
+	<li class="arrow"><h3>備考</h3>
+		<input  name="comment" type="text" />
+	</li>
+</ul>
+
+<center>
+	<button type="submit">登録/更新</button>
+</center>
+
+			</form>
+
+</div>
+
+<div id="memoFrame" class="Frame">
+			<form class="MemoForm" id="memoForm" name="memoForm"
+				enctype="multipart/form-data" method="POST"
+				action="/classes/org/kotemaru/kokorahen/Kokorahen.writeMemo" >
+
+				<input name="id" type="hidden"/>
+				<input name="lat" type="hidden"/>
+				<input name="lng" type="hidden"/>
+				<table border=0 cellspacing=0>
+					<tr><td colspan=3 align="center" bgcolor="#aaeeff">
+						 メモ
+					</td></tr>
+					<tr><td><nobr>種別</nobr></td><td>:</td><td width="99%">
+						<select name="type">
+							<option value="1" >SPOTメモ</option>
+							<option value="2" >場所メモ</option>
+							<option value="3" >タグメモ</option>
+						</select>
+					</td></tr>
+					<tr><td><nobr>重要度</nobr></td><td>:</td><td>
+						<input name="level" type="radio" value="3" />高
+						<input name="level" type="radio" value="2" checked />中
+						<input name="level" type="radio" value="1" />低
+					</td></tr>
+					<tr><td><nobr>評価</nobr></td><td>:</td><td>
+						<img src="star5.png" />&nbsp&nbsp
+						<input name="tested" type="checkbox" value="true" checked />評価済
+					</td></tr>
+					<tr><td><nobr>住所</nobr></td><td>:</td><td width="99%">
+						<input name="address" type="text" />
+					</td></tr>
+					<tr><td><nobr>タグ</nobr></td><td>:</td><td>
+						<input name="tags" type="text" />
+					</td></tr>
+					<tr><td><nobr>コメント</nobr></td><td>:</td><td>
+						<textarea name="comment" ></textarea>
+					</td></tr>
+					<tr><td></td><td></td><td></td></tr>
+
+					<tr><td colspan=3 align="center">
+						<button type="submit">メモ書込</button>
+						<button type="submit">戻る</button>
+					</td></tr>
+				</table>
+			</form>
+</div>
+
+<div id="settingFrame" class="Frame">
+</div>
+
+</div>
+
+
+</body>
+</html>

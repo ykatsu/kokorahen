@@ -119,10 +119,10 @@ function onMapClick(ev) {
 	var lngSW = rect.getSouthWest().lng();
 
 	// サーバーから表示範囲内のマーカー取得。非同期。
-	IchiMemo.getAreasAsync({
+	Kokorahen.getAreasAsync({
 		send: function(areas) {
 			for(var i=0; i<areas.length; i++) {
-				IchiMemo.listAsync(protMarkers, {area: areas[i]});
+				Kokorahen.listSpotAsync(protMarkers, {area: areas[i]});
 			}
 		},
 		_throw: function (e) {
@@ -152,7 +152,7 @@ var protMarkers = {
 						icon:pinImage, shadow:pinShadowImage
 				});
 				google.maps.event.addListener(m, 'click', onMarkerClick);
-				m.masterData = list[i];
+				m.spotData = list[i];
 				markers[id] = m;
 			} else {
 				// 既に有る場合は表示を有効にする。
@@ -170,7 +170,40 @@ var protMarkers = {
  */
 function onMarkerClick(ev) {
 	$("#memoFrame").show();
+
+	var spotForm = document.getElementById("spotForm");
+	var memoForm = document.getElementById("memoForm");
+
+	var pos = this.getPosition();
+	memoForm.lat.value = spotForm.lat.value = pos.lat();
+	spotForm.lng.value = spotForm.lng.value = pos.lng();
+
+	// 座標から住所を取得しinputタグに設定。
+	var geocoder = new google.maps.Geocoder();
+	geocoder.geocode({latLng: pos}, function(results, status){
+		var addr = "???";
+		if(status == google.maps.GeocoderStatus.OK){
+			addr = results[0].formatted_address;
+		}
+		memoForm.address.value = spotForm.address.value = addr;
+	});
+
+	var sd = this.spotData;
+	if (sd != null) {
+		postForm.id.value = sd.id;
+		postForm.name.value = sd.name;
+		postForm.tags.value = sd.tags;
+
+		var img = document.getElementById("spotImg");
+		img.src = "/image?id="+sd.image;
+		//$("#balloonImgInput").hide();
+		//$("input[name='level']").val([md.level]);
+		//$("input[name='appraise']").val([md.appraise]);
+
+	}
 }
+
+
 
 
 /**
@@ -193,9 +226,9 @@ function onLoadBalloon(ev) {
 	});
 
 	var img = document.getElementById("balloonImg");
-	if (balloonMarker.masterData) {
+	if (balloonMarker.spotData) {
 		// 登録済マーカーならパラメータをformに復元。
-		var md = balloonMarker.masterData;
+		var md = balloonMarker.spotData;
 		form.id.value = md.id;
 		form.comment.value = md.comment;
 		form.tags.value = md.tags;
@@ -220,12 +253,17 @@ function onLoadBalloon(ev) {
 function onImageSelect(_this, ev) {
 	// 選択画像を読み込んでプレビューする。
 	// HTML5機能。IE,safari 未対応。
+/*
 	var reader = new FileReader();
 	reader.onload = function(e) {
 		var img = document.getElementById("balloonImg");
 		img.src = reader.result;
 	};
 	reader.readAsDataURL(_this.files[0]);
+*/
+	var img = document.getElementById("spotImg");
+	img.src = _this.value;
+
 }
 
 

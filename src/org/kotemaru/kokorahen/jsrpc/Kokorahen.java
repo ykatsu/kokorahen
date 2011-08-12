@@ -26,7 +26,7 @@ import com.google.appengine.api.datastore.Key;
 public class Kokorahen {
 	public static String writeImage(MultiPartMap params) {
 		FileItem fileItem = params.getFileItem("file");
-		if (fileItem == null && fileItem.getData().length == 0) {
+		if (fileItem == null || fileItem.getData().length == 0) {
 			return "";
 		}
 
@@ -38,8 +38,10 @@ public class Kokorahen {
 		return ""+imgKey.getId();
 	}
 
-	public static Long writeSpot(Map map) {
-		Params params = new Params(map);
+	public static Long writeSpot(MultiPartMap params) {
+		//Params params = new Params(map);
+
+		String imgKey = writeImage(params);
 
 		SpotModel model = null;
 		Long id = params.getLong("id");
@@ -58,7 +60,8 @@ public class Kokorahen {
 		model.setAddress(params.getString("address"));
 		model.setAppraise(params.getInteger("appraise"));
 		model.setTags(Arrays.asList(params.getString("tags").split(",")));
-		model.setImage(params.getString("image"));
+		//model.setImage(params.getString("image"));
+		model.setImage(imgKey);
 		Key key = Datastore.put(model);
 
 		return key.getId();

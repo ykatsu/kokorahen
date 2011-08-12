@@ -17,7 +17,8 @@
 
 
 		<div id="memoFrame">
-			<form id="spotForm" name="spotForm">
+			<form id="spotForm" name="spotForm"
+				action="/classes/org/kotemaru/kokorahen/Kokorahen.writeSpot" >
 				<input name="id" type="hidden"/>
 				<input name="lat" type="hidden"/>
 				<input name="lng" type="hidden"/>
@@ -26,17 +27,18 @@
 					<tr><td colspan=3 align="center" bgcolor="#aaeeff">
 						SPOT情報
 					</td></tr>
-					<tr><td><nobr>画像</nobr></td><td>:</td><td width="99%">
-						<img style="width:100%;" src="http://maps.google.co.jp/mapfiles/ms/icons/blue-pushpin.png" />
+					<tr><td><nobr>画像<br/>URL</nobr></td><td>:</td><td width="99%">
+						<input type="text" name="image" onchange="onImageSelect(this,event)" /><br/>
+						<img id="spotImg" style="width:100%;" src="http://maps.google.co.jp/mapfiles/ms/icons/blue-pushpin.png" />
 					</td></tr>
 					<tr><td><nobr>名前</nobr></td><td>:</td><td width="99%">
-						<input class="BalloonText" name="name" type="text"  autocomplete="on"  list="names" />
+						<input  name="name" type="text"  autocomplete="on"  list="names" />
 					</td></tr>
 					<tr><td><nobr>住所</nobr></td><td>:</td><td width="99%">
-						<input class="BalloonText" name="address" type="text" />
+						<input  name="address" type="text" />
 					</td></tr>
 					<tr><td><nobr>タグ</nobr></td><td>:</td><td>
-						<input class="BalloonText" name="tags" type="text" />
+						<input name="tags" type="text" />
 					</td></tr>
 					<tr><td><nobr>評価</nobr></td><td>:</td><td>
 						<img src="star3.png" />
@@ -44,7 +46,8 @@
 					<tr><td></td><td></td><td></td></tr>
 
 					<tr><td colspan=3 align="center">
-						<button type="submit">SPOT登録/更新</button>
+						<button type="submit">登録</button>
+						<button type="button" onclick="showMemo()">メモ</button>
 						<button type="submit">戻る</button>
 					</td></tr>
 				</table>
@@ -55,7 +58,7 @@
 
 			<form class="MemoForm" id="memoForm" name="memoForm"
 				enctype="multipart/form-data" method="POST"
-				action="/classes/org/kotemaru/ichimemo/jsrpc/IchiMemo.register" >
+				action="/classes/org/kotemaru/kokorahen/Kokorahen.writeMemo" >
 
 				<input name="id" type="hidden"/>
 				<input name="lat" type="hidden"/>
@@ -81,13 +84,13 @@
 						<input name="tested" type="checkbox" value="true" checked />評価済
 					</td></tr>
 					<tr><td><nobr>住所</nobr></td><td>:</td><td width="99%">
-						<input class="BalloonText" name="address" type="text" />
+						<input name="address" type="text" />
 					</td></tr>
 					<tr><td><nobr>タグ</nobr></td><td>:</td><td>
-						<input class="BalloonText" name="tags" type="text" />
+						<input name="tags" type="text" />
 					</td></tr>
 					<tr><td><nobr>コメント</nobr></td><td>:</td><td>
-						<textarea class="BalloonText" name="comment" ></textarea>
+						<textarea name="comment" ></textarea>
 					</td></tr>
 					<tr><td></td><td></td><td></td></tr>
 
@@ -97,6 +100,7 @@
 					</td></tr>
 				</table>
 			</form>
+
 		</div>
 
 	</body>
