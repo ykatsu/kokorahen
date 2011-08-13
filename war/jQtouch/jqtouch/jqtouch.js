@@ -57,8 +57,7 @@
                 fullScreenClass: 'fullscreen',
                 hoverDelay: 50,
                 icon: null,
-                iconPad: null, // available in iOS 4.2 and later.
-                icon4: null, // available in iOS 4.2 and later.
+                icon4: null, // experimental
                 moveThreshold: 10,
                 preloadImages: false,
                 pressDelay: 1000,
@@ -89,8 +88,8 @@
             };
 
         function _debug(message) {
-            var now = (new Date).getTime();
-            var delta = now - lastTime;
+            now = (new Date).getTime();
+            delta = now - lastTime;
             lastTime = now;
             if (jQTSettings.debug) {
                 if (message) {
@@ -134,7 +133,7 @@
 
             // Find the nearest tappable ancestor
             if (!$el.is(touchSelectors.join(', '))) {
-                $el = $(e.target).closest(touchSelectors.join(', '));
+                var $el = $(e.target).closest(touchSelectors.join(', '));
             }
 
             // Prevent default if we found an internal link (relative or absolute)
@@ -176,7 +175,7 @@
 
             // Position the incoming page so toolbar is at top of viewport regardless of scroll position on from page
             // toPage.css('top', window.pageYOffset);
-
+            
             fromPage.trigger('pageAnimationStart', { direction: 'out' });
             toPage.trigger('pageAnimationStart', { direction: 'in' });
 
@@ -226,7 +225,7 @@
             // Define private navigationEnd callback
             function navigationEndHandler(event) {
                 _debug();
-
+                
                 if ($.support.animationEvents && animation && jQTSettings.useAnimations) {
                     fromPage.unbind('webkitAnimationEnd', navigationEndHandler);
                     fromPage.unbind('webkitTransitionEnd', navigationEndHandler);
@@ -333,7 +332,7 @@
                     goBack();
                 } else {
                     _debug(location.hash + ' !== ' + hist[1].hash);
-                }
+                } 
             }
         }
         function init(options) {
@@ -347,16 +346,20 @@
                 };
             }
 
-            // Set appropriate icon (retina display available in iOS 4.2 and later.)
-            var precomposed = (jQTSettings.addGlossToIcon) ? '' : '-precomposed';
-            if (jQTSettings.icon) {
-                hairExtensions += '<link rel="apple-touch-icon' + precomposed + '" href="' + jQTSettings.icon + '" />';
-            }
-            if (jQTSettings.iconPad) {
-                hairExtensions += '<link rel="apple-touch-icon' + precomposed + '" sizes="72x72" href="' + jQTSettings.iconPad + '" />';
-            }
-            if (jQTSettings.icon4) {
-                hairExtensions += '<link rel="apple-touch-icon' + precomposed + '" sizes="114x114" href="' + jQTSettings.icon4 + '" />';
+            // Set appropriate icon (retina display stuff is experimental)
+            if (jQTSettings.icon || jQTSettings.icon4) {
+                var precomposed, appropriateIcon;
+                if (jQTSettings.icon4 && window.devicePixelRatio && window.devicePixelRatio === 2) {
+                    appropriateIcon = jQTSettings.icon4;
+                } else if (jQTSettings.icon) {
+                    appropriateIcon = jQTSettings.icon;
+                } else {
+                    appropriateIcon = false;
+                }
+                if (appropriateIcon) {
+                    precomposed = (jQTSettings.addGlossToIcon) ? '' : '-precomposed';
+                    hairExtensions += '<link rel="apple-touch-icon' + precomposed + '" href="' + appropriateIcon + '" />';
+                }
             }
 
             // Set startup screen
@@ -585,7 +588,7 @@
             if (!$el.is(touchSelectors.join(', '))) {
                 var $el = $(e.target).closest(touchSelectors.join(', '));
             }
-
+            
             // Make sure we have a tappable element
             if (!$el.length || !$el.attr('href')) {
                 _debug('Could not find a link related to tapped element');
@@ -594,8 +597,7 @@
 
             // Init some vars
             var target = $el.attr('target'),
-               // hash = $el.attr('hash'),
-                hash = $el.attr('hash') || ($el.prop && $el.prop('hash')), //1.6 :jQuery attr vs. prop
+                hash = $el.attr('hash'),
                 animation = null;
 
             if ($el.isExternalLink()) {
@@ -658,7 +660,7 @@
         }
         function touchStartHandler(e) {
             _debug();
-
+            
             if (!tapReady) {
                 _debug('TouchStart handler aborted because tap is not ready');
                 e.preventDefault();
@@ -896,8 +898,8 @@
                 .bind('submit', submitHandler)
                 .bind('tap', tapHandler)
                 .trigger('orientationchange');
-
-
+            
+            
             // Determine what the "current" (initial) panel should be
             if ($('#jqt > .current').length == 0) {
                 currentPage = $('#jqt > *:first');
@@ -912,7 +914,7 @@
             setHash(initialPageId);
             addPageToHistory(currentPage);
             scrollTo(0, 0);
-
+            
             // Make sure none of the panels yank the location bar into view
             $('#jqt > *').css('minHeight', window.innerHeight);
 
