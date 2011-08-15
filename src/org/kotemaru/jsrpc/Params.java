@@ -16,13 +16,20 @@ public class Params  {
 		Object val = map.get(key);
 		if (val == null) return null;
 		if (val instanceof Double) return (Double) val;
-		return Double.valueOf(val.toString());
+		String strVal = val.toString();
+		if (strVal.length() == 0) return null;
+		return Double.valueOf(strVal);
 	}
 	public Integer getInteger(String key) {
 		return (Integer) map.get(key);
 	}
 	public Long getLong(String key) {
-		return (Long) map.get(key);
+		Object val = map.get(key);
+		if (val == null) return null;
+		if (val instanceof Long) return (Long) val;
+		String strVal = val.toString();
+		if (strVal.length() == 0) return null;
+		return Long.valueOf(strVal);
 	}
 	public Boolean getBoolean(String key) {
 		return (Boolean) map.get(key);

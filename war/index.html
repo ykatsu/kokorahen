@@ -88,8 +88,8 @@
 			//google.maps.event.addListener(balloon, 'domready', onLoadBalloon);
 
 			// GPSから現在位置取得、
-			navigator.geolocation.watchPosition(geoUpdate,
-					function(e){waitingIcon(false);});
+			navigator.geolocation.getCurrentPosition(geoUpdate,
+					function(e){alert(""+e)});
 		}
 		/**
 		 * GPS取得イベント処理。
@@ -139,18 +139,54 @@
 		}
 
 		function onShowSpot(ev, info){
-			var pos = currentMarker.getPosition();
-			setSpotPos(pos);
+			if ($('#spot').is(':hidden')) return;
+
+			var pos;
 			google.maps.event.trigger(map2, "resize");
+
+			var spotForm = document.spot;
+			var sd = currentMarker.spotData;
+			if (sd == null) {
+				pos = currentMarker.getPosition();
+
+				spotForm.id.value = "";
+				spotForm.lat.value = "";
+				spotForm.lng.value = "";
+				spotForm.address.value = "";
+				spotForm.name.value = "";
+				spotForm.openHours.value = "";
+				spotForm.closedDay.value = "";
+				spotForm.email.value = "";
+				spotForm.url.value = "";
+				spotForm.comment.value = "";
+				spotForm.tags.value = "";
+				spotForm.image.value = "";
+				$("#spotImage").attr("src", "/images/Home.png");
+
+				setSpotPos(pos);
+			} else {
+				pos = new google.maps.LatLng(sd.lat, sd.lng);
+
+				spotForm.id.value = sd.id;
+				spotForm.lat.value = sd.lat;
+				spotForm.lng.value = sd.lng;
+				spotForm.address.value = sd.address;
+				spotForm.name.value = sd.name;
+				spotForm.openHours.value = sd.openHours;
+				spotForm.closedDay.value = sd.closedDay;
+				spotForm.email.value = sd.email;
+				spotForm.url.value = sd.url;
+				spotForm.comment.value = sd.comment;
+				spotForm.tags.value = sd.tags.join(",");
+				spotForm.image.value = sd.image;
+				if (sd.image != null && sd.image != "") {
+					$("#spotImage").attr("src", sd.image);
+				}
+			}
+
 			marker2.setPosition(pos);
 			marker2.setVisible(true);
 			map2.setCenter(pos);
-
-			var sd = currentMarker.spotData;
-			if (sd != null) {
-				document.spot.name.value = sd.name;
-			}
-
 		};
 		function setSpotPos(pos){
 			var spotForm = document.spot;
@@ -194,6 +230,7 @@
 		    new google.maps.Point(8,31) // anchor
 		);
 		var markers = {}; // マーカーの一覧。
+		var areaFlags = {}; // 取得済みエリアの一覧。
 
 		/**
 		 * マップクリックイベント処理。
@@ -212,7 +249,11 @@
 			Kokorahen.getAreasAsync({
 				send: function(areas) {
 					for(var i=0; i<areas.length; i++) {
-						Kokorahen.listSpotAsync(protMarkers, {area: areas[i]});
+						var area = areas[i];
+						if (!areaFlags[area]) {
+							Kokorahen.listSpotAsync(protMarkers, {area: area});
+							areaFlags[area] = true;
+						}
 					}
 				},
 				_throw: function (e) {
@@ -273,7 +314,7 @@
 	</style>
 </head>
 
-<body onorientationchange="updateOrientation();">
+<body onorientationchange="updateOrientation();" onresize="updateOrientation();">
 <!-- tabbar -->
 <div id="tabbar">
 	<div>
@@ -303,32 +344,36 @@
 
 	<div id="spot"  class="keep_tabbar">
 		<div class="toolbar">
-			<h1>ここらへん</h1>
+			<h1>Spot情報</h1>
 			<a class="back slideright" href="#map">Map</a>
 			<a class="button" id="infoButton" href="javascript:writeSpot()">登録</a>
 		</div>
 		<div class="s-scrollwrapper">
 		<div>
 		<form action="" name="spot">
+			<input name="id" type="hidden"/>
+			<input name="lat" type="hidden"/>
+			<input name="lng" type="hidden"/>
+
+
+
 			<img id="spotImage" src="/images/Home.png" width="45%"  Align="left" onclick="$('#spotImageUrl').focus()"/>
 			<br/><br/>
 			<input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" />
 			<br/><br/>
-			<input id="spotImageUrl" type="url" name="iamge" placeholder="画像URL"
+			<input id="spotImageUrl" type="url" name="image" placeholder="画像URL"
 					style="font-size:14px;width:50%;"
 					onchange="$('#spotImage').attr('src', this.value)" />
 			<a href="https://picasaweb.google.com/home" target="_blank" ><img src="http://lh5.googleusercontent.com/s/v/79.06/img/logo/pwa-ja.gif"/></a>
 
 			<br clear="left" />
 
-			<input name="lat" type="hidden"/>
-			<input name="lng" type="hidden"/>
 
 			<ul class="edit rounded">
 				<li><input type="text" name="address" placeholder="住所"/></li>
 				<li><input type="text" name="tags" placeholder="タグ"/></li>
-				<li><input type="text" name="activeTime" placeholder="営業時間"/></li>
-				<li><input type="text" name="yasumi" placeholder="定休日"/></li>
+				<li><input type="text" name="openHours" placeholder="営業時間"/></li>
+				<li><input type="text" name="closedDay" placeholder="定休日"/></li>
 				<li><input type="email" name="email" placeholder="E-Mail"/></li>
 				<li><input type="url" name="url" placeholder="URL"/></li>
 				<li><input type="text" name="comment" placeholder="備考"/></li>
@@ -341,10 +386,31 @@
 		</div>
 	</div>
 
+	<div id="timeline" class="keep_tabbar">
+		<div class="toolbar">
+			<h1>TimeLine</h1>
+		</div>
+		<div class="s-scrollwrapper">
+			<div>
+			工事中
+			</div>
+		</div>
+	</div>
+
+	<div id="list" class="keep_tabbar">
+		<div class="toolbar">
+			<h1>List</h1>
+		</div>
+		<div class="s-scrollwrapper">
+			<div>
+			工事中
+			</div>
+		</div>
+	</div>
 
 	<div id="memo" class="keep_tabbar">
 		<div class="toolbar">
-			<h1>ここらへん</h1>
+			<h1>Memo</h1>
 		</div>
 		<div class="s-scrollwrapper">
 		<ul class="edit rounded">
@@ -391,6 +457,17 @@
 			<li><input type="text" name="name" placeholder="コメント"
 				id="some_name" /></li>
 		</ul>
+		</div>
+	</div>
+
+	<div id="config" class="keep_tabbar">
+		<div class="toolbar">
+			<h1>Config</h1>
+		</div>
+		<div class="s-scrollwrapper">
+			<div>
+			工事中
+			</div>
 		</div>
 	</div>
 

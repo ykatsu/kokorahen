@@ -65,6 +65,8 @@ System.out.println("--->"+map);
 		model.setComment(params.getString("comment"));
 		model.setClosedDay(params.getString("closedDay"));
 		model.setOpenHours(params.getString("openHours"));
+		model.setEmail(params.getString("email"));
+		model.setUrl(params.getString("url"));
 		//model.setImage(imgKey);
 		Key key = Datastore.put(model);
 

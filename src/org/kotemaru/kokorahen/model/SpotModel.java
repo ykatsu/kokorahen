@@ -29,6 +29,8 @@ public class SpotModel extends ModelBase {
 	private String comment;
 	private String openHours;
 	private String closedDay;
+	private String email;
+	private String url;
 
 
 	public long getId() {
@@ -173,6 +175,26 @@ public class SpotModel extends ModelBase {
 
 	public void setClosedDay(String closedDay) {
 		this.closedDay = closedDay;
+	}
+
+
+	public String getEmail() {
+		return email;
+	}
+
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+
+	public String getUrl() {
+		return url;
+	}
+
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 
