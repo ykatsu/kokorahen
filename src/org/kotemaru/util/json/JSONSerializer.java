@@ -15,7 +15,7 @@ Members ::= Pair ["," Pair]...;
 Pair ::= String ":" Value;
 Array ::= "[" [Elements] "]";
 Elements :: = Value ["," Value]...;
-Value ::= 
+Value ::=
 	  String
 	| Number
 	| Object
@@ -153,8 +153,8 @@ public class JSONSerializer {
 		out.write(c1);
 		out.write(c2);
 	}
-	
-	
+
+
 	public void sBean(Object obj)  throws IOException {
 		int count = 0;
 		append('{');
@@ -169,8 +169,14 @@ public class JSONSerializer {
 				&& Character.isUpperCase(mname.charAt(3))
 			) {
 				if (count++>0) append(',');
-				
-				String key = mname.substring(3).toLowerCase();
+
+				String key = mname.substring(3);
+				if (key.length() > 1) {
+					key = key.substring(0,1).toLowerCase() + key.substring(1);
+				} else {
+					key = key.toLowerCase();
+				}
+
 				sString(key.toString());
 				append(':');
 				try {

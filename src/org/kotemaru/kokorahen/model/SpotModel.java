@@ -15,6 +15,7 @@ import com.google.appengine.api.datastore.Key;
 public class SpotModel extends ModelBase {
 	private static final long serialVersionUID = 1L;
 
+	private String name;
 	private Date createDate;
 	private Date updateDate;
 	private Double lat;
@@ -22,13 +23,26 @@ public class SpotModel extends ModelBase {
 	private String area;
 	private String address;
 	private List<String> tags;
-	private Integer level;
+	private Integer level = 0;
 	private Integer appraise = -1;
 	private String image;
+	private String comment;
+	private String openHours;
+	private String closedDay;
 
 
 	public long getId() {
 		return getKey().getId();
+	}
+
+
+	public String getName() {
+		return name;
+	}
+
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 
@@ -129,6 +143,36 @@ public class SpotModel extends ModelBase {
 
 	public void setImage(String image) {
 		this.image = image;
+	}
+
+
+	public String getComment() {
+		return comment;
+	}
+
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+
+	public String getOpenHours() {
+		return openHours;
+	}
+
+
+	public void setOpenHours(String openHours) {
+		this.openHours = openHours;
+	}
+
+
+	public String getClosedDay() {
+		return closedDay;
+	}
+
+
+	public void setClosedDay(String closedDay) {
+		this.closedDay = closedDay;
 	}
 
 

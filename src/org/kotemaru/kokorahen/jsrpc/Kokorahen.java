@@ -38,10 +38,10 @@ public class Kokorahen {
 		return ""+imgKey.getId();
 	}
 
-	public static Long writeSpot(MultiPartMap params) {
-		//Params params = new Params(map);
-
-		String imgKey = writeImage(params);
+	public static Long writeSpot(Map map) {
+		Params params = new Params(map);
+System.out.println("--->"+map);
+		//String imgKey = writeImage(params);
 
 		SpotModel model = null;
 		Long id = params.getLong("id");
@@ -52,16 +52,20 @@ public class Kokorahen {
 			model = new SpotModel();
 		}
 
+		model.setName(params.getString("name"));
 		model.setCreateDate(new Date());
 		model.setUpdateDate(new Date());
 		model.setLat(params.getDouble("lat"));
 		model.setLng(params.getDouble("lng"));
 		model.setArea(toArea(model.getLat(), model.getLng()));
 		model.setAddress(params.getString("address"));
-		model.setAppraise(params.getInteger("appraise"));
+		//model.setAppraise(params.getInteger("appraise"));
 		model.setTags(Arrays.asList(params.getString("tags").split(",")));
-		//model.setImage(params.getString("image"));
-		model.setImage(imgKey);
+		model.setImage(params.getString("image"));
+		model.setComment(params.getString("comment"));
+		model.setClosedDay(params.getString("closedDay"));
+		model.setOpenHours(params.getString("openHours"));
+		//model.setImage(imgKey);
 		Key key = Datastore.put(model);
 
 		return key.getId();

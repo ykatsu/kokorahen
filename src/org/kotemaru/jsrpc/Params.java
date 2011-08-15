@@ -13,7 +13,10 @@ public class Params  {
 		return (String) map.get(key);
 	}
 	public Double getDouble(String key) {
-		return (Double) map.get(key);
+		Object val = map.get(key);
+		if (val == null) return null;
+		if (val instanceof Double) return (Double) val;
+		return Double.valueOf(val.toString());
 	}
 	public Integer getInteger(String key) {
 		return (Integer) map.get(key);
