@@ -4,36 +4,36 @@
 
 var ${className} = {};
 
-${className}.__makeUrl = function() {
-	var url = "/classes/${packagePath}/${className}";
-	return url;
-};
-${className}.__toParams = function(args, offset) {
-	var params = [];
+${className}.__makeUrl = function(mname, args, offset) {
+	var url = "/classes/${packagePath}/${className}."+mname;
 	for (var i=offset; i<args.length; i++) {
-		params.push(args[i]);
+		url += (i==offset ? '?' : '&');
+		var n = i-offset;
+		if (typeof args[i] == "object") {
+			url += "a"+n+"="+encodeURI(JSON.stringify(args[i]));
+		} else {
+			url += "a"+n+"="+encodeURI(args[i]);
+		}
 	}
-	return params;
+	return url;
 };
 
 ${className}.__call = function(mname, args) {
-	var url = ${className}.__makeUrl();
+	var url = ${className}.__makeUrl(mname, args, 0);
 	var xreq = new XMLHttpRequest();
-	xreq.open("POST", url, false);
-	xreq.setRequestHeader("Content-Type", "application/json;charset=utf-8");
-	xreq.send(JSON.stringify({method:mname, params:${className}.__toParams(args,0)}));
+	xreq.open("GET", url, false);
+	xreq.send();
 	if (xreq.status/100 != 2) throw xreq.responseText;
 	var res = JSON.parse(xreq.responseText);
-	if (res.error) throw res.error;
+	if (res.error) RPJS.errorHandler(res.error);
 	return res.result;
 };
 
 ${className}.__callAsync = function(mname, args) {
 	var callback = args[0];
-	var url = ${className}.__makeUrl();
+	var url = ${className}.__makeUrl(mname, args, 1);
 	var xreq = new XMLHttpRequest();
-	xreq.open("POST", url, true);
-	xreq.setRequestHeader("Content-Type", "application/json;charset=utf-8");
+	xreq.open("GET", url, true);
 	xreq.onreadystatechange = function (ev) {
 		if (xreq.readyState == 4) {
 			if(xreq.status == 200) {
@@ -49,13 +49,13 @@ ${className}.__callAsync = function(mname, args) {
 			}
 		}
 	}
-	xreq.send(JSON.stringify({method:mname, params:${className}.__toParams(args,1)}));
+	xreq.send();
 };
 
 
 #foreach( $method in $masterClassDecl.methods )
 #set ($methodName = "${method.simpleName}")
-#if (${helper.isPublic($method)} && ${helper.isStatic($method)})
+#if (${helper.isPublic($method)} && ${helper.isStatic($method)}) 
 ${className}.${methodName} = function(${helper.getArguments($method)}){
 	return ${className}.__call("${methodName}", arguments);
 }

@@ -7,7 +7,7 @@
 	<property name="classes" value="${basedir}/war/WEB-INF/classes"/>
 	<property name="lib" value="${basedir}/war/WEB-INF/lib"/>
 	<property name="apt_gen" value="${basedir}/.apt_generated"/>
-	
+
 	<property name="pre" value="${basedir}/pre"/>
 	<property name="pre.source" value="${source}"/>
 	<property name="pre.classes" value="${pre}/classes"/>
@@ -31,13 +31,13 @@
 		<mkdir dir="${pre}" />
 		<mkdir dir="${pre.apt_gen}" />
 		<mkdir dir="${pre.classes}" />
-		<apt 
+		<apt
 			srcdir="${pre.source}"
-			preprocessdir="${pre.apt_gen}" 
-			destdir="${pre.classes}" 
-			debug="on" 
-			encoding="utf-8" 
-			compile="true" 
+			preprocessdir="${pre.apt_gen}"
+			destdir="${pre.classes}"
+			debug="on"
+			encoding="utf-8"
+			compile="true"
 			factorypathref="apt-path"
 			classpathref="apt-path"
 		>
@@ -53,7 +53,7 @@
 				<exclude name="**/*.java"/>
 			</fileset>
 		</copy>
-		
+
 		<jar jarfile="${pre}/apt-jsrpc.jar">
 			<fileset dir="${pre.classes}" />
 		</jar>
@@ -62,13 +62,13 @@
 	<target name="compile" depends="precompile" >
 
 		<mkdir dir="${classes}" />
-		<apt 
+		<apt
 			srcdir="${source}"
-			preprocessdir="${apt_gen}" 
-			destdir="${classes}" 
-			debug="on" 
-			encoding="utf-8" 
-			compile="true" 
+			preprocessdir="${apt_gen}"
+			destdir="${classes}"
+			debug="on"
+			encoding="utf-8"
+			compile="true"
 			factorypathref="apt-path"
 			classpathref="apt-path"
 		>
@@ -81,11 +81,12 @@
 		</copy>
 
 	</target>
-	
+
 
 	<target name="clean">
 		<delete dir="${apt_gen}" />
 		<delete dir="${pre.apt_gen}" />
 		<delete dir="${pre.classes}" />
+		<delete file="${pre}/apt-jsrpc.jar" />
 	</target>
 </project>

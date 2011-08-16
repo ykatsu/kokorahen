@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -29,13 +30,13 @@ public class CalljavaServlet extends HttpServlet {
 	public static HttpRequestContext getHttpRequestContext() {
 		return httpRequestContext.get();
 	}
-	
-	
+
+
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
 		httpRequestContext.set(new HttpRequestContext(this, req, resp));
-		
+
 		String pinfo = req.getPathInfo();
 		if (pinfo == null) return;
 		try {
@@ -45,7 +46,7 @@ public class CalljavaServlet extends HttpServlet {
 			throw new ServletException(e);
 		}
 	}
-	
+
 	public void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		httpRequestContext.set(new HttpRequestContext(this, req, resp));
@@ -55,8 +56,8 @@ public class CalljavaServlet extends HttpServlet {
 			if (ctype != null) ctype = ctype.toLowerCase();
 			if (FileUpload.isMultipartContent(req)) {
 				callMethodForMultiPart(req, resp);
-			} else if (MIME_JSON.equals(ctype)) {
-				// TODO: json-rpc
+			} else if (ctype.startsWith(MIME_JSON)) {
+				callJsonRpc(req, resp);
 			} else {
 				callMethodForParam(req, resp);
 			}
@@ -65,6 +66,8 @@ public class CalljavaServlet extends HttpServlet {
 			throw new ServletException(e);
 		}
 	}
+
+
 	private void callMethodForMultiPart(HttpServletRequest req,
 			HttpServletResponse resp) throws Exception {
 		String pinfo = req.getPathInfo();
@@ -94,7 +97,7 @@ public class CalljavaServlet extends HttpServlet {
 			throw new RuntimeException(
 					"Not found method "+mname+"(Map)");
 		}
-		
+
 		Object result = method.invoke(null, map);
 
 		resp.setContentType(MIME_HTML+";charset=utf-8");
@@ -124,7 +127,7 @@ public class CalljavaServlet extends HttpServlet {
 			throw new RuntimeException(
 					"Not found method "+mname+"("+argc+"args)");
 		}
-		
+
 
 		Object[] args = new Object[argc];
 		Class[] types = method.getParameterTypes();
@@ -142,6 +145,49 @@ public class CalljavaServlet extends HttpServlet {
 		new JSONSerializer().serialize(result, out);
 		out.write("}".getBytes("UTF-8"));
 		out.flush();
+	}
+	private void callJsonRpc(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+		JSONParser parser = new JSONParser();
+		Map map = parser.parse(req.getReader());
+		String mname = map.get("method").toString();
+		List params = (List) map.get("params");
+		int argc = params.size();
+
+		String pinfo = req.getPathInfo();
+		String cname = pinfo.substring(1).replace('/','.');
+
+		Class clazz = Class.forName(cname);
+		Method method = null;
+		Method[] methods = clazz.getMethods();
+		for (int i=0; i<methods.length; i++) {
+			if (methods[i].getParameterTypes().length == argc
+				&& mname.equals(methods[i].getName())) {
+				method = methods[i];
+			}
+		}
+		if (method == null) {
+			throw new RuntimeException(
+					"Not found method "+mname+"("+argc+"args)");
+		}
+
+
+		Object[] args = new Object[argc];
+		Class[] types = method.getParameterTypes();
+		if (types != null) {
+			for (int i=0; i<types.length; i++) {
+				args[i] = params.get(i);
+			}
+		}
+
+		Object result = method.invoke(null, args);
+
+		resp.setContentType(MIME_JSON);
+		OutputStream out = resp.getOutputStream();
+		out.write("{\"result\":".getBytes("UTF-8"));
+		new JSONSerializer().serialize(result, out);
+		out.write("}".getBytes("UTF-8"));
+		out.flush();
+
 	}
 
 	private Object toArg(Class type, String val) throws Exception {
@@ -168,4 +214,3 @@ public class CalljavaServlet extends HttpServlet {
 	}
 
 }
-	

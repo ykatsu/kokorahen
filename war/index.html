@@ -27,6 +27,7 @@
 
 
 	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js" ></script>
+	<script src="/InfoBox.js" ></script>
 
 	<script type="text/javascript" charset="utf-8">
 		var jqt = $.jQTouch({
@@ -52,6 +53,8 @@
 		var map;
 		var map2;
 		var currentMarker;
+		var balloon;
+		var infobox;
 
 		function initMap() {
 
@@ -76,6 +79,13 @@
 			}
 			map2 = new google.maps.Map(document.getElementById("mapCanvas2"),mapopts2);
 
+			// バルーン生成。
+			balloon = new google.maps.InfoWindow({
+				content: $("#balloon").html(),
+				maxWidth: 200
+			});
+			infobox = new InfoBox(map);
+
 			// 現在位置マーカー生成
 			marker = new google.maps.Marker({position: center, map: map });
 			marker2 = new google.maps.Marker({position: center, map: map2 });
@@ -86,10 +96,12 @@
 			google.maps.event.addListener(marker, 'click', onMarkerClick);
 			google.maps.event.addListener(map2, 'click', onMap2Click);
 			//google.maps.event.addListener(balloon, 'domready', onLoadBalloon);
+			//google.maps.event.addListener(balloon, 'click', onBalloonClick);
+			infobox.addEventListener('click', onBalloonClick, false);
 
 			// GPSから現在位置取得、
 			navigator.geolocation.getCurrentPosition(geoUpdate,
-					function(e){alert(""+e)});
+					function(e){alert("現在位置が取得できません。\n"+e.message)});
 		}
 		/**
 		 * GPS取得イベント処理。
@@ -120,6 +132,19 @@
 			currentMarker = this;
 			jqt.goTo("#spot", "slideleft");
 		}
+		function onSpotMarkerClick(ev) {
+			currentMarker = this;
+			//balloon.open(map, this);
+			var sd = currentMarker.spotData;
+			infobox.open(this, sd.name);
+		}
+		function onBalloonClick(ev) {
+			jqt.goTo("#spot", "slideleft");
+			ev.preventDefault();
+			return false;
+		}
+
+
 		function onMap2Click(ev) {
 			marker2.setPosition(ev.latLng);
 			marker2.setVisible(true);
@@ -282,7 +307,7 @@
 						var m = new google.maps.Marker({position: pos, map: map,
 								icon:pinImage, shadow:pinShadowImage
 						});
-						google.maps.event.addListener(m, 'click', onMarkerClick);
+						google.maps.event.addListener(m, 'click', onSpotMarkerClick);
 						m.spotData = list[i];
 						markers[id] = m;
 					} else {
@@ -473,6 +498,12 @@
 
 </div>
 
+<div style="display:none;">
+	<div id="balloon" class="Balloon" onclick="onBalloonClick(event)">
+		<div onclick="onBalloonClick(event)"">name</div>
+		<div>addr</div>
+	</div>
+</div>
 
 </body>
 </html>
