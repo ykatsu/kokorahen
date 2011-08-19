@@ -16,8 +16,10 @@ import org.kotemaru.jsrpc.MultiPartMap;
 import org.kotemaru.jsrpc.Params;
 import org.kotemaru.jsrpc.annotation.JsRpc;
 import org.kotemaru.kokorahen.meta.MemoModelMeta;
+import org.kotemaru.kokorahen.meta.ReviewModelMeta;
 import org.kotemaru.kokorahen.meta.SpotModelMeta;
 import org.kotemaru.kokorahen.model.MemoModel;
+import org.kotemaru.kokorahen.model.ReviewModel;
 import org.kotemaru.kokorahen.model.SpotModel;
 
 import com.google.appengine.api.datastore.Key;
@@ -107,6 +109,32 @@ System.out.println("--->"+map);
 		return key.getId();
 
 	}
+	public static Long writeReview(Map map) {
+		Params params = new Params(map);
+
+		ReviewModel model = null;
+		Long id = params.getLong("id");
+		if (id != null) {
+			Key key = Datastore.createKey(ReviewModel.class, id);
+			model = Datastore.get(ReviewModel.class, key);
+		} else {
+			model = new ReviewModel();
+		}
+
+		List<String> images = new ArrayList<String>(1);
+		images.add(params.getString("image"));
+
+		model.setUsername(null); // TODO:
+		model.setSpotId(params.getLong("spotId")); // TODO:
+		model.setCreateDate(new Date());
+		model.setUpdateDate(new Date());
+		model.setAppraise(params.getInteger("appraise"));
+		model.setComment(params.getString("comment"));
+		Key key = Datastore.put(model);
+
+		return key.getId();
+
+	}
 
 
 	private static String toArea(double lat, double lng) {
@@ -168,6 +196,25 @@ System.out.println("--->"+map);
 		q.filter(e.area.equal(area));
 		List<MemoModel> list = q.asList();
 		System.out.println("datas="+list+"\n"+params);
+		return list;
+	}
+	public static List<ReviewModel> listReview(long spotId){
+		ReviewModelMeta e = ReviewModelMeta.get();
+		ModelQuery q = Datastore.query(e);
+		q.filter(e.spotId.equal(spotId));
+		q.sort(e.updateDate.desc);
+		q.limit(20);
+		List<ReviewModel> list = q.asList();
+		System.out.println("review="+list);
+		return list;
+	}
+	public static List<ReviewModel> listTimeline(){
+		ReviewModelMeta e = ReviewModelMeta.get();
+		ModelQuery q = Datastore.query(e);
+		q.sort(e.updateDate.desc);
+		q.limit(20);
+		List<ReviewModel> list = q.asList();
+		System.out.println("review="+list);
 		return list;
 	}
 

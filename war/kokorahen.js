@@ -8,6 +8,9 @@ $(function(){
 	// custom event listener setup.
 	$('#spot').bind('pageAnimationEnd', onShowSpot);
 	$('#list').bind('pageAnimationEnd', onShowList);
+	$('#memo').bind('pageAnimationEnd', onShowMemo);
+	$('#review').bind('pageAnimationEnd', onShowReview);
+	$('#timeline').bind('pageAnimationEnd', onShowTimeline);
 
 	// 補助マップのスクロールで親ページがスクロールしないようにしている。
 	function eventBreaker(ev) {
@@ -16,6 +19,20 @@ $(function(){
 	}
 	$('#mapCanvas2').bind('touchmove', eventBreaker);
 	$('#mapCanvas2').bind('mousemove', eventBreaker);
+
+
+	$('#appraise_raty').raty({
+		click: function(score, evt) {
+			//$("#appraise").val(score);
+			document.review.appraise.value = score;
+		},
+		size:48,
+		path: "/images",
+		starHalf:   'star-half-big.png',
+		starOff:    'star-off-big.png',
+		starOn:     'star-on-big.png'
+	});
+
 });
 
 
@@ -25,6 +42,8 @@ var marker;
 var currentMarker;
 var balloon;
 var infobox;
+var reviews = {};
+var currentReview;
 
 function initMap() {
 
@@ -113,6 +132,15 @@ function onListClick(id) {
 	currentMarker = markers[id];
 	jqt.goTo("#spot", "slideleft");
 }
+function onMemoClick(id) {
+	currentMarker = markers[id];
+	currentReview = null;
+	jqt.goTo("#review", "slideleft");
+}
+function onReviewClick(id) {
+	currentReview = reviews[id];
+	jqt.goTo("#review", "slideleft");
+}
 
 function onBalloonClick(ev) {
 	jqt.goTo("#spot", "slideleft");
@@ -185,11 +213,30 @@ function onShowSpot(ev, info){
 		if (sd.image != null && sd.image != "") {
 			$("#spotImage").attr("src", sd.image);
 		}
+
+		Kokorahen.listReviewAsync({
+			send: function(list) {
+				var ul = $("#spotReview");
+				ul.html("");
+				for (var i=0; i<list.length; i++) {
+					ul.append($("<li class='arrow'><a href='javascript:onReviewClick("
+							+list[i].id+")'>"
+							+list[i].comment+"</a></li>"));
+					reviews[list[i].id] = list[i];
+				}
+				jqt.setPageHeight();
+			},
+			_throw: function(e) {
+				alert(e.message);
+			}
+		},sd.id);
+
 	}
 
 	marker2.setPosition(pos);
 	marker2.setVisible(true);
 	map2.setCenter(pos);
+
 };
 function setSpotPos(pos){
 	var spotForm = document.spot;
@@ -216,6 +263,15 @@ function writeSpot() {
 	}
 	var id = Kokorahen.writeSpot(params);
 	alert("sopt id="+id);
+}
+function writeReview() {
+	var params = {};
+	var elems = document.review.elements;
+	for (var i=0; i<elems.length; i++) {
+		params[elems[i].name] = elems[i].value;
+	}
+	var id = Kokorahen.writeReview(params);
+	alert("review id="+id);
 }
 
 // ピンイメージ。
@@ -276,6 +332,7 @@ function onMapIdol() {
  */
 var protMarkers = {
 	send: function(list) {
+		var isUpdate = false;
 		// for (var key in markers) markers[key].setVisible(false);
 		for (var i=0; i<list.length; i++) {
 			var id = list[i].id;
@@ -288,10 +345,15 @@ var protMarkers = {
 				google.maps.event.addListener(m, 'click', onSpotMarkerClick);
 				m.spotData = list[i];
 				markers[id] = m;
+				isUpdate = true;
 			} else {
 				// 既に有る場合は表示を有効にする。
 				markers[id].setVisible(true);
 			}
+		}
+		if (isUpdate === true) {
+			onShowList();
+			onShowMemo();
 		}
 	},
 	_throw: function(e) {
@@ -319,6 +381,8 @@ function sortNear() {
 }
 
 function onShowList() {
+	if ($('#list').is(':hidden')) return;
+
 	var list = sortNear();
 	var ul = $("#listSpots");
 	ul.html("");
@@ -327,8 +391,58 @@ function onShowList() {
 	}
 }
 
+function onShowMemo() {
+	if ($('#memo').is(':hidden')) return;
+
+	var list = sortNear();
+	var ul = $("#memoSpots");
+	ul.html("");
+	for (var i=0; i<list.length && i<50; i++) {
+		ul.append($("<li class='arrow'><a href='javascript:onMemoClick("+list[i].id+")'>"+list[i].name+"</a></li>"));
+	}
+}
+
+function onShowReview() {
+	if ($('#review').is(':hidden')) return;
+
+	var reviewForm = document.review;
+
+	if (currentReview === null) {
+		var sd = currentMarker.spotData;
+		if (sd == null) return;
+		reviewForm.name.value = sd.name;
+		reviewForm.spotId.value = sd.id;
+	} else {
+		reviewForm.id.value = currentReview.id;
+		reviewForm.spotId.value = currentReview.spotId;
+		reviewForm.comment.value = currentReview.comment;
+		reviewForm.appraise.value = currentReview.appraise;
+		$.fn.raty.start(currentReview.appraise, "#appraise_raty");
+
+		reviewForm.name.value = markers[currentReview.spotId].spotData.name;
+	}
 
 
+}
+
+function onShowTimeline() {
+	if ($('#timeline').is(':hidden')) return;
+
+
+	Kokorahen.listTimelineAsync({
+		send: function(list) {
+			var ul = $("#listTimeline");
+			ul.html("");
+			for (var i=0; i<list.length && i<50; i++) {
+				ul.append($("<li class='arrow'><a href='javascript:onListClick("+list[i].id+")'>"+list[i].comment+"</a></li>"));
+			}
+			jqt.setPageHeight();
+		},
+		_throw: function(){
+			alert(e.message);
+		}
+	});
+}
 
 
 

@@ -18,9 +18,9 @@ import com.google.appengine.api.memcache.MemcacheServiceFactory;
 @SuppressWarnings("serial")
 public class ResourceServlet extends HttpServlet {
 	private static final String NS_MEMCACHE = ResourceServlet.class.getName();
-	private static MemcacheService memcache = 
+	private static MemcacheService memcache =
 		MemcacheServiceFactory.getMemcacheService(NS_MEMCACHE);
-	
+
 	private static final String MIME_JSON = "application/json";
 	private static final String MIME_JS = "application/javascript";
 	private static final String MIME_TEXT = "text/plain";
@@ -29,7 +29,10 @@ public class ResourceServlet extends HttpServlet {
 			throws ServletException, IOException {
 
 		String pinfo = req.getPathInfo();
-		if (pinfo == null) return;
+		if (pinfo == null) {
+			memcache.clearAll();
+			return;
+		}
 		try {
 			takeResource(req, resp);
 		} catch (Exception e) {
@@ -38,7 +41,7 @@ public class ResourceServlet extends HttpServlet {
 		}
 	}
 
-	private void takeResource(HttpServletRequest req, 
+	private void takeResource(HttpServletRequest req,
 			HttpServletResponse resp) throws Exception  {
 		String pinfo = req.getPathInfo();
 
@@ -47,7 +50,7 @@ public class ResourceServlet extends HttpServlet {
 			data = IOUtil.getResource(ResourceServlet.class, pinfo);
 			memcache.put(pinfo, data);
 		}
-		
+
 		if (pinfo.endsWith(".js")) {
 			resp.setContentType(MIME_JS);
 		} else if (pinfo.endsWith(".json")) {
@@ -55,7 +58,7 @@ public class ResourceServlet extends HttpServlet {
 		} else  {
 			resp.setContentType(MIME_TEXT);
 		}
-		
+
 		resp.getWriter().write(data);
 	}
-}	
+}

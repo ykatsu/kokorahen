@@ -24,8 +24,9 @@
 	<script src="/jQtouch/extensions/jqt.bars/jqt.bars.js" type="application/x-javascript" charset="utf-8"></script>
 	<script src="/jQtouch/extensions/jqt.listIndex/jqt.listIndex.js" type="application/x-javascript" charset="utf-8"></script>
 
+	<script src="/js/jquery.raty.js" ></script>
 
-	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js" ></script>
+	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=1" ></script>
 	<script src="/InfoBox.js" ></script>
 
 	<script src="kokorahen.js"></script>
@@ -55,7 +56,7 @@
 		<li><a href="#map" mask="/images/location_pin.png" ><strong>Map</strong></a></li>
 		<li><a href="#timeline" mask="/images/clock_time.png" ><strong>TimeLine</strong></a></li>
 		<li><a href="#list" mask="/images/list.png" ><strong>List</strong></a></li>
-		<li><a href="#memo" mask="/images/edit.png" ><strong>Memo</strong></a></li>
+		<li><a href="#memo" mask="/images/edit.png" ><strong>Review</strong></a></li>
 		<li><a href="#config" mask="/images/preferences_gear_5.png" ><strong>Config</strong></a></li>
 	</ul>
 	</div>
@@ -114,6 +115,11 @@
 
 			<div id="mapCanvas2">
 			</div>
+
+			<hr/>
+			<ul id="spotReview" class="rounded">
+			</ul>
+
 		</form>
 		</div>
 		</div>
@@ -125,7 +131,7 @@
 		</div>
 		<div class="s-scrollwrapper">
 			<div>
-			工事中
+				<ul class="rounded" id="listTimeline"></ul>
 			</div>
 		</div>
 	</div>
@@ -143,55 +149,40 @@
 
 	<div id="memo" class="keep_tabbar">
 		<div class="toolbar">
-			<h1>Memo</h1>
+			<h1>Review</h1>
 		</div>
 		<div class="s-scrollwrapper">
-		<ul class="edit rounded">
-			<li><input type="text" name="name" placeholder="名前"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="住所"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="コメント"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="名前"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="住所"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="コメント"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="名前"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="住所"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="コメント"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="名前"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="住所"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="コメント"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="名前"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="住所"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="コメント"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="名前"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="住所"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="コメント"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="名前"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="住所"
-				id="some_name" /></li>
-			<li><input type="text" name="name" placeholder="コメント"
-				id="some_name" /></li>
-		</ul>
+			<div>
+				<ul class="rounded" id="memoSpots"></ul>
+			</div>
 		</div>
 	</div>
+
+	<div id="review"  class="keep_tabbar">
+		<div class="toolbar">
+			<h1>Review</h1>
+			<a class="back slideright" href="#">Back</a>
+			<a class="button" id="infoButton" href="javascript:writeReview()">登録</a>
+		</div>
+		<div class="s-scrollwrapper">
+		<div>
+		<form action="" name="review">
+			<input name="id" type="hidden"/>
+			<input name="spotId" type="hidden"/>
+			<input name="appraise" type="hidden"/>
+
+
+			<input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" />
+			<ul class="edit rounded">
+				<li><div style="width:100%" id="appraise_raty"></div></li>
+				<li><textarea name="comment"  cols="100%" placeholder="コメント" ></textarea></li>
+			</ul>
+		</form>
+		</div>
+		</div>
+	</div>
+
+
 
 	<div id="config" class="keep_tabbar">
 		<div class="toolbar">

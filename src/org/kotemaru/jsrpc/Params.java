@@ -21,7 +21,12 @@ public class Params  {
 		return Double.valueOf(strVal);
 	}
 	public Integer getInteger(String key) {
-		return (Integer) map.get(key);
+		Object val = map.get(key);
+		if (val == null) return null;
+		if (val instanceof Integer) return (Integer) val;
+		String strVal = val.toString();
+		if (strVal.length() == 0) return null;
+		return Integer.valueOf(strVal);
 	}
 	public Long getLong(String key) {
 		Object val = map.get(key);
