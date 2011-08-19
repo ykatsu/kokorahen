@@ -412,6 +412,9 @@ function onShowReview() {
 		if (sd == null) return;
 		reviewForm.name.value = sd.name;
 		reviewForm.spotId.value = sd.id;
+		reviewForm.comment.value = "";
+		reviewForm.appraise.value = 0;
+		$.fn.raty.start(0, "#appraise_raty");
 	} else {
 		reviewForm.id.value = currentReview.id;
 		reviewForm.spotId.value = currentReview.spotId;
@@ -434,7 +437,8 @@ function onShowTimeline() {
 			var ul = $("#listTimeline");
 			ul.html("");
 			for (var i=0; i<list.length && i<50; i++) {
-				ul.append($("<li class='arrow'><a href='javascript:onListClick("+list[i].id+")'>"+list[i].comment+"</a></li>"));
+				ul.append($("<li class='arrow'><a href='javascript:onReviewClick("+list[i].id+")'>"+list[i].comment+"</a></li>"));
+				reviews[list[i].id] = list[i];
 			}
 			jqt.setPageHeight();
 		},
