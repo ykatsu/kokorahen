@@ -56,7 +56,7 @@
 		<li><a href="#map" mask="/images/location_pin.png" ><strong>Map</strong></a></li>
 		<li><a href="#timeline" mask="/images/clock_time.png" ><strong>TimeLine</strong></a></li>
 		<li><a href="#list" mask="/images/list.png" ><strong>List</strong></a></li>
-		<li><a href="#memo" mask="/images/edit.png" ><strong>Review</strong></a></li>
+		<li><a href="#memo" mask="/images/edit.png" ><strong>Memo</strong></a></li>
 		<li><a href="#user" mask="/images/user.png" ><strong>User</strong></a></li>
 	</ul>
 	</div>
@@ -80,7 +80,7 @@
 		<div class="toolbar">
 			<h1>Spot情報</h1>
 			<a class="back slideright" href="#">Back</a>
-			<a class="button" id="infoButton" href="javascript:writeSpot()">登録</a>
+			<a class="button" id="infoButton" href="javascript:Spot.write()">登録</a>
 		</div>
 		<div class="s-scrollwrapper">
 		<div>
@@ -90,18 +90,21 @@
 			<input name="lng" type="hidden"/>
 
 
+			<ul class="edit individual">
+				<li>
+					<img id="spotImage" src="/images/Home.png"  Align="left" style="width:100%;" onclick="$('#spotImageUrl').focus()"/>
+					<input id="spotImageUrl" type="url" name="image" placeholder="画像URL"
+							style="font-size:14px;"
+							onchange="$('#spotImage').attr('src', this.value)" />
+				</li>
+				<li>
+					<input type="text" name="name" placeholder="名前" style="font-size:20px;" />
+					<br/><br/>					<br/><br/>
 
-			<img id="spotImage" src="/images/Home.png" width="45%"  Align="left" onclick="$('#spotImageUrl').focus()"/>
-			<br/><br/>
-			<input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" />
-			<br/><br/>
-			<input id="spotImageUrl" type="url" name="image" placeholder="画像URL"
-					style="font-size:14px;width:50%;"
-					onchange="$('#spotImage').attr('src', this.value)" />
-			<a href="https://picasaweb.google.com/home" target="_blank" ><img src="http://lh5.googleusercontent.com/s/v/79.06/img/logo/pwa-ja.gif"/></a>
+					<a href="javascript:Spot.onReviewClick(null)" class="grayButton"  >review</a>
 
-			<br clear="left" />
-
+				</li>
+			</ul>
 
 			<ul class="edit rounded">
 				<li><input type="text" name="address" placeholder="住所"/></li>
@@ -153,7 +156,7 @@
 		</div>
 		<div class="s-scrollwrapper">
 			<div>
-				<ul class="rounded" id="memoSpots"></ul>
+				工事中
 			</div>
 		</div>
 	</div>
@@ -162,7 +165,7 @@
 		<div class="toolbar">
 			<h1>Review</h1>
 			<a class="back slideright" href="#">Back</a>
-			<a class="button" id="infoButton" href="javascript:writeReview()">登録</a>
+			<a class="button" id="infoButton" href="javascript:Review.write()">登録</a>
 		</div>
 		<div class="s-scrollwrapper">
 		<div>
