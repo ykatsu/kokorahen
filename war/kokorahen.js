@@ -3,6 +3,8 @@ var jqt = $.jQTouch({
 });
 
 $(function(){
+	Login.init();
+
 	Map.init();
 	Timeline.init();
 	List.init();
@@ -455,9 +457,10 @@ function User() {
 
 }
 User.init = function()  {
-	$('#review').bind('pageAnimationEnd', Review.onShow);
+	$('#user').bind('pageAnimationEnd', User.onShow);
 }
 User.onShow = function() {
+	document.user.username.value = Login.info.username;
 }
 
 //-------------------------------------------------------------------
@@ -505,6 +508,24 @@ Review.write = function() {
 	var id = Kokorahen.writeReview(params);
 	alert("review id="+id);
 }
+
+//-------------------------------------------------------------------
+//Login
+function Login() { }
+Login.info = {username: null};
+
+Login.init = function() {
+	var url = "http://"+location.host;
+	Login.info = Kokorahen.getUsername("google", url);
+	if (Login.info.username == null) {
+		location.href = Login.info.loginUrl;
+	}
+}
+
+Login.logout = function() {
+	location.href = Login.info.logoutUrl;
+}
+
 
 /* EOF */
 

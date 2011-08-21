@@ -1,17 +1,23 @@
 package org.kotemaru.kokorahen.jsrpc;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slim3.controller.upload.FileItem;
 import org.slim3.datastore.*;
 
 import org.kotemaru.ichimemo.model.*;
 import org.kotemaru.ichimemo.meta.*;
+import org.kotemaru.jsrpc.CalljavaServlet;
 import org.kotemaru.jsrpc.MultiPartMap;
 import org.kotemaru.jsrpc.Params;
 import org.kotemaru.jsrpc.annotation.JsRpc;
@@ -21,11 +27,48 @@ import org.kotemaru.kokorahen.meta.SpotModelMeta;
 import org.kotemaru.kokorahen.model.MemoModel;
 import org.kotemaru.kokorahen.model.ReviewModel;
 import org.kotemaru.kokorahen.model.SpotModel;
+import org.kotemaru.util.HttpRequestContext;
 
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 
 @JsRpc()
 public class Kokorahen {
+
+	public static Map getUsername(String mode, String url) throws IOException {
+		//Params params = new Params(map);
+
+		String username = null;
+		String nickname = null;
+		String loginUrl = null;
+		String logoutUrl = null;
+		//String mode = params.getString("mode");
+		if ("google".equals(mode)) {
+			UserService us = UserServiceFactory.getUserService();
+			User user = us.getCurrentUser();
+			if (user != null) {
+				username = user.getEmail();
+				nickname = user.getNickname();
+			}
+			loginUrl = us.createLoginURL(url);
+			logoutUrl = us.createLogoutURL(url);
+		} else {
+			throw new RuntimeException("Not implements");
+		}
+
+		Map result = new HashMap();
+		result.put("username", username);
+		result.put("nickname", nickname);
+		result.put("loginUrl", loginUrl);
+		result.put("logoutUrl", logoutUrl);
+		return result;
+	}
+
+
+
+
 	public static String writeImage(MultiPartMap params) {
 		FileItem fileItem = params.getFileItem("file");
 		if (fileItem == null || fileItem.getData().length == 0) {

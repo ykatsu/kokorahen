@@ -1,11 +1,4 @@
-<!-- Indices written at Sat, 20 Aug 2011 07:29:29 UTC -->
+<!-- Indices written at Sun, 21 Aug 2011 12:51:05 UTC -->
 
-<datastore-indexes>
+<datastore-indexes/>
 
-    <!-- Used 32 times in query history -->
-    <datastore-index kind="ReviewModel" ancestor="false" source="auto">
-        <property name="spotId" direction="asc"/>
-        <property name="updateDate" direction="desc"/>
-    </datastore-index>
-
-</datastore-indexes>

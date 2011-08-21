@@ -179,10 +179,15 @@ public class CalljavaServlet extends HttpServlet {
 			}
 		}
 
+		resp.setHeader("Pragma","no-cache");
+		resp.setHeader("Cache-Control","no-cache");
+
 		Object result = method.invoke(null, args);
 
-		resp.setContentType(MIME_JSON);
+		if (resp.isCommitted()) return;
+
 		OutputStream out = resp.getOutputStream();
+		resp.setContentType(MIME_JSON);
 		out.write("{\"result\":".getBytes("UTF-8"));
 		new JSONSerializer().serialize(result, out);
 		out.write("}".getBytes("UTF-8"));
