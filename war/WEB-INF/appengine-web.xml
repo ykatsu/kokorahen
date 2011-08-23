@@ -19,10 +19,11 @@
        <include path="**/*.js" />
        <include path="**/*.css" />
     </static-files>
-	
+
 	<!-- Configure java.util.logging -->
 	<system-properties>
 		<property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
+		<property name="oauth.consumerKey" value="oeFXp2qxgUJkm3d1qTEw" />
+		<property name="oauth.consumerSecret" value="MHDnbqX9TBWr2dGvFNDYAAPz4gG8Y7LhBt2waTqORTk" />
 	</system-properties>
-	
 </appengine-web-app>

@@ -16,8 +16,8 @@ public class HttpRequestContext  {
 	private	final HttpServletRequest request;
 	private final HttpServletResponse response;
 
-	public HttpRequestContext(Servlet servlet, 
-			HttpServletRequest request, HttpServletResponse response) 
+	public HttpRequestContext(Servlet servlet,
+			HttpServletRequest request, HttpServletResponse response)
 	{
 		this.servlet = servlet;
 		this.request = request;
@@ -32,6 +32,9 @@ public class HttpRequestContext  {
 	}
 	public HttpServletResponse getResponse(){
 		return response;
+	}
+	public HttpSession getSession(boolean b){
+		return request.getSession(b);
 	}
 
 }

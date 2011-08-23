@@ -10,5 +10,7 @@
 	<classpathentry kind="lib" path="lib/velocity-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/tools.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/slim3-1.0.12.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/twitter4j-appengine-2.2.4.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/twitter4j-core-2.2.4.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

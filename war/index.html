@@ -196,6 +196,7 @@
 			<div>
 				<form action="" name="user">
 					<input name="username" />
+					<input name="nickname" />
 					<a href="javascript:Login.logout()">Logout</a>
 				</form>
 			</div>
@@ -209,10 +210,8 @@
 		</div>
 		<div class="s-scrollwrapper">
 			<div>
-				<a href="javascript:Spot.onReviewClick(null)" class="whiteButton"  >google</a>
-				<a href="javascript:Spot.onReviewClick(null)" class="whiteButton"  >open-id</a>
-				<a href="javascript:Spot.onReviewClick(null)" class="whiteButton"  >twitter</a>
-				<a href="javascript:Spot.onReviewClick(null)" class="whiteButton"  >facebook</a>
+				<a href="javascript:Login.login('google')" class="whiteButton"  >google</a>
+				<a href="javascript:Login.login('twitter')" class="whiteButton"  >twitter</a>
 
 			</div>
 		</div>

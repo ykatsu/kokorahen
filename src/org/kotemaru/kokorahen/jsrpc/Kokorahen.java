@@ -8,9 +8,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.slim3.controller.upload.FileItem;
 import org.slim3.datastore.*;
@@ -33,41 +36,130 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.auth.RequestToken;
 
 @JsRpc()
 public class Kokorahen {
+	private static final Logger LOG = Logger.getLogger(Kokorahen.class.getName());
 
-	public static Map getUsername(String mode, String url) throws IOException {
+	private static final String  LOGIN_INFO = "Login.info";
+
+	private static final String  PROVIDER = "provider";
+	private static final String  USERNAME = "username";
+	private static final String  NICKNAME = "nickname";
+	private static final String  LOGIN_URL = "LoginUrl";
+	private static final String  LOGOUT_URL = "LogoutUrl";
+
+	private static final String  GOOGLE = "google";
+	private static final String  TWITTER = "twitter";
+
+	private static final String  LOGOUT_PATH =
+"/classes/org/kotemaru/kokorahen/jsrpc/Kokorahen.logout";
+
+	public static Map getLoginInfo(String url) throws Exception {
 		//Params params = new Params(map);
 
-		String username = null;
-		String nickname = null;
-		String loginUrl = null;
-		String logoutUrl = null;
-		//String mode = params.getString("mode");
-		if ("google".equals(mode)) {
-			UserService us = UserServiceFactory.getUserService();
-			User user = us.getCurrentUser();
-			if (user != null) {
-				username = user.getEmail();
-				nickname = user.getNickname();
-			}
-			loginUrl = us.createLoginURL(url);
-			logoutUrl = us.createLogoutURL(url);
-		} else {
-			throw new RuntimeException("Not implements");
-		}
+		HttpRequestContext ctx = CalljavaServlet.getHttpRequestContext();
+		HttpServletRequest req = ctx.getRequest();
+		HttpSession session = req.getSession(true);
+		LOG.warning("getLoginInfo="+session.getId());
 
-		Map result = new HashMap();
-		result.put("username", username);
-		result.put("nickname", nickname);
-		result.put("loginUrl", loginUrl);
-		result.put("logoutUrl", logoutUrl);
-		return result;
+		Map info = (Map) session.getAttribute(LOGIN_INFO);
+		if (info == null) {
+			info = new HashMap();
+		}
+		LOG.warning("getLoginInfo="+info);
+
+		setupGoogle(info, url);
+		setupTwitter(info, url, session);
+		session.setAttribute(LOGIN_INFO, info);
+		return info;
+	}
+	private static void setupGoogle(Map info, String url) throws Exception {
+		if (info.get(PROVIDER) != null) return;
+
+		UserService us = UserServiceFactory.getUserService();
+		if (us.getCurrentUser() != null) {
+			info.put(PROVIDER, GOOGLE);
+			info.put(USERNAME, us.getCurrentUser().getEmail());
+			info.put(NICKNAME, us.getCurrentUser().getNickname());
+		}
+		info.put(GOOGLE+LOGIN_URL, us.createLoginURL(url));
+		info.put(GOOGLE+LOGOUT_URL, us.createLogoutURL(url+LOGOUT_PATH));
+	}
+	private static void setupTwitter(Map info, String url, HttpSession session) throws Exception {
+		if (info.get(PROVIDER) != null) return;
+
+		Twitter twitter = (Twitter) session.getAttribute(TWITTER);
+		if (twitter == null) {
+			twitter = new TwitterFactory().getInstance();
+			//twitter.setOAuthConsumer();->appengine-web.xml
+			session.setAttribute(TWITTER, twitter);
+			String callback =
+"https://ichimemo.appspot.com/classes/org/kotemaru/kokorahen/jsrpc/Kokorahen.twitterCallback";
+			RequestToken requestToken = twitter.getOAuthRequestToken(callback);
+			session.setAttribute("twitter.requestToken", requestToken);
+			info.put(TWITTER+LOGIN_URL, requestToken.getAuthenticationURL());
+			info.put(TWITTER+LOGOUT_URL, url+LOGOUT_PATH);
+		}
 	}
 
+	public static void twitterCallback() throws Exception {
+		HttpRequestContext ctx = CalljavaServlet.getHttpRequestContext();
+		HttpServletRequest req = ctx.getRequest();
+		HttpServletResponse res= ctx.getResponse();
+		HttpSession session = req.getSession();
 
+		Twitter twitter = (Twitter) session.getAttribute(TWITTER);
+		RequestToken requestToken = (RequestToken) session.getAttribute("twitter.requestToken");
+		String verifier = req.getParameter("oauth_verifier");
+		if (twitter==null || requestToken==null || verifier == null) {
+			LOG.warning("Not twitter login");
+			session.invalidate();
+			res.sendRedirect("/");
+			return;
+		}
 
+		twitter.getOAuthAccessToken(requestToken, verifier);
+		Map info = (Map) session.getAttribute(LOGIN_INFO);
+		info.put(PROVIDER, TWITTER);
+		info.put(USERNAME, ""+twitter.getId()+"@twitter.com");
+		info.put(NICKNAME, twitter.getScreenName());
+		//info.put("googleLogoutUrl", us.createLogoutURL(url));
+		session.setAttribute(LOGIN_INFO, info);
+		LOG.warning("callback="+session.getId());
+		//return info;
+		res.sendRedirect("/");
+	}
+
+	public static void logout() throws Exception {
+		logout("/");
+	}
+	public static void logout(String nextUrl) throws Exception {
+		HttpRequestContext ctx = CalljavaServlet.getHttpRequestContext();
+		HttpServletRequest req = ctx.getRequest();
+		HttpServletResponse res= ctx.getResponse();
+		HttpSession session = req.getSession();
+
+		session.invalidate();
+		res.sendRedirect(nextUrl);
+	}
+
+	private static void twit(String msg) throws Exception {
+		HttpRequestContext ctx = CalljavaServlet.getHttpRequestContext();
+		HttpSession session = ctx.getSession(false);
+		Twitter twitter = (Twitter) session.getAttribute(TWITTER);
+		if (twitter == null) {
+			LOG.warning("not twit sid="+session.getId());
+			return;
+		}
+
+		twitter4j.Status stat = twitter.updateStatus(msg);
+		LOG.warning("twit sid="+session.getId()+","+stat.getText());
+	}
 
 	public static String writeImage(MultiPartMap params) {
 		FileItem fileItem = params.getFileItem("file");
@@ -152,7 +244,7 @@ System.out.println("--->"+map);
 		return key.getId();
 
 	}
-	public static Long writeReview(Map map) {
+	public static Long writeReview(Map map) throws Exception {
 		Params params = new Params(map);
 
 		ReviewModel model = null;
@@ -175,8 +267,9 @@ System.out.println("--->"+map);
 		model.setComment(params.getString("comment"));
 		Key key = Datastore.put(model);
 
-		return key.getId();
+		twit(params.getString("comment"));
 
+		return key.getId();
 	}
 
 

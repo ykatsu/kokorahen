@@ -461,6 +461,7 @@ User.init = function()  {
 }
 User.onShow = function() {
 	document.user.username.value = Login.info.username;
+	document.user.nickname.value = Login.info.nickname;
 }
 
 //-------------------------------------------------------------------
@@ -516,14 +517,23 @@ Login.info = {username: null};
 
 Login.init = function() {
 	var url = "http://"+location.host;
-	Login.info = Kokorahen.getUsername("google", url);
-	if (Login.info.username == null) {
-		location.href = Login.info.loginUrl;
+	Login.info = Kokorahen.getLoginInfo(url);
+	if (Login.info.provider == undefined) {
+		jqt.goTo("#login");
 	}
+
+	if (Login.nickname == null || Login.nickname == "") {
+		Login.nickname = Login.username;
+	}
+
+}
+
+Login.login = function(provider) {
+	location.href = Login.info[provider+"LoginUrl"];
 }
 
 Login.logout = function() {
-	location.href = Login.info.logoutUrl;
+	location.href = Login.info[Login.info.provider+"LogoutUrl"];
 }
 
 

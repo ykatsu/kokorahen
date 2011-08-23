@@ -41,9 +41,13 @@ public class CalljavaServlet extends HttpServlet {
 		if (pinfo == null) return;
 		try {
 			callMethodForParam(req, resp);
+
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new ServletException(e);
+			Throwable t = e;
+			while (t.getCause() != null) {
+				t = t.getCause();
+			}
+			throw new ServletException(t);
 		}
 	}
 
@@ -61,9 +65,13 @@ public class CalljavaServlet extends HttpServlet {
 			} else {
 				callMethodForParam(req, resp);
 			}
+
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new ServletException(e);
+			Throwable t = e;
+			while (t.getCause() != null) {
+				t = t.getCause();
+			}
+			throw new ServletException(t);
 		}
 	}
 
