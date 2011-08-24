@@ -6,33 +6,34 @@ import java.util.Date;
 import java.util.List;
 
 import org.slim3.datastore.Attribute;
+import org.slim3.datastore.Datastore;
 import org.slim3.datastore.InverseModelRef;
 import org.slim3.datastore.Model;
 
 import com.google.appengine.api.datastore.Key;
 
 @Model
-public class ReviewModel extends ModelBase {
+public class UserModel extends ModelBase {
 	private static final long serialVersionUID = 1L;
 
-	private String username;
+	//private String username;
 	private String nickname;
-	private Long spotId;
+	private String provider;
+
 	private Date createDate;
 	private Date updateDate;
-	private String comment;
-	private Integer appraise = -1;
+	private Date lastLogin;
 
-	public long getId() {
-		return getKey().getId();
-	}
+	private boolean autoTwit = false;
 
 	public String getUsername() {
-		return username;
+		Key key = super.getKey();
+		return key.getName();
 	}
 
 	public void setUsername(String username) {
-		this.username = username;
+		Key key = Datastore.createKey(UserModel.class, username);
+		super.setKey(key);
 	}
 
 	public String getNickname() {
@@ -41,14 +42,6 @@ public class ReviewModel extends ModelBase {
 
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
-	}
-
-	public Long getSpotId() {
-		return spotId;
-	}
-
-	public void setSpotId(Long spotId) {
-		this.spotId = spotId;
 	}
 
 	public Date getCreateDate() {
@@ -67,20 +60,29 @@ public class ReviewModel extends ModelBase {
 		this.updateDate = updateDate;
 	}
 
-	public String getComment() {
-		return comment;
+	public boolean isAutoTwit() {
+		return autoTwit;
 	}
 
-	public void setComment(String comment) {
-		this.comment = comment;
+	public void setAutoTwit(boolean autoTwit) {
+		this.autoTwit = autoTwit;
 	}
 
-	public Integer getAppraise() {
-		return appraise;
+	public String getProvider() {
+		return provider;
 	}
 
-	public void setAppraise(Integer appraise) {
-		this.appraise = appraise;
+	public void setProvider(String provider) {
+		this.provider = provider;
 	}
+
+	public Date getLastLogin() {
+		return lastLogin;
+	}
+
+	public void setLastLogin(Date lastLogin) {
+		this.lastLogin = lastLogin;
+	}
+
 
 }

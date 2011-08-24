@@ -58,7 +58,10 @@ public class JSONSerializer {
 	}
 
 	public void sObject(Object obj)  throws IOException {
-		if (obj instanceof Map) {
+
+		if (obj instanceof JSONSerializable) {
+			sCustom((JSONSerializable) obj);
+		} else if (obj instanceof Map) {
 			sMap((Map) obj);
 		} else if (obj instanceof List) {
 			sArray((List)obj);
@@ -75,6 +78,10 @@ public class JSONSerializer {
 			//throw new RuntimeException("Unknown object "+obj.getClass());
 			sBean(obj);
 		}
+	}
+
+	public void sCustom(JSONSerializable obj)  throws IOException {
+		obj.toJSON(this);
 	}
 
 	public void sArray(List obj)  throws IOException {

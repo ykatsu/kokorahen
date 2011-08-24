@@ -21,6 +21,7 @@ import org.slim3.datastore.*;
 import org.kotemaru.ichimemo.model.*;
 import org.kotemaru.ichimemo.meta.*;
 import org.kotemaru.jsrpc.CalljavaServlet;
+import org.kotemaru.jsrpc.JsrpcException;
 import org.kotemaru.jsrpc.MultiPartMap;
 import org.kotemaru.jsrpc.Params;
 import org.kotemaru.jsrpc.annotation.JsRpc;
@@ -30,6 +31,7 @@ import org.kotemaru.kokorahen.meta.SpotModelMeta;
 import org.kotemaru.kokorahen.model.MemoModel;
 import org.kotemaru.kokorahen.model.ReviewModel;
 import org.kotemaru.kokorahen.model.SpotModel;
+import org.kotemaru.kokorahen.model.UserModel;
 import org.kotemaru.util.HttpRequestContext;
 
 import com.google.appengine.api.datastore.Key;
@@ -46,6 +48,7 @@ public class Kokorahen {
 	private static final Logger LOG = Logger.getLogger(Kokorahen.class.getName());
 
 	private static final String  LOGIN_INFO = "Login.info";
+	private static final String  LOGIN_USER = "Login.user";
 
 	private static final String  PROVIDER = "provider";
 	private static final String  USERNAME = "username";
@@ -55,98 +58,157 @@ public class Kokorahen {
 
 	private static final String  GOOGLE = "google";
 	private static final String  TWITTER = "twitter";
+	private static final String  TWITTER_TOKEN = "twitter.requestToken";
 
 	private static final String  LOGOUT_PATH =
 "/classes/org/kotemaru/kokorahen/jsrpc/Kokorahen.logout";
 
-	public static Map getLoginInfo(String url) throws Exception {
-		//Params params = new Params(map);
-
-		HttpRequestContext ctx = CalljavaServlet.getHttpRequestContext();
-		HttpServletRequest req = ctx.getRequest();
-		HttpSession session = req.getSession(true);
-		LOG.warning("getLoginInfo="+session.getId());
-
-		Map info = (Map) session.getAttribute(LOGIN_INFO);
-		if (info == null) {
-			info = new HashMap();
-		}
-		LOG.warning("getLoginInfo="+info);
-
-		setupGoogle(info, url);
-		setupTwitter(info, url, session);
-		session.setAttribute(LOGIN_INFO, info);
-		return info;
+	private static HttpSession getSession(boolean b) {
+		return CalljavaServlet.getHttpRequestContext().getSession(b);
 	}
-	private static void setupGoogle(Map info, String url) throws Exception {
-		if (info.get(PROVIDER) != null) return;
+	private static void redirect(String url) throws IOException {
+		HttpServletResponse res = CalljavaServlet.getHttpRequestContext().getResponse();
+		res.sendRedirect(url);
+	}
+
+	public static UserModel getLoginUser() {
+		HttpSession session = getSession(true);
+		System.out.println("getLogin="+session.getId());
+		UserModel user = (UserModel) session.getAttribute(LOGIN_USER);
+		return user;
+	}
+
+
+	public static String login(String provider) throws Exception {
+		HttpServletRequest req = CalljavaServlet.getHttpRequestContext().getRequest();
+		String url = req.getScheme()+"://"+req.getServerName()+":"+req.getServerPort();
+		if (GOOGLE.equals(provider)) {
+			return loginGoogle(url);
+		} else if (TWITTER.equals(provider)) {
+			return loginTwitter(url);
+		} else {
+			throw new RuntimeException("Unsupported login provider "+provider);
+		}
+		// TODO:lastLogin
+	}
+
+
+	public static String loginGoogle(String url) throws Exception {
+		HttpSession session = getSession(true);
 
 		UserService us = UserServiceFactory.getUserService();
 		if (us.getCurrentUser() != null) {
-			info.put(PROVIDER, GOOGLE);
-			info.put(USERNAME, us.getCurrentUser().getEmail());
-			info.put(NICKNAME, us.getCurrentUser().getNickname());
+			String name = us.getCurrentUser().getEmail();
+			Key key = Datastore.createKey(UserModel.class, name);
+			UserModel user;
+			try {
+				user = Datastore.get(UserModel.class, key);
+			} catch (EntityNotFoundRuntimeException e) {
+				user = new UserModel();
+				user.setUsername(name);
+				user.setNickname(name);
+				user.setProvider(GOOGLE);
+				user.setCreateDate(new Date());
+				user.setUpdateDate(new Date());
+				user.setLastLogin(new Date());
+			}
+			user.setLastLogin(new Date());
+			Datastore.put(user);
+
+			session.setAttribute(LOGIN_USER, user);
+			return "/";
 		}
-		info.put(GOOGLE+LOGIN_URL, us.createLoginURL(url));
-		info.put(GOOGLE+LOGOUT_URL, us.createLogoutURL(url+LOGOUT_PATH));
+
+		String callback = url+ "/classes/org/kotemaru/kokorahen/jsrpc/Kokorahen.googleCallback";
+		return us.createLoginURL(callback);
 	}
-	private static void setupTwitter(Map info, String url, HttpSession session) throws Exception {
-		if (info.get(PROVIDER) != null) return;
+	public static void googleCallback() throws Exception {
+		redirect(login(GOOGLE));
+	}
+
+	private static String loginTwitter(String url) throws Exception {
+		HttpSession session = getSession(true);
 
 		Twitter twitter = (Twitter) session.getAttribute(TWITTER);
 		if (twitter == null) {
 			twitter = new TwitterFactory().getInstance();
 			//twitter.setOAuthConsumer();->appengine-web.xml
 			session.setAttribute(TWITTER, twitter);
-			String callback =
-"https://ichimemo.appspot.com/classes/org/kotemaru/kokorahen/jsrpc/Kokorahen.twitterCallback";
-			RequestToken requestToken = twitter.getOAuthRequestToken(callback);
-			session.setAttribute("twitter.requestToken", requestToken);
-			info.put(TWITTER+LOGIN_URL, requestToken.getAuthenticationURL());
-			info.put(TWITTER+LOGOUT_URL, url+LOGOUT_PATH);
 		}
+		String callback = url+ "/classes/org/kotemaru/kokorahen/jsrpc/Kokorahen.twitterCallback";
+		RequestToken requestToken = twitter.getOAuthRequestToken(callback);
+		session.setAttribute(TWITTER_TOKEN, requestToken);
+		return requestToken.getAuthenticationURL();
 	}
 
 	public static void twitterCallback() throws Exception {
 		HttpRequestContext ctx = CalljavaServlet.getHttpRequestContext();
 		HttpServletRequest req = ctx.getRequest();
-		HttpServletResponse res= ctx.getResponse();
-		HttpSession session = req.getSession();
+		//HttpServletResponse res= ctx.getResponse();
+		//HttpSession session = req.getSession();
+		HttpSession session = getSession(true);
 
 		Twitter twitter = (Twitter) session.getAttribute(TWITTER);
-		RequestToken requestToken = (RequestToken) session.getAttribute("twitter.requestToken");
+		RequestToken requestToken = (RequestToken) session.getAttribute(TWITTER_TOKEN);
 		String verifier = req.getParameter("oauth_verifier");
 		if (twitter==null || requestToken==null || verifier == null) {
 			LOG.warning("Not twitter login");
 			session.invalidate();
-			res.sendRedirect("/");
+			redirect("/");
 			return;
 		}
 
 		twitter.getOAuthAccessToken(requestToken, verifier);
-		Map info = (Map) session.getAttribute(LOGIN_INFO);
-		info.put(PROVIDER, TWITTER);
-		info.put(USERNAME, ""+twitter.getId()+"@twitter.com");
-		info.put(NICKNAME, twitter.getScreenName());
-		//info.put("googleLogoutUrl", us.createLogoutURL(url));
-		session.setAttribute(LOGIN_INFO, info);
-		LOG.warning("callback="+session.getId());
-		//return info;
-		res.sendRedirect("/");
+
+		String name = "@"+twitter.getScreenName();
+		Key key = Datastore.createKey(UserModel.class, name);
+		UserModel user;
+		try {
+			user = Datastore.get(UserModel.class, key);
+		} catch (EntityNotFoundRuntimeException e) {
+			user = new UserModel();
+			user.setUsername(name);
+			user.setNickname(twitter.showUser(twitter.getId()).getName());
+			user.setProvider(TWITTER);
+			user.setCreateDate(new Date());
+			user.setUpdateDate(new Date());
+			user.setAutoTwit(true);
+		}
+		user.setLastLogin(new Date());
+		Datastore.put(user);
+		session.setAttribute(LOGIN_USER, user);
+		redirect("/");
+		return;
 	}
 
-	public static void logout() throws Exception {
-		logout("/");
+	public static String logout(String provider) throws Exception {
+		HttpServletRequest req = CalljavaServlet.getHttpRequestContext().getRequest();
+		String url = req.getScheme()+"://"+req.getServerName()+":"+req.getServerPort();
+
+		HttpSession session = getSession(true);
+		session.invalidate();
+
+		if (GOOGLE.equals(provider)) {
+			return logoutGoogle(url);
+		} else if (TWITTER.equals(provider)) {
+			return logoutTwitter(url);
+		} else {
+			//throw new RuntimeException("Unsupported login provider "+provider);
+			return url;
+		}
 	}
-	public static void logout(String nextUrl) throws Exception {
-		HttpRequestContext ctx = CalljavaServlet.getHttpRequestContext();
-		HttpServletRequest req = ctx.getRequest();
-		HttpServletResponse res= ctx.getResponse();
-		HttpSession session = req.getSession();
+
+	private static String logoutGoogle(String url) throws Exception {
+		HttpSession session = getSession(true);
 
 		session.invalidate();
-		res.sendRedirect(nextUrl);
+		UserService us = UserServiceFactory.getUserService();
+		return us.createLogoutURL(url);
 	}
+	private static String logoutTwitter(String url) throws Exception {
+		return url;
+	}
+
 
 	private static void twit(String msg) throws Exception {
 		HttpRequestContext ctx = CalljavaServlet.getHttpRequestContext();
@@ -245,6 +307,10 @@ System.out.println("--->"+map);
 
 	}
 	public static Long writeReview(Map map) throws Exception {
+		UserModel user = getLoginUser();
+		if (user == null) {
+			throw new JsrpcException("Not loggedin.");
+		}
 		Params params = new Params(map);
 
 		ReviewModel model = null;
@@ -259,15 +325,16 @@ System.out.println("--->"+map);
 		List<String> images = new ArrayList<String>(1);
 		images.add(params.getString("image"));
 
-		model.setUsername(null); // TODO:
-		model.setSpotId(params.getLong("spotId")); // TODO:
+		model.setUsername(user.getUsername());
+		model.setNickname(user.getNickname());
+		model.setSpotId(params.getLong("spotId"));
 		model.setCreateDate(new Date());
 		model.setUpdateDate(new Date());
 		model.setAppraise(params.getInteger("appraise"));
 		model.setComment(params.getString("comment"));
 		Key key = Datastore.put(model);
 
-		twit(params.getString("comment"));
+		twit(params.getString("comment")+"@"+params.getString("name"));
 
 		return key.getId();
 	}

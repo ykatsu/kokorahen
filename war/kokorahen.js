@@ -87,6 +87,10 @@ Map.onBalloonClick = function(ev) {
 	ev.preventDefault();
 	return false;
 }
+Map.onMarkerClick = function(ev) {
+	Spot.current = {marker:this};
+	jqt.goTo("#spot", "slideleft");
+}
 
 Map.updateOrientation = function(ev) {
 	var h1 = 45; // $("#mapHeader").height();
@@ -255,7 +259,7 @@ Spot.onShow = function(ev, info){
 		spotForm.tags.value = "";
 		spotForm.image.value = "";
 
-		setSpotPos(pos);
+		Spot.setSpotPos(pos);
 		$("#spotReview").html("");
 
 	} else {
@@ -402,17 +406,28 @@ Timeline.onShow = function() {
 			var ul = $("#listTimeline");
 			ul.html("");
 			for (var i=0; i<list.length && i<50; i++) {
-				ul.append($("<li class='arrow'><a href='javascript:Timeline.onItemClick("
-								+list[i].id+")'>"+list[i].comment+"</a></li>"));
+				ul.append($(Timeline.getListItem(list[i])));
 				Review.all[list[i].id] = list[i];
 			}
 			jqt.setPageHeight();
 		},
-		_throw: function(){
+		_throw: function(e){
 			alert(e.message);
 		}
 	});
 }
+Timeline.getListItem = function(data) {
+	var spot = Spot.all[data.spotId];
+	if (spot != null) spot = spot.data.name;
+	var html =
+"<li class='arrow'><a href='javascript:Timeline.onItemClick("+data.id+")'>"
+	+"<div style='font-size:50%;'>"+data.nickname+" @"+spot+"</div>"
+	+"<div>"+data.comment+"</div>"
+"</a></li>";
+	return html;
+
+}
+
 Timeline.onItemClick = function(id) {
 	Review.current = Review.all[id];
 	jqt.goTo("#review", "slideleft");
@@ -460,8 +475,8 @@ User.init = function()  {
 	$('#user').bind('pageAnimationEnd', User.onShow);
 }
 User.onShow = function() {
-	document.user.username.value = Login.info.username;
-	document.user.nickname.value = Login.info.nickname;
+	document.user.username.value = Login.user.username;
+	document.user.nickname.value = Login.user.nickname;
 }
 
 //-------------------------------------------------------------------
@@ -513,12 +528,12 @@ Review.write = function() {
 //-------------------------------------------------------------------
 //Login
 function Login() { }
-Login.info = {username: null};
+Login.user = {username: null};
 
 Login.init = function() {
 	var url = "http://"+location.host;
-	Login.info = Kokorahen.getLoginInfo(url);
-	if (Login.info.provider == undefined) {
+	Login.user = Kokorahen.getLoginUser();
+	if (Login.user == null) {
 		jqt.goTo("#login");
 	}
 
@@ -529,11 +544,15 @@ Login.init = function() {
 }
 
 Login.login = function(provider) {
-	location.href = Login.info[provider+"LoginUrl"];
+	location.href = Kokorahen.login(provider);
 }
 
 Login.logout = function() {
-	location.href = Login.info[Login.info.provider+"LogoutUrl"];
+	if (Login.user != null) {
+		location.href = Kokorahen.logout(Login.user.provider);
+	} else {
+		location.href = Kokorahen.logout(null);
+	}
 }
 
 
