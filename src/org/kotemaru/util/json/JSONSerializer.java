@@ -30,12 +30,22 @@ Number ::= /^-?[0-9]+([.][0-9]+)?([eE][-+]?[0-9]+)?$/;
 */
 
 public class JSONSerializer {
+	public static final JSONCustom[] DEFAULT_CUSTOMS = {
+		new JSONCustomDate()
+	};
+
+
 	private OutputStream out;
+	private JSONCustom[] customs = DEFAULT_CUSTOMS;
 
 	public JSONSerializer() {
 	}
 	public JSONSerializer(OutputStream out) {
 		this.out = out;
+	}
+
+	public void setCustom(JSONCustom[] customs) {
+		this.customs = customs;
 	}
 
 	public void serialize(Object obj, OutputStream out) throws IOException  {
@@ -59,8 +69,9 @@ public class JSONSerializer {
 
 	public void sObject(Object obj)  throws IOException {
 
-		if (obj instanceof JSONSerializable) {
-			sCustom((JSONSerializable) obj);
+		JSONCustom custom = getJSONCustom(obj);
+		if (custom != null) {
+			custom.toJSON(this, obj);
 		} else if (obj instanceof Map) {
 			sMap((Map) obj);
 		} else if (obj instanceof List) {
@@ -78,6 +89,14 @@ public class JSONSerializer {
 			//throw new RuntimeException("Unknown object "+obj.getClass());
 			sBean(obj);
 		}
+	}
+	protected JSONCustom getJSONCustom(Object obj) {
+		for (int i=0; i<customs.length; i++) {
+			if (customs[i].getType().isInstance(obj)) {
+				return customs[i];
+			}
+		}
+		return null;
 	}
 
 	public void sCustom(JSONSerializable obj)  throws IOException {

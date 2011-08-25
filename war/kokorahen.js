@@ -3,15 +3,19 @@ var jqt = $.jQTouch({
 });
 
 $(function(){
-	Login.init();
+	var modules = [Login, Map, Timeline, List, Memo, User, Spot, SpotReview, Review];
 
-	Map.init();
-	Timeline.init();
-	List.init();
-	Memo.init();
-	User.init();
-	Spot.init();
-	Review.init();
+	for (var i=0; i<modules.length; i++) {
+		var m = modules[i];
+		if (m.init != undefined) m.init();
+		if (m.onShow) {
+			$(m.ID).bind('pageAnimationEnd', m, function(ev, info) {
+				if ($(this).is(':hidden')) return;
+				ev.data.onShow(ev, info);
+			});
+		}
+	}
+
 });
 
 function updateOrientation() {
@@ -55,8 +59,6 @@ Map.init = function() {
 		google.maps.event.addListener(Map.marker, 'click', Map.onMarkerClick);
 		Map.infobox.addEventListener('click', Map.onBalloonClick, false);
 	}
-
-	$('#map').bind('pageAnimationEnd', Map.onShow);
 }
 
 /**
@@ -83,13 +85,13 @@ Map.onMapClick = function(ev) {
 	Map.marker.setVisible(true);
 }
 Map.onBalloonClick = function(ev) {
-	jqt.goTo("#spot", "slideleft");
+	jqt.goTo(Spot.ID, "slideleft");
 	ev.preventDefault();
 	return false;
 }
 Map.onMarkerClick = function(ev) {
 	Spot.current = {marker:this};
-	jqt.goTo("#spot", "slideleft");
+	jqt.goTo(Spot.ID, "slideleft");
 }
 
 Map.updateOrientation = function(ev) {
@@ -144,12 +146,12 @@ Map.protMarkers = {
 	send: function(list) {
 		var isUpdate = false;
 		for (var i=0; i<list.length; i++) {
-			if (isUpdate === false && Spot.all[list[i]] === undefined) {
+			if (isUpdate == false && Spot.all[list[i]] == undefined) {
 				isUpdate = true;
 			}
 			Spot.getSpot(list[i]);
 		}
-		if (isUpdate === true) {
+		if (isUpdate == true) {
 			List.onShow();
 		}
 	},
@@ -199,8 +201,6 @@ Spot.init = function() {
 	Spot.marker2 = new google.maps.Marker({position: Map.DEFAULT_CENTER, map: Spot.map });
 	google.maps.event.addListener(Spot.map, 'click', Spot.onMap2Click);
 
-	$('#spot').bind('pageAnimationEnd', Spot.onShow);
-
 	// 補助マップのスクロールで親ページがスクロールしないようにしている。
 	function eventBreaker(ev) {
 		ev.preventDefault();
@@ -221,7 +221,7 @@ Spot.getSpot = function(data) {
 
 Spot.onSpotMarkerClick = function(ev) {
 	Spot.current = this.spot;
-	if (Spot.current === null) return;
+	if (Spot.current == null) return;
 	Map.infobox.open(this, Spot.current.data.name);
 }
 Spot.onMap2Click = function(ev) {
@@ -232,8 +232,6 @@ Spot.onMap2Click = function(ev) {
 
 
 Spot.onShow = function(ev, info){
-	if ($(Spot.ID).is(':hidden')) return;
-
 	google.maps.event.trigger(Spot.map, "resize");
 
 	var pos;
@@ -260,7 +258,6 @@ Spot.onShow = function(ev, info){
 		spotForm.image.value = "";
 
 		Spot.setSpotPos(pos);
-		$("#spotReview").html("");
 
 	} else {
 		pos = new google.maps.LatLng(sd.lat, sd.lng);
@@ -280,47 +277,12 @@ Spot.onShow = function(ev, info){
 		if (sd.image != null && sd.image != "") {
 			spotImage.attr("src", sd.image);
 		}
-
-		Spot.loadReview(sd.id);
 	}
 
 	Spot.marker2.setPosition(pos);
 	Spot.marker2.setVisible(true);
 	Spot.map.setCenter(pos);
 };
-
-
-Spot.loadReview = function(spotId) {
-	Kokorahen.listReviewAsync({
-		send: function(list) {
-			var ul = $("#spotReview");
-			ul.html("");
-			for (var i=0; i<list.length; i++) {
-				ul.append($("<li class='arrow'><a href='javascript:Spot.onReviewClick("
-						+list[i].id+")'>"
-						+list[i].comment+"</a></li>"));
-				Review.all[list[i].id] = list[i];
-			}
-			jqt.setPageHeight();
-		},
-		_throw: function(e) {
-			alert(e.message);
-		}
-	}, spotId);
-}
-Spot.onReviewClick = function(reviewId) {
-	if (reviewId === null) {
-		var spotId = document.spot.id.value;
-		if (spotId == "") return;
-		var sd = Spot.all[spotId].data;
-		Review.current = {
-			id: "", spotId: sd.id, appraise: 0, comment: ""
-		};
-	} else {
-		Review.current = Review.all[reviewId];
-	}
-	jqt.goTo("#review", "slideleft");
-}
 
 Spot.setSpotPos = function(pos){
 	var spotForm = document.spot;
@@ -348,13 +310,70 @@ Spot.write = function(){
 	alert("sopt id="+id);
 }
 
+//-----------------------------------------------------------------
+// SpotReview
+function SpotReview() { }
+SpotReview.ID = "#spotReview";
+SpotReview.LIST_ID = "#spotReviewList";
+
+SpotReview.init = function() {
+	// nop.
+}
+SpotReview.onShow = function(ev, info){
+	SpotReview.load(Spot.current.data.id);
+}
+
+SpotReview.load = function(spotId) {
+	$(SpotReview.LIST_ID).html("");
+	Kokorahen.listReviewAsync({
+		send: function(list) {
+			var ul = $(SpotReview.LIST_ID);
+			//ul.html("");
+			for (var i=0; i<list.length; i++) {
+				ul.append($(SpotReview.getListItem(list[i])));
+				Review.all[list[i].id] = list[i];
+			}
+			jqt.setPageHeight();
+		},
+		_throw: function(e) {
+			alert(e.message);
+		}
+	}, spotId);
+}
+
+SpotReview.getListItem = function(data) {
+	var spot = Spot.all[data.spotId];
+	if (spot != null) spot = spot.data.name;
+	var html =
+"<li class='arrow'><a href='javascript:SpotReview.onReviewClick("+data.id+")'>"
+	+"<div style='font-size:50%;'>"+data.nickname+" @"+spot+"</div>"
+	+"<div>"+data.comment+"</div>"
+"</a></li>";
+	return html;
+}
+
+SpotReview.onReviewClick = function(reviewId) {
+	if (reviewId == null) {
+		var spotId = document.spot.id.value;
+		if (spotId == "") return;
+		var sd = Spot.all[spotId].data;
+		Review.current = {
+			id: "", spotId: sd.id, appraise: 0, comment: ""
+		};
+	} else {
+		Review.current = Review.all[reviewId];
+	}
+	jqt.goTo(Review.ID, "slideleft");
+}
+
 
 //-----------------------------------------------------------------
 // List tab
 
 function List() {}
+List.ID = "#list";
 List.init = function()  {
-	$('#list').bind('pageAnimationEnd', List.onShow);
+	// nop.
 }
 //直線距離計算関数
 List.compDistance = google.maps.geometry.spherical.computeDistanceBetween;
@@ -368,15 +387,13 @@ List.sortNear = function() {
 		list.push(sd);
 	}
 	list.sort(function(a,b){
-		if (a._distance === b._distance) return 0;
+		if (a._distance == b._distance) return 0;
 		return (a._distance > b._distance) ? 1 : -1;
 	});
 	return list;
 }
 
 List.onShow = function() {
-	if ($('#list').is(':hidden')) return;
-
 	var list = List.sortNear();
 	var ul = $("#listSpots");
 	ul.html("");
@@ -389,18 +406,17 @@ List.onShow = function() {
 
 List.onItemClick = function(id) {
 	Map.spot = Spot.all[id];
-	jqt.goTo("#spot", "slideleft");
+	jqt.goTo(Spot.ID, "slideleft");
 }
 
 //-----------------------------------------------------------------
 // Timeline tab
 function Timeline() {}
+Timeline.ID = "#timeline";
 Timeline.init = function() {
-	$('#timeline').bind('pageAnimationEnd', Timeline.onShow);
+	// nop.
 }
 Timeline.onShow = function() {
-	if ($('#timeline').is(':hidden')) return;
-
 	Kokorahen.listTimelineAsync({
 		send: function(list) {
 			var ul = $("#listTimeline");
@@ -416,6 +432,7 @@ Timeline.onShow = function() {
 		}
 	});
 }
+
 Timeline.getListItem = function(data) {
 	var spot = Spot.all[data.spotId];
 	if (spot != null) spot = spot.data.name;
@@ -425,12 +442,11 @@ Timeline.getListItem = function(data) {
 	+"<div>"+data.comment+"</div>"
 "</a></li>";
 	return html;
-
 }
 
 Timeline.onItemClick = function(id) {
 	Review.current = Review.all[id];
-	jqt.goTo("#review", "slideleft");
+	jqt.goTo(Review.ID, "slideleft");
 }
 
 
@@ -438,12 +454,11 @@ Timeline.onItemClick = function(id) {
 //-----------------------------------------------------------------
 // Memo tab
 function Memo() { }
+Memo.ID = "#memo";
 Memo.init = function() {
-	$('#memo').bind('pageAnimationEnd', Memo.onShow);
+	// nop.
 }
 Memo.onShow = function() {
-	if ($('#memo').is(':hidden')) return;
-
 	var list = List.sortNear();
 	var ul = $("#memoSpots");
 	ul.html("");
@@ -455,7 +470,7 @@ Memo.onShow = function() {
 }
 
 Memo.onItemClick = function(id) {
-	if (id === null) {
+	if (id == null) {
 		id = document.spot.id.value;
 		if (id == "") return;
 	}
@@ -463,16 +478,15 @@ Memo.onItemClick = function(id) {
 	Review.current = {
 		id: "", spotId: sd.id, appraise: 0, comment: ""
 	};
-	jqt.goTo("#review", "slideleft");
+	jqt.goTo(Review.ID, "slideleft");
 }
 
 //-----------------------------------------------------------------
 // Timeline tab
-function User() {
-
-}
+function User() { }
+User.ID = "#user"
 User.init = function()  {
-	$('#user').bind('pageAnimationEnd', User.onShow);
+	// nop.
 }
 User.onShow = function() {
 	document.user.username.value = Login.user.username;
@@ -482,6 +496,7 @@ User.onShow = function() {
 //-------------------------------------------------------------------
 // Review
 function Review() { }
+Review.ID = "#review";
 Review.all = {};
 Review.current = null;
 Review.init = function() {
@@ -497,13 +512,10 @@ Review.init = function() {
 		starOn:     'star-on-big.png'
 	});
 
-	$('#review').bind('pageAnimationEnd', Review.onShow);
 }
 
 Review.onShow = function() {
-	if ($('#review').is(':hidden')) return;
-
-	if (Review.current === null) return;
+	if (Review.current == null) return;
 	var reviewForm = document.review;
 	reviewForm.id.value        = Review.current.id;
 	reviewForm.spotId.value    = Review.current.spotId;
@@ -528,13 +540,14 @@ Review.write = function() {
 //-------------------------------------------------------------------
 //Login
 function Login() { }
+Login.ID = "#login";
 Login.user = {username: null};
 
 Login.init = function() {
 	var url = "http://"+location.host;
 	Login.user = Kokorahen.getLoginUser();
 	if (Login.user == null) {
-		jqt.goTo("#login");
+		jqt.goTo(Login.ID);
 	}
 
 	if (Login.nickname == null || Login.nickname == "") {

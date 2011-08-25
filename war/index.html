@@ -62,6 +62,7 @@
 	</div>
 </div>
 
+<!-- main  -->
 <div id="jqt">
 	<div id="map" class="keep_tabbar">
 		<div id="mapHeader" class="toolbar">
@@ -99,11 +100,10 @@
 				</li>
 				<li>
 					<input type="text" name="name" placeholder="名前" style="font-size:20px;" />
-					<br/><br/>					<br/><br/>
-
-					<a href="javascript:Spot.onReviewClick(null)" class="grayButton"  >review</a>
-
+					<br/><br/>
 				</li>
+				<li class="arrow"><a href="javascript:jqt.goTo('#spotReview','slideleft')"  >review</a></li>
+				<li class="arrow"><a href="#spotTwit"  >つぶやく</a></li>
 			</ul>
 
 			<ul class="edit rounded">
@@ -119,14 +119,28 @@
 			<div id="mapCanvas2">
 			</div>
 
-			<hr/>
-			<ul id="spotReview" class="rounded">
-			</ul>
-
 		</form>
 		</div>
 		</div>
 	</div>
+
+
+	<div id="spotReview" class="keep_tabbar">
+		<div class="toolbar">
+			<h1>Spotレビュー</h1>
+			<a class="back slideright" href="#">Back</a>
+		</div>
+		<div class="s-scrollwrapper">
+			<a class="grayButton" href="javascript:SpotReview.onReviewClick(null)" >レビューを書く</a>
+			<div>
+				<ul id="spotReviewList" class="rounded">
+				</ul>
+			</div>
+		</div>
+	</div>
+
+
+
 
 	<div id="timeline" class="keep_tabbar">
 		<div class="toolbar">
@@ -219,6 +233,7 @@
 
 </div>
 
+<!-- Custom balloon -->
 <div style="display:none;">
 	<div id="balloon" class="Balloon" onclick="onBalloonClick(event)">
 		<div onclick="onBalloonClick(event)"">name</div>
