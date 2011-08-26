@@ -26,6 +26,7 @@
 
 	<script src="/js/jquery.raty.js" ></script>
 
+	<script src="/js/Jsrpc.js?v=1" ></script>
 	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=1" ></script>
 	<script src="/InfoBox.js" ></script>
 
@@ -91,7 +92,7 @@
 			<input name="lng" type="hidden"/>
 
 
-			<ul class="edit individual">
+			<ul class="individual">
 				<li>
 					<img id="spotImage" src="/images/Home.png"  Align="left" style="width:100%;" onclick="$('#spotImageUrl').focus()"/>
 					<input id="spotImageUrl" type="url" name="image" placeholder="画像URL"
@@ -102,7 +103,8 @@
 					<input type="text" name="name" placeholder="名前" style="font-size:20px;" />
 					<br/><br/>
 				</li>
-				<li class="arrow"><a href="javascript:jqt.goTo('#spotReview','slideleft')"  >review</a></li>
+				<li class="arrow"
+				style="background-image:url(/jQtouch/themes/default/img/chevron.png), -webkit-gradient(linear, 0% 0%, 0% 100%, from(#4c4d4e), to(#404142))"><a href="javascript:jqt.goTo('#spotReview','slideleft')"  >review</a></li>
 				<li class="arrow"><a href="#spotTwit"  >つぶやく</a></li>
 			</ul>
 
@@ -189,8 +191,8 @@
 			<input name="appraise" type="hidden"/>
 
 
-			<input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" />
 			<ul class="edit rounded">
+				<li><input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" /></li>
 				<li><div style="width:100%" id="appraise_raty"></div></li>
 				<li><textarea name="comment"  cols="100%" placeholder="コメント" ></textarea></li>
 			</ul>

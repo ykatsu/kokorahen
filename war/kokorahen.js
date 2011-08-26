@@ -118,7 +118,7 @@ Map.onMapIdol = function(ev) {
 
 	// サーバーから表示範囲内のマーカー取得。非同期。
 	Kokorahen.getAreasAsync({
-		send: function(areas) {
+		success: function(areas) {
 			for(var i=0; i<areas.length; i++) {
 				var area = areas[i];
 				if (!Map.areaFlags[area]) {
@@ -127,7 +127,7 @@ Map.onMapIdol = function(ev) {
 				}
 			}
 		},
-		_throw: function (e) {
+		fail: function (e) {
 			alert(e);
 		}
 	}, {
@@ -143,7 +143,7 @@ Map.onMapIdol = function(ev) {
  * 表示範囲内のマーカー取得コールバック。
  */
 Map.protMarkers = {
-	send: function(list) {
+	success: function(list) {
 		var isUpdate = false;
 		for (var i=0; i<list.length; i++) {
 			if (isUpdate == false && Spot.all[list[i]] == undefined) {
@@ -155,7 +155,7 @@ Map.protMarkers = {
 			List.onShow();
 		}
 	},
-	_throw: function(e) {
+	fail: function(e) {
 		alert(e);
 	}
 }
@@ -326,7 +326,7 @@ SpotReview.onShow = function(ev, info){
 SpotReview.load = function(spotId) {
 	$(SpotReview.LIST_ID).html("");
 	Kokorahen.listReviewAsync({
-		send: function(list) {
+		success: function(list) {
 			var ul = $(SpotReview.LIST_ID);
 			//ul.html("");
 			for (var i=0; i<list.length; i++) {
@@ -335,8 +335,8 @@ SpotReview.load = function(spotId) {
 			}
 			jqt.setPageHeight();
 		},
-		_throw: function(e) {
-			alert(e.message);
+		fail: function(e) {
+			alert(e);
 		}
 	}, spotId);
 }
@@ -418,7 +418,7 @@ Timeline.init = function() {
 }
 Timeline.onShow = function() {
 	Kokorahen.listTimelineAsync({
-		send: function(list) {
+		success: function(list) {
 			var ul = $("#listTimeline");
 			ul.html("");
 			for (var i=0; i<list.length && i<50; i++) {
@@ -427,8 +427,8 @@ Timeline.onShow = function() {
 			}
 			jqt.setPageHeight();
 		},
-		_throw: function(e){
-			alert(e.message);
+		fail: function(e){
+			alert(e);
 		}
 	});
 }

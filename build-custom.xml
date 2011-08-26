@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 
-<project default="dummy" basedir=".">
+<project default="cleanBuild" basedir=".">
 
 	<property name="target.jar" value="${basedir}/apt-helper-1.0.jar"/>
 	<property name="source" value="${basedir}/src"/>
@@ -24,7 +24,7 @@
 		<pathelement location="${pre.source}" />
 		<pathelement location="${pre.classes}" />
 	</path>
-	<target name="dummy">
+	<target name="cleanBuild" depends="clean,precompile">
 	</target>
 
 	<target name="precompile">

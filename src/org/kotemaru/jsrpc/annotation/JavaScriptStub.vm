@@ -4,63 +4,16 @@
 
 var ${className} = {};
 
-${className}.__makeUrl = function() {
-	var url = "/classes/${packagePath}/${className}";
-	return url;
-};
-${className}.__toParams = function(args, offset) {
-	var params = [];
-	for (var i=offset; i<args.length; i++) {
-		params.push(args[i]);
-	}
-	return params;
-};
-
-${className}.__call = function(mname, args) {
-	var url = ${className}.__makeUrl();
-	var xreq = new XMLHttpRequest();
-	xreq.open("POST", url, false);
-	xreq.setRequestHeader("Content-Type", "application/json;charset=utf-8");
-	xreq.send(JSON.stringify({method:mname, params:${className}.__toParams(args,0)}));
-	if (xreq.status/100 != 2) throw xreq.responseText;
-	var res = JSON.parse(xreq.responseText);
-	if (res.error) throw res.error;
-	return res.result;
-};
-
-${className}.__callAsync = function(mname, args) {
-	var callback = args[0];
-	var url = ${className}.__makeUrl();
-	var xreq = new XMLHttpRequest();
-	xreq.open("POST", url, true);
-	xreq.setRequestHeader("Content-Type", "application/json;charset=utf-8");
-	xreq.onreadystatechange = function (ev) {
-		if (xreq.readyState == 4) {
-			if(xreq.status == 200) {
-				setTimeout(function(){
-				 try{
-					var res = JSON.parse(xreq.responseText);
-					if (res.error) RPJS.errorHandler(res.error,callback);
-					callback.send(res.result);
- 				 }catch(err){callback._throw(err);}
-				},10);
-			} else {
-				callback._throw(err);
-			}
-		}
-	}
-	xreq.send(JSON.stringify({method:mname, params:${className}.__toParams(args,1)}));
-};
-
+${className}.__URL = "/classes/${packagePath}/${className}";
 
 #foreach( $method in $masterClassDecl.methods )
 #set ($methodName = "${method.simpleName}")
 #if (${helper.isPublic($method)} && ${helper.isStatic($method)})
 ${className}.${methodName} = function(${helper.getArguments($method)}){
-	return ${className}.__call("${methodName}", arguments);
+	return JSRPC.call(${className}.__URL, "${methodName}", arguments);
 }
 ${className}.${methodName}Async = function(_callback ${helper.getArgumentsAfter($method)}){
-	return ${className}.__callAsync("${methodName}", arguments);
+	return JSRPC.callAsync(${className}.__URL, "${methodName}", arguments);
 }
 #end
 #end
