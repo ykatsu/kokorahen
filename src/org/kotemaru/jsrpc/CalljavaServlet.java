@@ -23,19 +23,20 @@ public class CalljavaServlet extends HttpServlet {
 	private static final String MIME_JS = "application/javascript";
 	private static final String MIME_TEXT = "text/plain";
 	private static final String MIME_MULTIPART = "multipart/form-data";
+	private static final String JSRPC_KEEP = JsrpcEnvironment.class.getName();
 
-	private static final ThreadLocal<HttpRequestContext> httpRequestContext
-		= new ThreadLocal<HttpRequestContext>();
+	//private static final ThreadLocal<HttpRequestContext> httpRequestContext
+	//	= new ThreadLocal<HttpRequestContext>();
 
-	public static HttpRequestContext getHttpRequestContext() {
-		return httpRequestContext.get();
-	}
+	//public static HttpRequestContext getHttpRequestContext() {
+	//	return httpRequestContext.get();
+	//}
 
 
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		httpRequestContext.set(new HttpRequestContext(this, req, resp));
+		//httpRequestContext.set(new HttpRequestContext(this, req, resp));
 
 		String pinfo = req.getPathInfo();
 		if (pinfo == null) return;
@@ -53,7 +54,7 @@ public class CalljavaServlet extends HttpServlet {
 
 	public void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		httpRequestContext.set(new HttpRequestContext(this, req, resp));
+		//httpRequestContext.set(new HttpRequestContext(this, req, resp));
 
 		try {
 			String ctype = req.getContentType();
@@ -75,6 +76,37 @@ public class CalljavaServlet extends HttpServlet {
 		}
 	}
 
+
+	private Object getInstance(Class cls, HttpServletRequest req,
+			HttpServletResponse resp) throws Exception {
+
+		HttpSession session = req.getSession(true);
+		JsrpcEnvironment env = (JsrpcEnvironment)session.getAttribute(JSRPC_KEEP);
+
+		if (env != null) {
+			env.setHttpServletRequest(req);
+			env.setHttpServletResponse(resp);
+			return env;
+		}
+
+
+		Object obj = cls.newInstance();
+		if (obj instanceof JsrpcEnvironment) {
+			env = (JsrpcEnvironment)obj;
+			env.setHttpServletRequest(req);
+			env.setHttpServletResponse(resp);
+		}
+		return obj;
+	}
+	private void saveInstance(HttpServletRequest req, Object obj) {
+		if (!(obj instanceof JsrpcEnvironment)) return;
+
+		JsrpcEnvironment env = (JsrpcEnvironment)obj;
+		if (!env.isSaveSession()) return;
+
+		HttpSession session = req.getSession(true);
+		session.setAttribute(JSRPC_KEEP, obj);
+	}
 
 	private void callMethodForMultiPart(HttpServletRequest req,
 			HttpServletResponse resp) throws Exception {
@@ -106,7 +138,9 @@ public class CalljavaServlet extends HttpServlet {
 					"Not found method "+mname+"(Map)");
 		}
 
-		Object result = method.invoke(null, map);
+		Object obj = getInstance(clazz, req, resp);
+		Object result = method.invoke(obj, map);
+		saveInstance(req, obj);
 
 		resp.setContentType(MIME_HTML+";charset=utf-8");
 		resp.getWriter().write(result.toString());
@@ -145,7 +179,9 @@ public class CalljavaServlet extends HttpServlet {
 			}
 		}
 
-		Object result = method.invoke(null, args);
+		Object obj = getInstance(clazz, req, resp);
+		Object result = method.invoke(obj, args);
+		saveInstance(req, obj);
 
 		resp.setContentType(MIME_JSON);
 		OutputStream out = resp.getOutputStream();
@@ -190,7 +226,9 @@ public class CalljavaServlet extends HttpServlet {
 		resp.setHeader("Pragma","no-cache");
 		resp.setHeader("Cache-Control","no-cache");
 
-		Object result = method.invoke(null, args);
+		Object obj = getInstance(clazz, req, resp);
+		Object result = method.invoke(obj, args);
+		saveInstance(req, obj);
 
 		if (resp.isCommitted()) return;
 
