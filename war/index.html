@@ -1,247 +1,296 @@
-<!doctype html>
-<html>
-  <head>
+<!DOCTYPE html> 
+<html> 
+	<head> 
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta id="viewport" name="viewport"
 		content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+	<title>Page Title</title> 
 
-    <title>ここらへん</title>
-    <style type="text/css" media="screen">@import "/jQtouch/jqtouch/jqtouch.css";</style>
-    <style type="text/css" media="screen">@import "/jQtouch/themes/jqt/theme.css";</style>
-	<style type="text/css" media="screen">@import "/jQtouch/extensions/jqt.bars/jqt.bars.css";</style>
-	<style type="text/css" media="screen">@import "/jQtouch/extensions/jqt.bars/themes/jqt/theme.css";</style>
-	<style type="text/css" media="screen">@import "/jQtouch/extensions/jqt.listIndex/jqt.listIndex.css";</style>
+	<script>
+if (location.hash != "" && location.hash != null) {
+	location.href = "/";
+}
+	</script>
 
 
-	<script src="/js/jquery-1.6.0.js" ></script>
-	<script src="http://maps.google.com/maps/api/js?libraries=geometry&amp;sensor=true"></script>
-<!--
-	<script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript" ></script>
--->
-	<script src="/jQtouch/jqtouch/jqtouch.js" type="application/x-javascript" charset="utf-8"></script>
-	<script src="/jQtouch/extensions/jqt.autotitles.js" type="application/x-javascript" charset="utf-8"></script>
-	<script src="/jQtouch/extensions/jqt.bars/jqt.bars.js" type="application/x-javascript" charset="utf-8"></script>
-	<script src="/jQtouch/extensions/jqt.listIndex/jqt.listIndex.js" type="application/x-javascript" charset="utf-8"></script>
-
+	<!-- JQuery -->
+	<link rel="stylesheet" href="/jqm/jquery.mobile-1.0b2.css" />
+	<script src="/js/jquery-1.6.2.min.js"></script>
 	<script src="/js/jquery.raty.js" ></script>
+	<script src="/jqm/jquery.mobile-1.0b2.js"></script>
+	
+	<!-- google map -->
+	<script src="http://maps.google.com/maps/api/js?libraries=geometry&amp;sensor=true"></script>
 
+	<!-- This apps -->
 	<script src="/js/Jsrpc.js?v=1" ></script>
 	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=2" ></script>
 	<script src="/InfoBox.js" ></script>
-
 	<script src="kokorahen.js"></script>
+	
 
-	<style type="text/css" media="screen">
+	<style type="text/css">
 		html, body {
 			width: 100%;
 			height: 100%;
+			margin: 0;
+			padding:0;
 		}
-		#map {
-			height: 100%;
-		}
+
+.nav-glyphish-example .ui-btn .ui-btn-inner {
+	padding-top: 32px !important;
+	padding-bottom: 0px !important;
+}
+.nav-glyphish-example .ui-btn .ui-icon {
+	width: 32px!important;
+	height: 32px!important;
+	margin-left: -15px !important;
+	box-shadow: none!important;
+	-moz-box-shadow: none!important;
+	-webkit-box-shadow: none!important;
+	-webkit-border-radius: none !important;
+	border-radius: none !important;
+}
+.nav-glyphish-example .ui-btn .ui-btn-inner .ui-btn-text{
+	font-size: 10px !important;
+}
+
+.tab-map .ui-icon {background: url(/images/location_pin.png) 50% 0 no-repeat; background-size: 32px 32px;}
+.tab-timeline .ui-icon {background: url(/images/clock_time.png) 50% 0 no-repeat; background-size: 32px 32px;}
+.tab-list .ui-icon {background: url(/images/list.png) 50% 0 no-repeat; background-size: 32px 32px;}
+.tab-memo .ui-icon {background: url(/images/edit.png) 50% 0 no-repeat; background-size: 32px 32px;}
+.tab-user .ui-icon {background: url(/images/user.png) 50% 0 no-repeat; background-size: 32px 32px;}
+
+
+#mapCanvas {
+	padding: 0!important;
+}
 		#mapCanvas2 {
-			width: 290px;
+			width: 280px;
 			height: 200px;
 			margin: 4px auto 4px auto;
+			border: 1px solid black;
 		}
 
+		.BalloonLine1 {
+			font-size:16px;
+			font-weight: bold;
+			line-height:100%;
+			white-space:nowrap;
+			overflow:hidden;
+			text-overflow:ellipsis;
+		}
+		.BalloonLine2 {
+			font-size:10px;
+		}
+#spotNameWrap {
+	margin: .4em 5px;
+	margin-right: 20px;
+}
+#spotNameWrap input{
+	width: 100%;
+}
+
+
+
 	</style>
+
 </head>
-
-<body onorientationchange="updateOrientation();" onresize="updateOrientation();">
-<!-- tabbar -->
-<div id="tabbar">
-	<div>
-	<ul>
-		<li><a href="#map" mask="/images/location_pin.png" ><strong>Map</strong></a></li>
-		<li><a href="#timeline" mask="/images/clock_time.png" ><strong>TimeLine</strong></a></li>
-		<li><a href="#list" mask="/images/list.png" ><strong>List</strong></a></li>
-		<li><a href="#memo" mask="/images/edit.png" ><strong>Memo</strong></a></li>
-		<li><a href="#user" mask="/images/user.png" ><strong>User</strong></a></li>
-	</ul>
+<body
+	onorientationchange="updateOrientation();"
+	onresize="updateOrientation();"
+> 
+	<div style="display:none;" id="tabfooter"  >
+			<div data-role="navbar" data-grid="d" class="nav-glyphish-example" >
+				<ul>
+					<li><a href="#map" class="tab-map" data-icon="custom" data-transition="none" >Map</a></li>
+					<li><a href="#timeline" class="tab-timeline" data-icon="custom" data-transition="none" >TimeLine</a></li>
+					<li><a href="#list" class="tab-list" data-icon="custom" data-transition="none" >List</a></li>
+					<li><a href="#memo" class="tab-memo" data-icon="custom" data-transition="none" >Memo</a></li>
+					<li><a href="#user" class="tab-user" data-icon="custom" data-transition="none" >User</a></li>
+				</ul>
+			</div>
 	</div>
-</div>
+<!-- == Login =================================================================== -->
+	<div id="login" data-role="page">
+		<div data-role="header" data-position="fixed">
+			<h1>Login</h1>
+		</div>
+		<div data-role="content">
+			<a href="javascript:Login.login('google')" data-role="button" >Google</a>
+			<a href="javascript:Login.login('twitter')" data-role="button" >Twitter</a>
+		</div>
+	</div>
 
-<!-- main  -->
-<div id="jqt">
-	<div id="map" class="keep_tabbar">
-		<div id="mapHeader" class="toolbar">
+<!-- == Map =================================================================== -->
+	<div id="map" data-role="page" >
+		<div data-role="header" data-position="fixed" data-theme="a">
 			<h1>ここらへん</h1>
-			<!--
-			<a class="back slideright" href="#home">back</a>
-			<a class="button slideleft" id="infoButton" href="#memo">add</a>
-			-->
 		</div>
-		<div id="mapCanvas">
+		<div data-role="content" id="mapCanvas">	
 		</div>
-    </div>
+		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
+		</div>
+	</div>
 
 
-	<div id="spot"  class="keep_tabbar">
-		<div class="toolbar">
+<!-- == Spot =================================================================== -->
+	<div id="spot" data-role="page" >
+		<div data-role="header" data-position="fixed" data-theme="a" data-add-back-btn="true">
 			<h1>Spot情報</h1>
-			<a class="back slideright" href="#">Back</a>
-			<a class="button" id="infoButton" href="javascript:Spot.write()">登録</a>
+			<a data-rel="back" data-icon="back" href="#map" >Back</a>
+			<a data-icon=“plus” data-iconpos="right" href="javascript:Spot.write()">登録</a>
 		</div>
-		<div class="s-scrollwrapper">
-		<div>
+		<div data-role="content">
 		<form action="" name="spot">
 			<input name="id" type="hidden"/>
 			<input name="lat" type="hidden"/>
 			<input name="lng" type="hidden"/>
 
-
-			<ul class="individual">
-				<li>
-					<img id="spotImage" src="/images/Home.png"  Align="left" style="width:100%;" onclick="$('#spotImageUrl').focus()"/>
+			<div class="ui-grid-a">
+				<div class="ui-block-a" >
+					<div style="margin-right:10px;" >
+					<img id="spotImage" border=1 src="/images/Home.png"  Align="left" style="width:100%;" onclick="$('#spotImageUrl').focus()"/>
 					<input id="spotImageUrl" type="url" name="image" placeholder="画像URL"
 							style="font-size:14px;"
 							onchange="$('#spotImage').attr('src', this.value)" />
-				</li>
-				<li>
-					<input type="text" name="name" placeholder="名前" style="font-size:20px;" />
-					<br/><br/>
-				</li>
-				<li class="arrow"
-				style="background-image:url(/jQtouch/themes/default/img/chevron.png), -webkit-gradient(linear, 0% 0%, 0% 100%, from(#4c4d4e), to(#404142))"><a href="javascript:jqt.goTo('#spotReview','slideleft')"  >review</a></li>
-				<li class="arrow"><a href="#spotTwit"  >つぶやく</a></li>
-			</ul>
-
-			<ul class="edit rounded">
-				<li><input type="text" name="address" placeholder="住所"/></li>
-				<li><input type="text" name="tags" placeholder="タグ"/></li>
-				<li><input type="text" name="openHours" placeholder="営業時間"/></li>
-				<li><input type="text" name="closedDay" placeholder="定休日"/></li>
-				<li><input type="email" name="email" placeholder="E-Mail"/></li>
-				<li><input type="url" name="url" placeholder="URL"/></li>
-				<li><input type="text" name="comment" placeholder="備考"/></li>
-			</ul>
+					</div>
+				</div>
+				<div class="ui-block-b">
+					<div id="spotNameWrap">
+					<input type="text" name="name" placeholder="名前" />
+					</div>
+					<a href="#spotReview" data-role="button" data-icon="arrow-r" data-iconpos="right">Review</a>
+					<a href="#spotReview" data-role="button" data-icon="arrow-r" data-iconpos="right">つぶやく</a>
+				</div>
+			</div>
+			
+			<div >
+				<input type="text" name="address" placeholder="住所"/>
+				<input type="text" name="tags" placeholder="タグ"/>
+				<input type="text" name="openHours" placeholder="営業時間"/>
+				<input type="text" name="closedDay" placeholder="定休日"/>
+				<input type="email" name="email" placeholder="E-Mail"/>
+				<input type="url" name="url" placeholder="URL"/>
+				<input type="text" name="comment" placeholder="備考"/>
+			</div>
+<br/>
 
 			<div id="mapCanvas2">
 			</div>
-
+<br/>
+<br/>
+<br/>
 		</form>
 		</div>
+		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
 	</div>
-
-
-	<div id="spotReview" class="keep_tabbar">
-		<div class="toolbar">
+<!-- == SpotReview =================================================================== -->
+	<div id="spotReview" data-role="page"  >
+		<div data-role="header" data-position="fixed" data-theme="a">
 			<h1>Spotレビュー</h1>
-			<a class="back slideright" href="#">Back</a>
+			<a data-rel="back" data-icon="back" href="#map" >Back</a>
 		</div>
-		<div class="s-scrollwrapper">
-			<a class="grayButton" href="javascript:SpotReview.onReviewClick(null)" >レビューを書く</a>
-			<div>
-				<ul id="spotReviewList" class="rounded">
-				</ul>
+		<div data-role="content" >
+			<a href="javascript:SpotReview.onReviewClick()" data-role="button" data-icon="arrow-r" data-iconpos="right">レビューを書く</a>
+			<br/>
+			<div id="spotReviewList" >
 			</div>
 		</div>
+		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
+		</div>
 	</div>
-
-
-
-
-	<div id="timeline" class="keep_tabbar">
-		<div class="toolbar">
+	
+<!-- == TimeLine =================================================================== -->
+	<div id="timeline" data-role="page" >
+		<div data-role="header" data-position="fixed" >
 			<h1>TimeLine</h1>
 		</div>
-		<div class="s-scrollwrapper">
-			<div>
-				<ul class="rounded" id="listTimeline"></ul>
-			</div>
+		<div data-role="content"  >	
+			<div id="timeLineList"></div>
+		</div>
+		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
 	</div>
 
-	<div id="list" class="keep_tabbar">
-		<div class="toolbar">
+<!-- == LIst =================================================================== -->
+	<div id="list" data-role="page">
+		<div data-role="header" data-position="fixed">
 			<h1>List</h1>
 		</div>
-		<div class="s-scrollwrapper">
-			<div>
-				<ul class="rounded" id="listSpots"></ul>
+		<div data-role="content">
+			<div id="listSpots">
+				<ul data-role="listview"  id="listSpots" data-inset="true" ></ul>
 			</div>
+		</div>
+		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
 	</div>
 
-	<div id="memo" class="keep_tabbar">
-		<div class="toolbar">
+<!-- == memo =================================================================== -->
+	<div id="memo" data-role="page">
+		<div data-role="header" data-position="fixed">
 			<h1>Review</h1>
 		</div>
-		<div class="s-scrollwrapper">
+		<div data-role="content">
 			<div>
 				工事中
 			</div>
 		</div>
+		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
+		</div>
 	</div>
 
-	<div id="review"  class="keep_tabbar">
-		<div class="toolbar">
+<!-- == Review =================================================================== -->
+	<div id="review"  data-role="page">
+		<div data-role="header" data-position="fixed">
 			<h1>Review</h1>
-			<a class="back slideright" href="#">Back</a>
-			<a class="button" id="infoButton" href="javascript:Review.write()">登録</a>
+			<a data-rel="back" data-icon="back" href="#map" >Back</a>
+			<a data-icon=“plus” data-iconpos="right" href="javascript:Review.write()">登録</a>
 		</div>
-		<div class="s-scrollwrapper">
-		<div>
+		<div data-role="content">
 		<form action="" name="review">
 			<input name="id" type="hidden"/>
 			<input name="spotId" type="hidden"/>
 			<input name="appraise" type="hidden"/>
 
-
-			<ul class="edit rounded">
-				<li><input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" /></li>
-				<li><div style="width:100%" id="appraise_raty"></div></li>
-				<li><textarea name="comment"  cols="100%" placeholder="コメント" ></textarea></li>
-			</ul>
+			<input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" />
+			<div style="width:300px" id="appraise_raty"></div>
+			<textarea name="comment"  cols="100%" placeholder="コメント" ></textarea>
 		</form>
 		</div>
+		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
 	</div>
 
 
 
-	<div id="user" class="keep_tabbar">
-		<div class="toolbar">
+<!-- == User =================================================================== -->
+	<div id="user" data-role="page">
+		<div data-role="header" data-position="fixed">
 			<h1>User</h1>
 			<a class="button" id="infoButton" href="javascript:"><img src="/images/config.png"/></a>
 		</div>
-		<div class="s-scrollwrapper">
+		<div data-role="content">
 			<div>
 				<form action="" name="user">
-					<input name="username" />
-					<input name="nickname" />
-					<a href="javascript:Login.logout()">Logout</a>
+					<div data-role="fieldcontain">
+						<label for="username">User ID:</label>
+						<input name="username" type="text" />
+						<br/>
+						<label for="nickname">Nick name:</label>
+						<input name="nickname" type="text" />
+						<br/>
+						<a href="javascript:Login.logout()" data-role="button">Logout</a>
+					</div>
 				</form>
 			</div>
 		</div>
-	</div>
-
-	<div id="login" class="keep_tabbar">
-		<div class="toolbar">
-			<h1>Login</h1>
-			<a class="back slideright" href="#">Back</a>
-		</div>
-		<div class="s-scrollwrapper">
-			<div>
-				<a href="javascript:Login.login('google')" class="whiteButton"  >google</a>
-				<a href="javascript:Login.login('twitter')" class="whiteButton"  >twitter</a>
-
-			</div>
+		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
 	</div>
-
-</div>
-
-<!-- Custom balloon -->
-<div style="display:none;">
-	<div id="balloon" class="Balloon" onclick="onBalloonClick(event)">
-		<div onclick="onBalloonClick(event)"">name</div>
-		<div>addr</div>
-	</div>
-</div>
 
 </body>
 </html>

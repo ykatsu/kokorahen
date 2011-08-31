@@ -174,8 +174,9 @@ public class Kokorahen implements JsrpcEnvironment {
 	}
 
 	public  String logout(String provider) throws Exception {
+		this.loginUser = null;
 		getSession(true).invalidate();
-
+System.out.println("logour:"+provider);
 		String url = this.getServerUrl();
 		if (GOOGLE.equals(provider)) {
 			return logoutGoogle(url);

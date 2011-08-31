@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+  <head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta id="viewport" name="viewport"
+		content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+
+    <title>ここらへん</title>
+    <style type="text/css" media="screen">@import "/jQtouch/jqtouch/jqtouch.css";</style>
+    <style type="text/css" media="screen">@import "/jQtouch/themes/jqt/theme.css";</style>
+	<style type="text/css" media="screen">@import "/jQtouch/extensions/jqt.bars/jqt.bars.css";</style>
+	<style type="text/css" media="screen">@import "/jQtouch/extensions/jqt.bars/themes/jqt/theme.css";</style>
+	<style type="text/css" media="screen">@import "/jQtouch/extensions/jqt.listIndex/jqt.listIndex.css";</style>
+
+
+	<script src="/js/jquery-1.6.0.js" ></script>
+	<script src="http://maps.google.com/maps/api/js?libraries=geometry&amp;sensor=true"></script>
+<!--
+	<script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript" ></script>
+-->
+	<script src="/jQtouch/jqtouch/jqtouch.js" type="application/x-javascript" charset="utf-8"></script>
+	<script src="/jQtouch/extensions/jqt.autotitles.js" type="application/x-javascript" charset="utf-8"></script>
+	<script src="/jQtouch/extensions/jqt.bars/jqt.bars.js" type="application/x-javascript" charset="utf-8"></script>
+	<script src="/jQtouch/extensions/jqt.listIndex/jqt.listIndex.js" type="application/x-javascript" charset="utf-8"></script>
+
+	<script src="/js/jquery.raty.js" ></script>
+
+	<script src="/js/Jsrpc.js?v=1" ></script>
+	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=2" ></script>
+	<script src="/InfoBox.js" ></script>
+
+	<script src="kokorahen.js"></script>
+
+	<style type="text/css" media="screen">
+		html, body {
+			width: 100%;
+			height: 100%;
+		}
+		#map {
+			height: 100%;
+		}
+		#mapCanvas2 {
+			width: 290px;
+			height: 200px;
+			margin: 4px auto 4px auto;
+		}
+
+	</style>
+</head>
+
+<body onorientationchange="updateOrientation();" onresize="updateOrientation();">
+<!-- tabbar -->
+<div id="tabbar">
+	<div>
+	<ul>
+		<li><a href="#map" mask="/images/location_pin.png" ><strong>Map</strong></a></li>
+		<li><a href="#timeline" mask="/images/clock_time.png" ><strong>TimeLine</strong></a></li>
+		<li><a href="#list" mask="/images/list.png" ><strong>List</strong></a></li>
+		<li><a href="#memo" mask="/images/edit.png" ><strong>Memo</strong></a></li>
+		<li><a href="#user" mask="/images/user.png" ><strong>User</strong></a></li>
+	</ul>
+	</div>
+</div>
+
+<!-- main  -->
+<div id="jqt">
+	<div id="map" class="keep_tabbar">
+		<div id="mapHeader" class="toolbar">
+			<h1>ここらへん</h1>
+			<!--
+			<a class="back slideright" href="#home">back</a>
+			<a class="button slideleft" id="infoButton" href="#memo">add</a>
+			-->
+		</div>
+		<div id="mapCanvas">
+		</div>
+    </div>
+
+
+	<div id="spot"  class="keep_tabbar">
+		<div class="toolbar">
+			<h1>Spot情報</h1>
+			<a class="back slideright" href="#">Back</a>
+			<a class="button" id="infoButton" href="javascript:Spot.write()">登録</a>
+		</div>
+		<div class="s-scrollwrapper">
+		<div>
+		<form action="" name="spot">
+			<input name="id" type="hidden"/>
+			<input name="lat" type="hidden"/>
+			<input name="lng" type="hidden"/>
+
+
+			<ul class="individual">
+				<li>
+					<img id="spotImage" src="/images/Home.png"  Align="left" style="width:100%;" onclick="$('#spotImageUrl').focus()"/>
+					<input id="spotImageUrl" type="url" name="image" placeholder="画像URL"
+							style="font-size:14px;"
+							onchange="$('#spotImage').attr('src', this.value)" />
+				</li>
+				<li>
+					<input type="text" name="name" placeholder="名前" style="font-size:20px;" />
+					<br/><br/>
+				</li>
+				<li class="arrow"
+				style="background-image:url(/jQtouch/themes/default/img/chevron.png), -webkit-gradient(linear, 0% 0%, 0% 100%, from(#4c4d4e), to(#404142))"><a href="javascript:jqt.goTo('#spotReview','slideleft')"  >review</a></li>
+				<li class="arrow"><a href="#spotTwit"  >つぶやく</a></li>
+			</ul>
+
+			<ul class="edit rounded">
+				<li><input type="text" name="address" placeholder="住所"/></li>
+				<li><input type="text" name="tags" placeholder="タグ"/></li>
+				<li><input type="text" name="openHours" placeholder="営業時間"/></li>
+				<li><input type="text" name="closedDay" placeholder="定休日"/></li>
+				<li><input type="email" name="email" placeholder="E-Mail"/></li>
+				<li><input type="url" name="url" placeholder="URL"/></li>
+				<li><input type="text" name="comment" placeholder="備考"/></li>
+			</ul>
+
+			<div id="mapCanvas2">
+			</div>
+
+		</form>
+		</div>
+		</div>
+	</div>
+
+
+	<div id="spotReview" class="keep_tabbar">
+		<div class="toolbar">
+			<h1>Spotレビュー</h1>
+			<a class="back slideright" href="#">Back</a>
+		</div>
+		<div class="s-scrollwrapper">
+			<a class="grayButton" href="javascript:SpotReview.onReviewClick(null)" >レビューを書く</a>
+			<div>
+				<ul id="spotReviewList" class="rounded">
+				</ul>
+			</div>
+		</div>
+	</div>
+
+
+
+
+	<div id="timeline" class="keep_tabbar">
+		<div class="toolbar">
+			<h1>TimeLine</h1>
+		</div>
+		<div class="s-scrollwrapper">
+			<div>
+				<ul class="rounded" id="listTimeline"></ul>
+			</div>
+		</div>
+	</div>
+
+	<div id="list" class="keep_tabbar">
+		<div class="toolbar">
+			<h1>List</h1>
+		</div>
+		<div class="s-scrollwrapper">
+			<div>
+				<ul class="rounded" id="listSpots"></ul>
+			</div>
+		</div>
+	</div>
+
+	<div id="memo" class="keep_tabbar">
+		<div class="toolbar">
+			<h1>Review</h1>
+		</div>
+		<div class="s-scrollwrapper">
+			<div>
+				工事中
+			</div>
+		</div>
+	</div>
+
+	<div id="review"  class="keep_tabbar">
+		<div class="toolbar">
+			<h1>Review</h1>
+			<a class="back slideright" href="#">Back</a>
+			<a class="button" id="infoButton" href="javascript:Review.write()">登録</a>
+		</div>
+		<div class="s-scrollwrapper">
+		<div>
+		<form action="" name="review">
+			<input name="id" type="hidden"/>
+			<input name="spotId" type="hidden"/>
+			<input name="appraise" type="hidden"/>
+
+
+			<ul class="edit rounded">
+				<li><input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" /></li>
+				<li><div style="width:100%" id="appraise_raty"></div></li>
+				<li><textarea name="comment"  cols="100%" placeholder="コメント" ></textarea></li>
+			</ul>
+		</form>
+		</div>
+		</div>
+	</div>
+
+
+
+	<div id="user" class="keep_tabbar">
+		<div class="toolbar">
+			<h1>User</h1>
+			<a class="button" id="infoButton" href="javascript:"><img src="/images/config.png"/></a>
+		</div>
+		<div class="s-scrollwrapper">
+			<div>
+				<form action="" name="user">
+					<input name="username" />
+					<input name="nickname" />
+					<a href="javascript:Login.logout()">Logout</a>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div id="login" class="keep_tabbar">
+		<div class="toolbar">
+			<h1>Login</h1>
+			<a class="back slideright" href="#">Back</a>
+		</div>
+		<div class="s-scrollwrapper">
+			<div>
+				<a href="javascript:Login.login('google')" class="whiteButton"  >google</a>
+				<a href="javascript:Login.login('twitter')" class="whiteButton"  >twitter</a>
+
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<!-- Custom balloon -->
+<div style="display:none;">
+	<div id="balloon" class="Balloon" onclick="onBalloonClick(event)">
+		<div onclick="onBalloonClick(event)"">name</div>
+		<div>addr</div>
+	</div>
+</div>
+
+</body>
+</html>

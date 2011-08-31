@@ -36,23 +36,34 @@ InfoBox.prototype.onAdd = function() {
 
 	var div = document.createElement('DIV');
 	div.style.position = "absolute";
-	div.style.width = "85px";
-	div.style.height = "64px";
+	div.style.width = "200px";
+	div.style.height = "60px";
 	div.style.cursor = "pointer";
 
 	var div2 = document.createElement('DIV');
 	div2.style.position = "absolute";
 	div2.style.top = "4px";
 	div2.style.left = "4px";
-	div2.style.width = "78px";
-	div2.style.height = "45px";
+	div2.style.width = "180px";
+	div2.style.height = "40px";
 	div2.style.overflow = "hidden";
 	div2.style.color = "black";
-	div.appendChild(div2);
+	div2.style.textOverflow = "ellipsis";
+
+	var img2 = document.createElement("img");
+	img2.src = "/images/balloon-shadow.png";
+	img2.style.position = "absolute";
+	img2.style.top = "4px";
+	img2.style.left = "5px";
 
 	var img = document.createElement("img");
-	img.src = "/images/fukidasi.png";
+	img.src = "/images/balloon.png";
+	img.style.position = "absolute";
+
+	div.appendChild(img2);
 	div.appendChild(img);
+	div.appendChild(div2);
+
 
 	this.box = div;
 	this.innerBox = div2;
@@ -77,8 +88,8 @@ InfoBox.prototype.draw = function() {
 	var pos = this.getProjection().fromLatLngToDivPixel(this.marker.getPosition());
 	if (!pos) return;
 
-	this.box.style.left = (pos.x-50)  + "px";
-	this.box.style.top = (pos.y-64-25) + "px";
+	this.box.style.left = (pos.x-99)  + "px";
+	this.box.style.top = (pos.y-48-24) + "px";
 	//this.box.style.display = 'block';
 }
 

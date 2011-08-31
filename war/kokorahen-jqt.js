@@ -1,56 +1,27 @@
-
-
-//-----------------------------------------------------------------
-// JQuery Mobile onload.
-
-$(document).bind("mobileinit", function(){
-//  $.mobile.foo = bar;
+var jqt = $.jQTouch({
+	useFastTouch: true
 });
 
-
-//$(document).bind("mobileinit", function(){
 $(function(){
-//$("body").live('pagecreate',function(event){
-		//var modules = [Login, Map, Timeline, List, Memo, User, Spot, SpotReview, Review];
-	
-	var modules = [Login, User, Map, Timeline, List, Memo, Spot, SpotReview, Review];
+	var modules = [Login, Map, Timeline, List, Memo, User, Spot, SpotReview, Review];
 
-	function init(m) {
+	for (var i=0; i<modules.length; i++) {
+		var m = modules[i];
 		if (m.init != undefined) m.init();
-		if (m.onBeforeShow) {
-			$(m.ID).bind('pagebeforeshow', function(ev, ui) {
-				try {
-					m.onBeforeShow(ev,ui);
-				} catch(e) {
-					// TODO: 例外が上がるとJQM(b2)が止まる。
-					alert(e.message+"\n"+e.url+":"+e.line);
-				}
-			});
-		}
 		if (m.onShow) {
-			$(m.ID).bind('pageshow', function(ev, ui) {
-				try {
-					m.onShow(ev,ui);
-				} catch(e) {
-					// TODO: 例外が上がるとJQM(b2)が止まる。
-					alert(e.message+"\n"+e.url+":"+e.line);
-				}
+			$(m.ID).bind('pageAnimationEnd', m, function(ev, info) {
+				if ($(this).is(':hidden')) return;
+				ev.data.onShow(ev, info);
 			});
 		}
-	};
-	for (var i=0; i<modules.length; i++) init(modules[i]);
+	}
 
-	// TODO: JQMがβのせいかFooterの共有が出来ないので自前で対処。
-	var footers = $("//div[data-id='tabfooter']");
-	footers.html($("#tabfooter").html());
 });
 
 function updateOrientation() {
 	Map.updateOrientation();
 }
-//window.onerror = function(msg, url, line) {
-	//alert(msg+"\n"+url+":"+line);
-//}
+
 //-----------------------------------------------------------------
 // Map tab
 function Map() {};
@@ -67,7 +38,7 @@ Map.options = {
 	center: Map.DEFAULT_CENTER ,
 	scaleControl: true,
 	mapTypeId: google.maps.MapTypeId.ROADMAP
-};
+}
 
 Map.init = function() {
 	with (Map) {
@@ -89,6 +60,7 @@ Map.init = function() {
 		Map.infobox.addEventListener('click', Map.onBalloonClick, false);
 	}
 }
+
 /**
  * GPS取得イベント処理。
  * <li>navigator.geolocation.watchPosition()
@@ -113,29 +85,23 @@ Map.onMapClick = function(ev) {
 	Map.marker.setVisible(true);
 }
 Map.onBalloonClick = function(ev) {
-	$.mobile.changePage(Spot.ID, "slide");
-	return Util.eventBreaker(ev);
+	jqt.goTo(Spot.ID, "slideleft");
+	ev.preventDefault();
+	return false;
 }
 Map.onMarkerClick = function(ev) {
 	Spot.current = {marker:this};
-	//jqt.goTo(Spot.ID, "slideleft");
-	$.mobile.changePage(Spot.ID, "slide");
-
+	jqt.goTo(Spot.ID, "slideleft");
 }
 
 Map.updateOrientation = function(ev) {
-	var h1 = 43; // $("#mapHeader").height();
-	var h2 = 50; //$("#tabbar").height();
+	var h1 = 45; // $("#mapHeader").height();
+	var h2 = $("#tabbar").height();
 	$(Map.CANVAS).height($("html").height() - h1 - h2);
 }
 
-Map.onBeforeShow = function(ev) {
+Map.onShow = function(ev) {
 	// nop.
-}
-Map.onShow = function(ev, info){
-	// Note: 地図が初期状態で非表示だと誤動作するのでその対処。
-	google.maps.event.trigger(Map.map, "resize");
-	//Map.map.setCenter(Map.marker.getPosition());
 }
 
 /**
@@ -151,7 +117,6 @@ Map.onMapIdol = function(ev) {
 	var lngSW = rect.getSouthWest().lng();
 
 	// サーバーから表示範囲内のマーカー取得。非同期。
-/*
 	Kokorahen.getAreasAsync({
 		success: function(areas) {
 			for(var i=0; i<areas.length; i++) {
@@ -171,20 +136,6 @@ Map.onMapIdol = function(ev) {
 		maxLng: Math.max(lngNE, lngSW),
 		minLng: Math.min(lngNE, lngSW),
 	});
-*/
-	var areas = Util.getAreas(
-			Math.min(latNE, latSW),
-			Math.min(lngNE, lngSW),
-			Math.max(latNE, latSW),
-			Math.max(lngNE, lngSW)
-	);
-	for(var i=0; i<areas.length; i++) {
-		var area = areas[i];
-		if (!Map.areaFlags[area]) {
-			Kokorahen.listSpotAsync(Map.protMarkers, {area: area});
-			Map.areaFlags[area] = true;
-		}
-	}
 
 };
 
@@ -200,13 +151,8 @@ Map.protMarkers = {
 			}
 			Spot.getSpot(list[i]);
 		}
-		var page = $.mobile.activePage.attr("id");
-		if (isUpdate == true && page=="list") {
-//try {
-			List.onBeforeShow();
-//} catch (e) {
-//	alert(e);
-//}
+		if (isUpdate == true) {
+			List.onShow();
 		}
 	},
 	fail: function(e) {
@@ -215,13 +161,12 @@ Map.protMarkers = {
 }
 
 //-----------------------------------------------------------------
-//Spot
+// Spot
 function Spot(data) {
 	this.data = data;
 	var pos = new google.maps.LatLng(data.lat, data.lng);
 	this.marker = new google.maps.Marker({position: pos, map: Map.map,
-		//icon:Spot.PIN, shadow:Spot.PIN_SHADOW
-		icon:Spot.PIN2, shadow:Spot.PIN2_SHADOW
+		icon:Spot.PIN, shadow:Spot.PIN_SHADOW
 	});
 	this.marker.spot = this;
 	google.maps.event.addListener(this.marker, 'click', Spot.onSpotMarkerClick);
@@ -230,33 +175,19 @@ Spot.ID = "#spot";
 Spot.HOME_IMG = "/images/Home.png";
 Spot.current = null;
 
-//ピンイメージ。
+// ピンイメージ。
 Spot.PIN = new google.maps.MarkerImage(
 	"http://maps.google.co.jp/mapfiles/ms/icons/blue-pushpin.png", // url
 	new google.maps.Size(32,32), // size
 	new google.maps.Point(0,0),  // origin
 	new google.maps.Point(10,30) // anchor
 );
-//ピンの影イメージ
+// ピンの影イメージ
 Spot.PIN_SHADOW = new google.maps.MarkerImage(
- "http://maps.google.co.jp/mapfiles/ms/icons/pushpin_shadow.png", // url
- new google.maps.Size(32,32), // size
- new google.maps.Point(0,0),  // origin
- new google.maps.Point(8,31) // anchor
-);
-//ピンイメージ。
-Spot.PIN2 = new google.maps.MarkerImage(
-	"/images/pin-blue.png", // url
-	new google.maps.Size(24,24), // size
-	new google.maps.Point(0,0),  // origin
-	new google.maps.Point(12,24) // anchor
-);
-//ピンの影イメージ
-Spot.PIN2_SHADOW = new google.maps.MarkerImage(
- "/images/pin-shadow.png", // url
- new google.maps.Size(40,24), // size
- new google.maps.Point(0,0),  // origin
- new google.maps.Point(14,24) // anchor
+    "http://maps.google.co.jp/mapfiles/ms/icons/pushpin_shadow.png", // url
+    new google.maps.Size(32,32), // size
+    new google.maps.Point(0,0),  // origin
+    new google.maps.Point(8,31) // anchor
 );
 
 Spot.init = function() {
@@ -266,20 +197,23 @@ Spot.init = function() {
 			scaleControl: false, disableDefaultUI: true,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 	}
-
 	Spot.map = new google.maps.Map(document.getElementById("mapCanvas2"),mapopts2);
 	Spot.marker2 = new google.maps.Marker({position: Map.DEFAULT_CENTER, map: Spot.map });
 	google.maps.event.addListener(Spot.map, 'click', Spot.onMap2Click);
 
 	// 補助マップのスクロールで親ページがスクロールしないようにしている。
-	$('#mapCanvas2').bind('touchmove', Util.eventBreaker);
-	$('#mapCanvas2').bind('mousemove', Util.eventBreaker);
+	function eventBreaker(ev) {
+		ev.preventDefault();
+		return false;
+	}
+	$('#mapCanvas2').bind('touchmove', eventBreaker);
+	$('#mapCanvas2').bind('mousemove', eventBreaker);
 
 }
 
 Spot.all = {};
 Spot.getSpot = function(data) {
-	if (Spot.all[data.id]) return Spot.all[data.id];
+	if (Spot.all[data.id]) return Spot.all[id];
 	var spot = new Spot(data);
 	Spot.all[data.id] = spot;
 	return spot;
@@ -288,10 +222,7 @@ Spot.getSpot = function(data) {
 Spot.onSpotMarkerClick = function(ev) {
 	Spot.current = this.spot;
 	if (Spot.current == null) return;
-	var addr = Spot.current.data.address.replace(/^日本,/,"");
-	var msg = "<div class='BalloonLine1'>"+Spot.current.data.name+"</div>"
-		+"<div class='BalloonLine2'>"+addr+"</div>";
-	Map.infobox.open(this, msg);
+	Map.infobox.open(this, Spot.current.data.name);
 }
 Spot.onMap2Click = function(ev) {
 	Spot.marker2.setPosition(ev.latLng);
@@ -300,7 +231,9 @@ Spot.onMap2Click = function(ev) {
 }
 
 
-Spot.onBeforeShow = function(ev, info){
+Spot.onShow = function(ev, info){
+	google.maps.event.trigger(Spot.map, "resize");
+
 	var pos;
 
 	var spotForm = document.spot;
@@ -326,8 +259,6 @@ Spot.onBeforeShow = function(ev, info){
 
 		Spot.setSpotPos(pos);
 
-		$(".SpotReviewBtn").hide();
-
 	} else {
 		pos = new google.maps.LatLng(sd.lat, sd.lng);
 
@@ -346,19 +277,11 @@ Spot.onBeforeShow = function(ev, info){
 		if (sd.image != null && sd.image != "") {
 			spotImage.attr("src", sd.image);
 		}
-		$(".SpotReviewBtn").show();
 	}
 
 	Spot.marker2.setPosition(pos);
-	//Spot.marker2.setVisible(true);
-	//Spot.map.setCenter(pos);
-};
-
-Spot.onShow = function(ev, info){
-	// Note: 地図が初期状態で非表示だと誤動作するのでその対処。
-	google.maps.event.trigger(Spot.map, "resize");
 	Spot.marker2.setVisible(true);
-	Spot.map.setCenter(Spot.marker2.getPosition());
+	Spot.map.setCenter(pos);
 };
 
 Spot.setSpotPos = function(pos){
@@ -388,7 +311,7 @@ Spot.write = function(){
 }
 
 //-----------------------------------------------------------------
-//SpotReview
+// SpotReview
 function SpotReview() { }
 SpotReview.ID = "#spotReview";
 SpotReview.LIST_ID = "#spotReviewList";
@@ -396,7 +319,7 @@ SpotReview.LIST_ID = "#spotReviewList";
 SpotReview.init = function() {
 	// nop.
 }
-SpotReview.onBeforeShow = function(ev, info){
+SpotReview.onShow = function(ev, info){
 	SpotReview.load(Spot.current.data.id);
 }
 
@@ -404,17 +327,13 @@ SpotReview.load = function(spotId) {
 	$(SpotReview.LIST_ID).html("");
 	Kokorahen.listReviewAsync({
 		success: function(list) {
-			var div = $("#spotReviewList");
-			var ul = $('<ul data-role="listview" data-inset="true" ></ul>');
-			div.html("");
-			div.append(ul);
-			
+			var ul = $(SpotReview.LIST_ID);
+			//ul.html("");
 			for (var i=0; i<list.length; i++) {
 				ul.append($(SpotReview.getListItem(list[i])));
 				Review.all[list[i].id] = list[i];
 			}
-			//jqt.setPageHeight();
-			ul.listview();
+			jqt.setPageHeight();
 		},
 		fail: function(e) {
 			alert(e);
@@ -426,7 +345,7 @@ SpotReview.getListItem = function(data) {
 	var spot = Spot.all[data.spotId];
 	if (spot != null) spot = spot.data.name;
 	var html =
-"<li><a href='javascript:SpotReview.onReviewClick("+data.id+")'>"
+"<li class='arrow'><a href='javascript:SpotReview.onReviewClick("+data.id+")'>"
 	+"<div style='font-size:50%;'>"+data.nickname+" @"+spot+"</div>"
 	+"<div>"+data.comment+"</div>"
 "</a></li>";
@@ -444,12 +363,12 @@ SpotReview.onReviewClick = function(reviewId) {
 	} else {
 		Review.current = Review.all[reviewId];
 	}
-	$.mobile.changePage(Review.ID, "slide");
+	jqt.goTo(Review.ID, "slideleft");
 }
 
 
 //-----------------------------------------------------------------
-//List tab
+// List tab
 
 function List() {}
 List.ID = "#list";
@@ -474,48 +393,39 @@ List.sortNear = function() {
 	return list;
 }
 
-List.onBeforeShow = function() {
+List.onShow = function() {
 	var list = List.sortNear();
-	var div = $("#listSpots");
-	var ul = $('<ul data-role="listview" data-inset="true" ></ul>');
-	div.html("");
-	div.append(ul);
-	
+	var ul = $("#listSpots");
+	ul.html("");
 	for (var i=0; i<list.length && i<50; i++) {
-		ul.append($("<li ><a href='javascript:List.onItemClick("
+		ul.append($("<li class='arrow'><a href='javascript:List.onItemClick("
 			+list[i].id+")'>"+list[i].name+"</a></li>"));
 	}
-	//jqt.setPageHeight();
-	ul.listview();
+	jqt.setPageHeight();
 }
 
 List.onItemClick = function(id) {
-	Spot.current = Spot.all[id];
-	$.mobile.changePage(Spot.ID, "slide");
+	Map.spot = Spot.all[id];
+	jqt.goTo(Spot.ID, "slideleft");
 }
 
 //-----------------------------------------------------------------
-//Timeline tab
+// Timeline tab
 function Timeline() {}
 Timeline.ID = "#timeline";
 Timeline.init = function() {
 	// nop.
 }
-Timeline.onBeforeShow = function() {
+Timeline.onShow = function() {
 	Kokorahen.listTimelineAsync({
 		success: function(list) {
-			var div = $("#timeLineList");
-			var ul = $('<ul data-role="listview" data-inset="true" ></ul>');
-			div.html("");
-			div.append(ul);
-
+			var ul = $("#listTimeline");
 			ul.html("");
 			for (var i=0; i<list.length && i<50; i++) {
 				ul.append($(Timeline.getListItem(list[i])));
 				Review.all[list[i].id] = list[i];
 			}
-			//jqt.setPageHeight();
-			ul.listview();
+			jqt.setPageHeight();
 		},
 		fail: function(e){
 			alert(e);
@@ -527,28 +437,28 @@ Timeline.getListItem = function(data) {
 	var spot = Spot.all[data.spotId];
 	if (spot != null) spot = spot.data.name;
 	var html =
-"<li><a href='javascript:Timeline.onItemClick("+data.id+")'>"
-	+"<span style='font-size:50%;'>"+data.nickname+" @"+spot+"</span>"
-	+"<br/><span>"+data.comment+"</span>"
+"<li class='arrow'><a href='javascript:Timeline.onItemClick("+data.id+")'>"
+	+"<div style='font-size:50%;'>"+data.nickname+" @"+spot+"</div>"
+	+"<div>"+data.comment+"</div>"
 "</a></li>";
 	return html;
 }
 
 Timeline.onItemClick = function(id) {
 	Review.current = Review.all[id];
-	$.mobile.changePage(Review.ID, "slide");
+	jqt.goTo(Review.ID, "slideleft");
 }
 
 
 
 //-----------------------------------------------------------------
-//Memo tab
+// Memo tab
 function Memo() { }
 Memo.ID = "#memo";
 Memo.init = function() {
 	// nop.
 }
-Memo.onBeforeShow = function() {
+Memo.onShow = function() {
 	var list = List.sortNear();
 	var ul = $("#memoSpots");
 	ul.html("");
@@ -556,7 +466,7 @@ Memo.onBeforeShow = function() {
 		ul.append($("<li class='arrow'><a href='javascript:Memo.onItemClick("
 				+list[i].id+")'>"+list[i].name+"</a></li>"));
 	}
-	//jqt.setPageHeight();
+	jqt.setPageHeight();
 }
 
 Memo.onItemClick = function(id) {
@@ -568,24 +478,23 @@ Memo.onItemClick = function(id) {
 	Review.current = {
 		id: "", spotId: sd.id, appraise: 0, comment: ""
 	};
-	$.mobile.changePage(Review.ID, "slide");
+	jqt.goTo(Review.ID, "slideleft");
 }
 
 //-----------------------------------------------------------------
-//Timeline tab
+// Timeline tab
 function User() { }
 User.ID = "#user"
 User.init = function()  {
 	// nop.
 }
-User.onBeforeShow = function() {
-	if (Login.user == null) return;
+User.onShow = function() {
 	document.user.username.value = Login.user.username;
 	document.user.nickname.value = Login.user.nickname;
 }
 
 //-------------------------------------------------------------------
-//Review
+// Review
 function Review() { }
 Review.ID = "#review";
 Review.all = {};
@@ -596,7 +505,7 @@ Review.init = function() {
 		click: function(score, evt) {
 			document.review.appraise.value = score;
 		},
-		size: 60,
+		size: 48,
 		path: "/images",
 		starHalf:   'star-half-big.png',
 		starOff:    'star-off-big.png',
@@ -605,7 +514,7 @@ Review.init = function() {
 
 }
 
-Review.onBeforeShow = function() {
+Review.onShow = function() {
 	if (Review.current == null) return;
 	var reviewForm = document.review;
 	reviewForm.id.value        = Review.current.id;
@@ -635,16 +544,18 @@ Login.ID = "#login";
 Login.user = {username: null};
 
 Login.init = function() {
+	var url = "http://"+location.host;
 	Login.user = Kokorahen.getLoginUser();
-	//if (Login.nickname == null || Login.nickname == "") {
-	//	Login.nickname = Login.username;
-	//}
-}
-Login.onBeforeShow = function() {
-	if (Login.user != null) {
-		$.mobile.changePage(Map.ID);
+	if (Login.user == null) {
+		jqt.goTo(Login.ID);
 	}
+
+	if (Login.nickname == null || Login.nickname == "") {
+		Login.nickname = Login.username;
+	}
+
 }
+
 Login.login = function(provider) {
 	location.href = Kokorahen.login(provider);
 }
@@ -655,52 +566,8 @@ Login.logout = function() {
 	} else {
 		location.href = Kokorahen.logout(null);
 	}
-	Login.user = null;
 }
 
-//-------------------------------------------------------------------
-//Util
-function Util() {}
-
-Util.getAreas = function(minLat, minLng, maxLat, maxLng){
-	var list = [];
-
-	var mode = 100; // 1Km
-	var len = 6;
-	var w = maxLat - minLat;
-	if (w > 0.05) { // >5Km
-		mode = 10; // 10Km
-		len = 5;
-	} else if (w < 0.01) { // <1Km
-		mode = 1000;
-		len = 7;
-	}
-
-	minLat = Math.floor(minLat*mode);
-	minLng = Math.floor(minLng*mode);
-	maxLat = Math.floor(maxLat*mode);
-	maxLng = Math.floor(maxLng*mode);
-
-	for (var lat = minLat; lat<=maxLat; lat+=1) {
-		for (var lng = minLng; lng<=maxLng; lng+=1) {
-			var area =
-				Util.toZeroPrefix("00",(lat/mode),len)+","+
-				Util.toZeroPrefix("00",(lng/mode),len);
-			list.push(area);
-			if (list.length>100) return list;
-		}
-	}
-	return list;
-}
-Util.toZeroPrefix = function(zeros, val, len) {
-	var str = zeros + val;
-	return str.substr(str.length-len);
-}
-Util.eventBreaker = function(ev) {
-	if(ev.stopPropagation) ev.stopPropagation();
-	ev.preventDefault();
-	return false;
-}
 
 /* EOF */
 
