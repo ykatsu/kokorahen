@@ -5,6 +5,7 @@
 
 $(document).bind("mobileinit", function(){
 //  $.mobile.foo = bar;
+//	$.mobile.selectmenu.prototype.options.nativeMenu = false;
 });
 
 
@@ -43,7 +44,27 @@ $(function(){
 	// TODO: JQMがβのせいかFooterの共有が出来ないので自前で対処。
 	var footers = $("//div[data-id='tabfooter']");
 	footers.html($("#tabfooter").html());
+
+	
+	var tagTree = {
+		"食事": {
+			"ラーメン": null,
+			"豚カツ": null,
+			"エスニック": {
+				"タイ料理": null,
+				"台湾料理": null
+			}
+		},
+		"酒": {
+			"日本酒": null,
+			"ワイン": null,
+		}
+	};
+	var spotTag = $("//select[refer='spotTagSelect']");
+	spotTag.html(Selector.tree2html(tagTree,"",0));
+	//spotTag.selectmenu();
 });
+
 
 function updateOrientation() {
 	Map.updateOrientation();
@@ -117,7 +138,8 @@ Map.onBalloonClick = function(ev) {
 	return Util.eventBreaker(ev);
 }
 Map.onMarkerClick = function(ev) {
-	Spot.current = {marker:this};
+	Map.infobox.close();
+	Spot.setCurrent({marker:this});
 	//jqt.goTo(Spot.ID, "slideleft");
 	$.mobile.changePage(Spot.ID, "slide");
 
@@ -286,7 +308,7 @@ Spot.getSpot = function(data) {
 }
 
 Spot.onSpotMarkerClick = function(ev) {
-	Spot.current = this.spot;
+	Spot.setCurrent(this.spot);
 	if (Spot.current == null) return;
 	var addr = Spot.current.data.address.replace(/^日本,/,"");
 	var msg = "<div class='BalloonLine1'>"+Spot.current.data.name+"</div>"
@@ -300,7 +322,8 @@ Spot.onMap2Click = function(ev) {
 }
 
 
-Spot.onBeforeShow = function(ev, info){
+Spot.setCurrent = function(cur){
+	Spot.current = cur;
 	var pos;
 
 	var spotForm = document.spot;
@@ -321,7 +344,8 @@ Spot.onBeforeShow = function(ev, info){
 		spotForm.email.value = "";
 		spotForm.url.value = "";
 		spotForm.comment.value = "";
-		spotForm.tags.value = "";
+
+		$(spotForm.tags).val([]);
 		spotForm.image.value = "";
 
 		Spot.setSpotPos(pos);
@@ -341,7 +365,8 @@ Spot.onBeforeShow = function(ev, info){
 		spotForm.email.value = sd.email;
 		spotForm.url.value = sd.url;
 		spotForm.comment.value = sd.comment;
-		spotForm.tags.value = sd.tags.join(",");
+		Selector.setValue(spotForm.tags, sd.tags);
+		//spotForm.tags.value = sd.tags.join(",");
 		spotForm.image.value = sd.image;
 		if (sd.image != null && sd.image != "") {
 			spotImage.attr("src", sd.image);
@@ -352,6 +377,12 @@ Spot.onBeforeShow = function(ev, info){
 	Spot.marker2.setPosition(pos);
 	//Spot.marker2.setVisible(true);
 	//Spot.map.setCenter(pos);
+};
+
+Spot.onBeforeShow = function(ev, info){
+	// Note:このタイミングでないとselectmenuの準備まに合わず。
+	$(document.spot.tags).selectmenu('refresh');
+	Selector.setup();
 };
 
 Spot.onShow = function(ev, info){
@@ -383,6 +414,7 @@ Spot.write = function(){
 	for (var i=0; i<elems.length; i++) {
 		params[elems[i].name] = elems[i].value;
 	}
+	params.tags = Selector.getValue(document.spot.tags).join(",");
 	var id = Kokorahen.writeSpot(params);
 	alert("sopt id="+id);
 }
@@ -490,7 +522,7 @@ List.onBeforeShow = function() {
 }
 
 List.onItemClick = function(id) {
-	Spot.current = Spot.all[id];
+	Spot.setCurrent(Spot.all[id]);
 	$.mobile.changePage(Spot.ID, "slide");
 }
 
@@ -700,6 +732,80 @@ Util.eventBreaker = function(ev) {
 	if(ev.stopPropagation) ev.stopPropagation();
 	ev.preventDefault();
 	return false;
+}
+
+Selector = {}
+Selector.isSetuped = false;
+Selector.mapping = {};
+Selector.SPACE="                 ";
+Selector.tree2html = function(tree, parent, indent) {
+	var html = "";
+	var spc = Selector.SPACE.substr(0, indent);
+	for (var key in tree) {
+		var val = parent+"/"+key;
+		html += "<option value='"+val+"'>"+spc+key+"</option>"
+		if (tree[key] != null) {
+			html += Selector.tree2html(tree[key], parent+"/"+key, indent+1);
+		}
+		Selector.mapping[key] = val;
+	}
+	return html;
+}
+Selector.onChange = function(ev, _this) {
+	var sel = $(_this);
+	var vals = sel.val();
+	if (vals == null) return;
+	var keys = {};
+
+	for (var i=0; i<vals.length; i++) {
+		var val = vals[i];
+		while(val.length > 0) {
+			keys[val] = true;
+			val = val.replace(/[/][^/]*$/,"");
+		}
+	}
+
+	var list = [];
+	for (var k in keys) {
+		list.push(k);
+	}
+	//alert(list);
+	sel.val(list);	
+	sel.selectmenu("refresh");	
+}
+Selector.setup = function() {
+	if (Selector.isSetuped) return;
+
+	var atags = $("a.ui-link-inherit");
+	atags.each(function(i) {
+		var atag = $(this);
+		var text = atag.text();
+		var indent = text.match(/^[ ]*/)[0];
+		if (indent.length == 0) return;
+		atag.css("margin-left",indent.length+"em");
+		atag.text(text.replace(/^[ ]*/,""));
+	});
+	Selector.isSetuped = true;
+}
+Selector.setValue = function(_this, vals) {
+	var sel = $(_this);
+	var list = [];
+	for (var i=0; i<vals.length; i++) {
+		var val = Selector.mapping[vals[i]];
+		if (val != null) list.push(val);
+	}
+	sel.val(list);
+	//sel.selectmenu("refresh");	
+}
+Selector.getValue = function(_this) {
+	var sel = $(_this);
+	var vals = sel.val();
+	var list = [];
+	for (var i=0; i<vals.length; i++) {
+		var val = vals[i].match(/[^/]*$/)[0];
+		list.push(val);
+	}
+	return list;
 }
 
 /* EOF */

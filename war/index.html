@@ -101,15 +101,15 @@ if (location.hash != "" && location.hash != null) {
 	onresize="updateOrientation();"
 > 
 	<div style="display:none;" id="tabfooter"  >
-			<div data-role="navbar" data-grid="d" class="nav-glyphish-example" >
-				<ul>
-					<li><a href="#map" class="tab-map" data-icon="custom" data-transition="none" >Map</a></li>
-					<li><a href="#timeline" class="tab-timeline" data-icon="custom" data-transition="none" >TimeLine</a></li>
-					<li><a href="#list" class="tab-list" data-icon="custom" data-transition="none" >List</a></li>
-					<li><a href="#memo" class="tab-memo" data-icon="custom" data-transition="none" >Memo</a></li>
-					<li><a href="#user" class="tab-user" data-icon="custom" data-transition="none" >User</a></li>
-				</ul>
-			</div>
+		<div data-role="navbar" data-grid="d" class="nav-glyphish-example" >
+			<ul>
+				<li><a href="#map" class="tab-map" data-icon="custom" data-transition="none" >Map</a></li>
+				<li><a href="#timeline" class="tab-timeline" data-icon="custom" data-transition="none" >TimeLine</a></li>
+				<li><a href="#list" class="tab-list" data-icon="custom" data-transition="none" >List</a></li>
+				<li><a href="#memo" class="tab-memo" data-icon="custom" data-transition="none" >Memo</a></li>
+				<li><a href="#user" class="tab-user" data-icon="custom" data-transition="none" >User</a></li>
+			</ul>
+		</div>
 	</div>
 <!-- == Login =================================================================== -->
 	<div id="login" data-role="page">
@@ -161,13 +161,19 @@ if (location.hash != "" && location.hash != null) {
 					<input type="text" name="name" placeholder="名前" />
 					</div>
 					<a href="#spotReview" data-role="button" data-icon="arrow-r" data-iconpos="right">Review</a>
-					<a href="#spotReview" data-role="button" data-icon="arrow-r" data-iconpos="right">つぶやく</a>
+				 	<a href="#spotReview" data-role="button" data-icon="arrow-r" data-iconpos="right">つぶやく</a>
 				</div>
 			</div>
 			
-			<div >
+			<div data-role="fieldcontain">
 				<input type="text" name="address" placeholder="住所"/>
-				<input type="text" name="tags" placeholder="タグ"/>
+				<select label="tags" name="tags" 
+					multiple=“multiple” tabindex="-1" 
+					refer="spotTagSelect" 
+					data-native-menu="false"
+					onchange="Selector.onChange(event, this)">
+				</select>
+
 				<input type="text" name="openHours" placeholder="営業時間"/>
 				<input type="text" name="closedDay" placeholder="定休日"/>
 				<input type="email" name="email" placeholder="E-Mail"/>
