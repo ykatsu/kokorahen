@@ -91,7 +91,35 @@ if (location.hash != "" && location.hash != null) {
 	width: 100%;
 }
 
+.FullSizeInput {
+	margin-left: 5px;
+	margin-right: 20px;
+}
+.FullSizeInput input, select, textarea, .ui-select{
+	width: 100%!important;
+}
 
+#waiting {
+	display: none;
+	position:absolute;
+	z-index:10000000;
+	top:0;
+	left:0;
+	margin: 50% 50%;
+}
+
+.SpotDaysBtn {
+	clear:both;
+	float:right;
+	margin-top:-5px;
+}
+.SpotDaysBtn div,fieldset {
+	margin: 0!important;
+	padding: 0!important;
+}
+.SpotDaysBtn .ui-btn-inner {
+	padding: 3px 1.5em;
+}
 
 	</style>
 
@@ -111,6 +139,7 @@ if (location.hash != "" && location.hash != null) {
 			</ul>
 		</div>
 	</div>
+
 <!-- == Login =================================================================== -->
 	<div id="login" data-role="page">
 		<div data-role="header" data-position="fixed">
@@ -127,8 +156,9 @@ if (location.hash != "" && location.hash != null) {
 		<div data-role="header" data-position="fixed" data-theme="a">
 			<h1>ここらへん</h1>
 		</div>
-		<div data-role="content" id="mapCanvas">	
+		<div data-role="content" id="mapCanvas">
 		</div>
+		<img id="waiting" src="/waiting.gif"/>
 		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
 	</div>
@@ -165,31 +195,102 @@ if (location.hash != "" && location.hash != null) {
 				</div>
 			</div>
 			
-			<div data-role="fieldcontain">
-				<input type="text" name="address" placeholder="住所"/>
-				<select label="tags" name="tags" 
-					multiple=“multiple” tabindex="-1" 
-					refer="spotTagSelect" 
-					data-native-menu="false"
-					onchange="Selector.onChange(event, this)">
-				</select>
 
-				<input type="text" name="openHours" placeholder="営業時間"/>
-				<input type="text" name="closedDay" placeholder="定休日"/>
-				<input type="email" name="email" placeholder="E-Mail"/>
-				<input type="url" name="url" placeholder="URL"/>
-				<input type="text" name="comment" placeholder="備考"/>
+			<br/>
+			<div data-role=“fieldcontain”>
+				<label>住所:</label>
+				<div class="FullSizeInput">
+					<input type="text" name="address" placeholder="住所"/>
+				</div>
+				<div id="mapCanvas2"></div>
+				<br/>
 			</div>
 
-			<br/>
-			<div id="mapCanvas2"></div>
-			<br/>
+			<div data-role=“fieldcontain”>
+				<label for="tags">タグ:</label>
+					<select label="tags" name="tags" id="spotTags"
+						multiple=“multiple” tabindex="-1" 
+						data-native-menu="false" data-pleceholder=“true”
+						onclick="$.mobile.changePage('#spotDaysDialog')"
+						onchange="Selector.onChangeWithParent(event, this)">
+					</select>
+			</div>
+
+			<div data-role=“fieldcontain”>
+				<label>営業時間:</label>
+				<table width="100%">
+					<tr>
+						<td width="1%">昼</td>
+						<td><select class="TimeSelector" ></select></td>
+						<td width="1%">〜</td>
+						<td><select class="TimeSelector" ></select></td>
+					</tr>
+					<tr>
+						<td width="1%">夜</td>
+						<td><select class="TimeSelector" ></select></td>
+						<td width="1%">〜</td>
+						<td><select class="TimeSelector" ></select></td>
+					</tr>
+					<tr>
+						<td width="1%">休</td>
+						<td colspan="3">
+							<a id="spotDays" data-role="button"
+								data-iconpos="right" 
+								data-icon=arrow-d
+								href="#spotDaysDialog" data-rel="dialog">無休</a>
+<!--
+							<select label="closedDay" name="closedDay" id="closedDay"
+								multiple=“multiple” tabindex="-1" 
+								data-native-menu="false"
+								onchange="Selector.onChangeIntensive(event, this)">
+							</select>
+-->
+						</td>
+					</tr>
+				</table>
+				<div class="FullSizeInput">
+					<input type="text" name="openHours" placeholder="営業時間注記"/>
+				</div>
+			</div>
+			<div data-role=“fieldcontain”>
+				<label>Email:</label>
+				<div class="FullSizeInput">
+					<input type="email" name="email" placeholder="E-Mail"/>
+				</div>
+			</div>
+			<div data-role=“fieldcontain”>
+				<label>URL:</label>
+				<div class="FullSizeInput">
+					<input type="url" name="url" placeholder="URL"/>
+				</div>
+			</div>
+			<div data-role=“fieldcontain”>
+				<label>備考:</label>
+				<div class="FullSizeInput">
+					<input type="text" name="comment" placeholder="備考"/>
+				</div>
+			</div>
+
 			<hr/>
 		</form>
 		</div>
 		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
 	</div>
+	
+<!-- == Spot Days Dialog ============================================================= -->
+	<div id="spotDaysDialog" data-role="page"  >
+		<div data-role="header" data-position="fixed" data-theme="a">
+			<h1>定休日</h1>
+		</div>
+		<div data-role="content" >
+			<ul data-role="listview" id="spotDaysList" >
+			</ul>
+		</div>
+	</div>
+
+
+
 <!-- == SpotReview =================================================================== -->
 	<div id="spotReview" data-role="page"  >
 		<div data-role="header" data-position="fixed" data-theme="a">

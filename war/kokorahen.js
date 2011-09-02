@@ -13,8 +13,9 @@ $(document).bind("mobileinit", function(){
 $(function(){
 //$("body").live('pagecreate',function(event){
 		//var modules = [Login, Map, Timeline, List, Memo, User, Spot, SpotReview, Review];
-	
-	var modules = [Login, User, Map, Timeline, List, Memo, Spot, SpotReview, Review];
+	$.mobile.pageLoading();
+	var modules = [Login, User, Map, Timeline, List, Memo, Spot, 
+	               SpotReview, Review, DaysSelector];
 
 	function init(m) {
 		if (m.init != undefined) m.init();
@@ -41,6 +42,11 @@ $(function(){
 	};
 	for (var i=0; i<modules.length; i++) init(modules[i]);
 
+	$("//div[data-role='dialog']").live('pageshow', function(ev, ui) {
+		$("#spotTags").selectmenu('refresh');
+	});
+	
+	
 	// TODO: JQMがβのせいかFooterの共有が出来ないので自前で対処。
 	var footers = $("//div[data-id='tabfooter']");
 	footers.html($("#tabfooter").html());
@@ -60,9 +66,21 @@ $(function(){
 			"ワイン": null,
 		}
 	};
-	var spotTag = $("//select[refer='spotTagSelect']");
-	spotTag.html(Selector.tree2html(tagTree,"",0));
-	//spotTag.selectmenu();
+	Spot.tagsSelector = new Selector("#spotTags", tagTree, "タグを選択(複数可)");
+
+	new DaysSelector("#spotDaysList");
+	
+	var html = "<option value=''>--:--</option>";
+	for (var h=0; h<24; h++) {
+		var hh = ("0"+h).match(/[0-9]{2}$/)[0];
+		for (var m=0; m<60; m+=30) {
+			var hhmm = hh + ":" + ("0"+m).match(/[0-9]{2}$/)[0];
+			html += "<option>"+hhmm+"</option>"
+		}
+	}
+	html += "<option>24:00</option>"
+	$(".TimeSelector").html(html);
+	
 });
 
 
@@ -77,6 +95,7 @@ function updateOrientation() {
 function Map() {};
 Map.ID = "#map";
 Map.CANVAS = "#mapCanvas";
+Map.WAITING = "#waiting";
 Map.map = null;
 Map.marker = null;
 Map.markers = null;
@@ -124,7 +143,7 @@ Map.setCenterFromGPS = function() {
 		Map.map.setCenter(center);
 		Map.marker.setPosition(center);
 	}, function(e){
-		alert("現在位置が取得できません。\n"+e.message)
+		alert("現在位置が取得できません。\n"+e.message);
 	});
 }
 
@@ -134,10 +153,12 @@ Map.onMapClick = function(ev) {
 	Map.marker.setVisible(true);
 }
 Map.onBalloonClick = function(ev) {
+	$(Map.WAITING).show();
 	$.mobile.changePage(Spot.ID, "slide");
 	return Util.eventBreaker(ev);
 }
 Map.onMarkerClick = function(ev) {
+	$(Map.WAITING).show();
 	Map.infobox.close();
 	Spot.setCurrent({marker:this});
 	//jqt.goTo(Spot.ID, "slideleft");
@@ -158,6 +179,7 @@ Map.onShow = function(ev, info){
 	// Note: 地図が初期状態で非表示だと誤動作するのでその対処。
 	google.maps.event.trigger(Map.map, "resize");
 	//Map.map.setCenter(Map.marker.getPosition());
+	$(Map.WAITING).hide();
 }
 
 /**
@@ -251,6 +273,7 @@ function Spot(data) {
 Spot.ID = "#spot";
 Spot.HOME_IMG = "/images/Home.png";
 Spot.current = null;
+Spot.tagsSelector = null;
 
 //ピンイメージ。
 Spot.PIN = new google.maps.MarkerImage(
@@ -340,7 +363,7 @@ Spot.setCurrent = function(cur){
 		spotForm.address.value = "";
 		spotForm.name.value = "";
 		spotForm.openHours.value = "";
-		spotForm.closedDay.value = "";
+		//spotForm.closedDay.value = "";
 		spotForm.email.value = "";
 		spotForm.url.value = "";
 		spotForm.comment.value = "";
@@ -361,11 +384,11 @@ Spot.setCurrent = function(cur){
 		spotForm.address.value = sd.address;
 		spotForm.name.value = sd.name;
 		spotForm.openHours.value = sd.openHours;
-		spotForm.closedDay.value = sd.closedDay;
+		//spotForm.closedDay.value = sd.closedDay;
 		spotForm.email.value = sd.email;
 		spotForm.url.value = sd.url;
 		spotForm.comment.value = sd.comment;
-		Selector.setValue(spotForm.tags, sd.tags);
+		Spot.tagsSelector.setValue(sd.tags);
 		//spotForm.tags.value = sd.tags.join(",");
 		spotForm.image.value = sd.image;
 		if (sd.image != null && sd.image != "") {
@@ -414,7 +437,7 @@ Spot.write = function(){
 	for (var i=0; i<elems.length; i++) {
 		params[elems[i].name] = elems[i].value;
 	}
-	params.tags = Selector.getValue(document.spot.tags).join(",");
+	params.tags = Spot.tagsSelector.getValue().join(",");
 	var id = Kokorahen.writeSpot(params);
 	alert("sopt id="+id);
 }
@@ -734,24 +757,56 @@ Util.eventBreaker = function(ev) {
 	return false;
 }
 
-Selector = {}
+//-------------------------------------------------------------------
+//Util-Selector
+function Selector(xpath, tree, pleceMsg){
+	this.xpath = xpath;
+	this.mapping = {};
+
+	var sel = $(xpath);
+	var html = "<option value=''>"+pleceMsg+"</option>"
+		+ this.tree2html(tree,"",0);
+	sel.html(html);
+	sel.data("Selector", this);
+}
 Selector.isSetuped = false;
-Selector.mapping = {};
 Selector.SPACE="                 ";
-Selector.tree2html = function(tree, parent, indent) {
+
+Selector.prototype.tree2html = function(tree, parent, indent) {
 	var html = "";
 	var spc = Selector.SPACE.substr(0, indent);
 	for (var key in tree) {
 		var val = parent+"/"+key;
 		html += "<option value='"+val+"'>"+spc+key+"</option>"
 		if (tree[key] != null) {
-			html += Selector.tree2html(tree[key], parent+"/"+key, indent+1);
+			html += this.tree2html(tree[key], parent+"/"+key, indent+1);
 		}
-		Selector.mapping[key] = val;
+		this.mapping[key] = val;
 	}
 	return html;
 }
-Selector.onChange = function(ev, _this) {
+
+Selector.prototype.setValue = function(vals) {
+	var sel = $(this.xpath);
+	var list = [];
+	for (var i=0; i<vals.length; i++) {
+		var val = this.mapping[vals[i]];
+		if (val != null) list.push(val);
+	}
+	sel.val(list);
+	//sel.selectmenu("refresh");	
+}
+Selector.prototype.getValue = function() {
+	var sel = $(this.xpath);
+	var vals = sel.val();
+	var list = [];
+	for (var i=0; i<vals.length; i++) {
+		var val = vals[i].match(/[^/]*$/)[0];
+		list.push(val);
+	}
+	return list;
+}
+Selector.onChangeWithParent = function(ev, _this) {
 	var sel = $(_this);
 	var vals = sel.val();
 	if (vals == null) return;
@@ -773,6 +828,37 @@ Selector.onChange = function(ev, _this) {
 	sel.val(list);	
 	sel.selectmenu("refresh");	
 }
+Selector.onChangeIntensive = function(ev, _this) {
+	var sel = $(_this);
+	var vals = sel.val();
+	if (vals == null) return;
+	var keys = {};
+
+	for (var i=0; i<vals.length; i++) {
+		keys[vals[i]] = true;
+	}
+	for (var i=0; i<vals.length; i++) {
+		var val = vals[i].replace(/[/][^/]*$/,"");
+		while (val.length > 1) {
+			if (keys[val]) {
+				keys[vals[i]] = false;
+				break;
+			}
+			val = val.replace(/[/][^/]*$/,"");
+		}
+	}
+	keys[""] = false;
+	
+	var list = [];
+	for (var k in keys) {
+		if (keys[k]) list.push(k);
+	}
+
+	//alert(list);
+	sel.val(list);	
+	sel.selectmenu("refresh");	
+}
+
 Selector.setup = function() {
 	if (Selector.isSetuped) return;
 
@@ -787,26 +873,83 @@ Selector.setup = function() {
 	});
 	Selector.isSetuped = true;
 }
-Selector.setValue = function(_this, vals) {
-	var sel = $(_this);
-	var list = [];
-	for (var i=0; i<vals.length; i++) {
-		var val = Selector.mapping[vals[i]];
-		if (val != null) list.push(val);
+//-------------------------------------------------------------------
+//Util-DaysSelector
+function DaysSelector(xpath, pleceMsg){
+	this.xpath = xpath;
+	var days = DaysSelector.BASE_DATA;
+	var html = "";
+	for (var i=0; i<days.length; i++) {
+		var name1 = days[i].id+"-L";
+		var name2 = days[i].id+"-D";
+
+		html +=
+'<li>'			
++'<span class="SpotDaysBtn">'
++'<div data-role="fieldcontain">'
++'<fieldset data-role="controlgroup" data-type=horizontal data-role="fieldcontain">' 
++'<input type="checkbox" name="'+name1+'" id="'+name1+'" onchange="DaysSelector.onChange(event,this)" />'
++'<label for="'+name1+'">昼</label>'
++'<input type="checkbox" name="'+name2+'" id="'+name2+'" onchange="DaysSelector.onChange(event,this)" />'
++'<label for="'+name2+'">夜</label>'
++'</fieldset>'
++'</div>'
++'</span>'+days[i].label
++'</li>'
+		;
 	}
-	sel.val(list);
-	//sel.selectmenu("refresh");	
+	$(xpath).html(html);
 }
-Selector.getValue = function(_this) {
-	var sel = $(_this);
-	var vals = sel.val();
-	var list = [];
-	for (var i=0; i<vals.length; i++) {
-		var val = vals[i].match(/[^/]*$/)[0];
-		list.push(val);
+DaysSelector.ID = "#spotDaysDialog";
+
+DaysSelector.BASE_DATA = [
+                      	{label:"月曜日", id:"Mon"},
+                      	{label:"火曜日", id:"Tue"},
+                      	{label:"水曜日", id:"Wen"},
+                      	{label:"木曜日", id:"Thu"},
+                      	{label:"金曜日", id:"Fri"},
+                      	{label:"土曜日", id:"Sat"},
+                      	{label:"日曜日", id:"Sun"},
+                      	{label:"祝日",   id:"Fet"}
+];
+
+DaysSelector.onShow = function(ev, ui) {
+	var days = DaysSelector.BASE_DATA;
+	for (var i=0; i<days.length; i++) {
+		var name1 = days[i].id+"-L";
+		var name2 = days[i].id+"-D";
+		$("#"+name1).checkboxradio("refresh");
+		$("#"+name2).checkboxradio("refresh");
 	}
-	return list;
 }
+
+DaysSelector.onChange = function(ev, _this) {
+	var label = "";
+	var days = DaysSelector.BASE_DATA;
+	for (var i=0; i<days.length; i++) {
+		var name1 = days[i].id+"-L";
+		var name2 = days[i].id+"-D";
+
+		var isL = $("#"+name1).is(':checked');
+		var isD = $("#"+name2).is(':checked');
+
+		if (isL || isD) {
+			label += ","+days[i].label.substr(0,1);
+		}
+		if (isL && !isD) {
+			label += "昼";
+		} else if (!isL && isD) {
+			label += "夜";
+		}
+	}
+
+	if (label.length == 0) {
+		label = ",無休"
+	}
+	
+	$("#spotDays .ui-btn-text").text(label.substr(1));
+}
+
 
 /* EOF */
 
