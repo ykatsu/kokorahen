@@ -66,10 +66,18 @@ if (location.hash != "" && location.hash != null) {
 	padding: 0!important;
 }
 		#mapCanvas2 {
-			width: 280px;
+			width: 270px;
 			height: 200px;
 			margin: 4px auto 4px auto;
 			border: 1px solid black;
+		}
+		#mapCanvas2Mask {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 1000000;
 		}
 
 		.BalloonLine1 {
@@ -199,6 +207,14 @@ if (location.hash != "" && location.hash != null) {
 			
 
 			<br/>
+			<div data-role=“fieldcontain”>
+				<label>住所:</label>
+				<div class="FullSizeInput">
+					<input type="text" name="address" placeholder="住所" readonly="readonly"/>
+				</div>
+				<div id="mapCanvas2"><div id="mapCanvas2Mask">タップして操作</div></div>
+				<br/>
+			</div>
 
 			<div data-role=“fieldcontain”>
 				<label for="tags">タグ:</label>
@@ -266,15 +282,6 @@ if (location.hash != "" && location.hash != null) {
 				</div>
 			</div>
 			
-			<div data-role=“fieldcontain”>
-				<label>住所:</label>
-				<div class="FullSizeInput">
-					<input type="text" name="address" placeholder="住所"/>
-				</div>
-				<div id="mapCanvas2"></div>
-				<br/>
-			</div>
-
 			<hr/>
 		</form>
 		</div>

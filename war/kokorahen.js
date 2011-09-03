@@ -64,96 +64,6 @@ $(function(){
 		"酒": {
 			"日本酒": null,
 			"ワイン0": null,
-			"日本酒1": null,
-			"日本酒2": null,
-			"ワイン3": null,
-			"日本酒4": null,
-			"ワイン5": null,
-			"日本酒6": null,
-			"ワイン7": null,
-			"日本酒8": null,
-			"ワイン9": null,
-			"ワイン10": null,
-			"日本酒11": null,
-			"日本酒12": null,
-			"ワイン13": null,
-			"日本酒14": null,
-			"ワイン15": null,
-			"日本酒16": null,
-			"ワイン17": null,
-			"日本酒18": null,
-			"ワイン19": null,
-			"ワイン20": null,
-			"日本酒21": null,
-			"日本酒22": null,
-			"ワイン23": null,
-			"日本酒24": null,
-			"ワイン25": null,
-			"日本酒26": null,
-			"ワイン27": null,
-			"日本酒28": null,
-			"ワイン29": null,
-			"ワイン30": null,
-			"日本酒31": null,
-			"日本酒32": null,
-			"ワイン33": null,
-			"日本酒34": null,
-			"ワイン35": null,
-			"日本酒36": null,
-			"ワイン37": null,
-			"日本酒38": null,
-			"ワイン39": null,
-			"ワイン40": null,
-			"日本酒41": null,
-			"日本酒42": null,
-			"ワイン43": null,
-			"日本酒44": null,
-			"ワイン45": null,
-			"日本酒46": null,
-			"ワイン47": null,
-			"日本酒48": null,
-			"ワイン49": null,
-			"ワイン50": null,
-			"日本酒51": null,
-			"日本酒52": null,
-			"ワイン53": null,
-			"日本酒54": null,
-			"ワイン55": null,
-			"日本酒56": null,
-			"ワイン57": null,
-			"日本酒58": null,
-			"ワイン59": null,
-			"ワイン60": null,
-			"日本酒61": null,
-			"日本酒62": null,
-			"ワイン63": null,
-			"日本酒64": null,
-			"ワイン65": null,
-			"日本酒66": null,
-			"ワイン67": null,
-			"日本酒68": null,
-			"ワイン69": null,
-			"ワイン70": null,
-			"日本酒71": null,
-			"日本酒72": null,
-			"ワイン73": null,
-			"日本酒74": null,
-			"ワイン75": null,
-			"日本酒76": null,
-			"ワイン77": null,
-			"日本酒78": null,
-			"ワイン79": null,
-			"ワイン80": null,
-			"日本酒81": null,
-			"日本酒82": null,
-			"ワイン83": null,
-			"日本酒84": null,
-			"ワイン85": null,
-			"日本酒86": null,
-			"ワイン87": null,
-			"日本酒88": null,
-			"ワイン89": null,
-			"ワイン80": null,
 		}
 	};
 	Spot.tagsSelector = new Selector("#spotTags", tagTree, "タグを選択(複数可)");
@@ -323,7 +233,7 @@ Map.onMapIdol = function(ev) {
 			Map.areaFlags[area] = true;
 		}
 	}
-
+	$("//a[target='_blank']").attr("href","#");
 };
 
 /**
@@ -365,6 +275,8 @@ function Spot(data) {
 	google.maps.event.addListener(this.marker, 'click', Spot.onSpotMarkerClick);
 }
 Spot.ID = "#spot";
+Spot.MAP = "#mapCanvas2";
+Spot.MAP_MASK = "#mapCanvas2Mask";
 Spot.HOME_IMG = "/images/Home.png";
 Spot.current = null;
 Spot.tagsSelector = null;
@@ -400,23 +312,36 @@ Spot.PIN2_SHADOW = new google.maps.MarkerImage(
 
 Spot.init = function() {
 	var mapopts2 = {
-			zoom: 18,
+			zoom: 18, noClear: true,
 			center: Map.DEFAULT_CENTER,
 			scaleControl: false, disableDefaultUI: true,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 	}
 
 	Spot.map = new google.maps.Map(document.getElementById("mapCanvas2"),mapopts2);
-	Spot.marker2 = new google.maps.Marker({position: Map.DEFAULT_CENTER, map: Spot.map });
+	Spot.marker2 = new google.maps.Marker({
+		position: Map.DEFAULT_CENTER, map: Spot.map,
+		draggable: true
+	});
+	google.maps.event.addListener(Spot.map, 'idle', Spot.onMap2Idle);
 	google.maps.event.addListener(Spot.map, 'click', Spot.onMap2Click);
 
-	// 補助マップのスクロールで親ページがスクロールしないようにしている。
-	$('#mapCanvas2').bind('touchmove', Util.eventBreaker);
-	$('#mapCanvas2').bind('mousemove', Util.eventBreaker);
-
+	$(Spot.MAP_MASK).click( function(){
+		$(document.spot.address).focus();
+	});
+	$(Spot.ID).click( function(){
+		$(document.spot).blur();
+	});
+	$(document.spot.address).focus( function(){
+		$(Spot.MAP_MASK).hide();
+	}).blur( function(){
+		$(Spot.MAP_MASK).show();
+	});
 }
 
 Spot.all = {};
+Spot.isMapFocus = false;
+
 Spot.getSpot = function(data) {
 	if (Spot.all[data.id]) return Spot.all[data.id];
 	var spot = new Spot(data);
@@ -435,7 +360,11 @@ Spot.onSpotMarkerClick = function(ev) {
 Spot.onMap2Click = function(ev) {
 	Spot.marker2.setPosition(ev.latLng);
 	Spot.marker2.setVisible(true);
-	Spot.setSpotPos(marker2.getPosition());
+	Spot.setSpotPos(Spot.marker2.getPosition());
+	//Spot.map.setCenter(Spot.marker2.getPosition());
+}
+Spot.onMap2Idle = function(ev) {
+	$("//a[target='_blank']").attr("href","#");
 }
 
 
@@ -500,6 +429,10 @@ Spot.onBeforeShow = function(ev, info){
 	// Note:このタイミングでないとselectmenuの準備まに合わず。
 	$(document.spot.tags).selectmenu('refresh');
 	Selector.setup();
+	
+	$(document.spot.address).live('blur', function(){
+		Spot.map.setOptions({draggable: false});
+	});
 };
 
 Spot.onShow = function(ev, info){
@@ -522,6 +455,7 @@ Spot.setSpotPos = function(pos){
 			addr = results[0].formatted_address;
 		}
 		spotForm.address.value = addr;
+		spotForm.address.scrollLeft = 1000;
 	});
 };
 
@@ -995,7 +929,11 @@ function DaysSelector(xpath, pleceMsg){
 	for (var i=0; i<days.length; i++) {
 		var name1 = days[i].id+"-L";
 		var name2 = days[i].id+"-D";
-
+		if (days[i].id == null) {
+			html += "<li></li>"
+			continue;
+		}
+		
 		html +=
 '<li>'			
 +'<span class="SpotDaysBtn">'
@@ -1023,7 +961,8 @@ DaysSelector.BASE_DATA = [
                       	{label:"金曜日", id:"Fri"},
                       	{label:"土曜日", id:"Sat"},
                       	{label:"日曜日", id:"Sun"},
-                      	{label:"祝日",   id:"Fet"}
+                      	{label:"-", id:null},
+                     	{label:"祝日",   id:"Fet"}
 ];
 
 DaysSelector.onShow = function(ev, ui) {
