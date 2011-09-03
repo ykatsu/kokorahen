@@ -17,8 +17,8 @@ if (location.hash != "" && location.hash != null) {
 	<!-- JQuery -->
 	<link rel="stylesheet" href="/jqm/jquery.mobile-1.0b2.css" />
 	<script src="/js/jquery-1.6.2.min.js"></script>
-	<script src="/js/jquery.raty.js" ></script>
-	<script src="/jqm/jquery.mobile-1.0b2.js"></script>
+	<script src="/jq.raty/js/jquery.raty.min.js" ></script>
+	<script src="/jqm/jquery.mobile-1.0b2.min.js"></script>
 	
 	<!-- google map -->
 	<script src="http://maps.google.com/maps/api/js?libraries=geometry&amp;sensor=true"></script>
@@ -100,7 +100,7 @@ if (location.hash != "" && location.hash != null) {
 }
 
 #waiting {
-	display: none;
+	display: block;
 	position:absolute;
 	z-index:10000000;
 	top:0;
@@ -158,7 +158,6 @@ if (location.hash != "" && location.hash != null) {
 		</div>
 		<div data-role="content" id="mapCanvas">
 		</div>
-		<img id="waiting" src="/waiting.gif"/>
 		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
 	</div>
@@ -168,7 +167,10 @@ if (location.hash != "" && location.hash != null) {
 	<div id="spot" data-role="page" >
 		<div data-role="header" data-position="fixed" data-theme="a" data-add-back-btn="true">
 			<h1>Spot情報</h1>
+			<!--
 			<a data-rel="back" data-icon="back" href="#map" >Back</a>
+-->
+			<a data-icon="back" href="javascript:Util.backPage()" >Back</a>
 			<a data-icon=“plus” data-iconpos="right" href="javascript:Spot.write()">登録</a>
 		</div>
 		<div data-role="content">
@@ -197,14 +199,6 @@ if (location.hash != "" && location.hash != null) {
 			
 
 			<br/>
-			<div data-role=“fieldcontain”>
-				<label>住所:</label>
-				<div class="FullSizeInput">
-					<input type="text" name="address" placeholder="住所"/>
-				</div>
-				<div id="mapCanvas2"></div>
-				<br/>
-			</div>
 
 			<div data-role=“fieldcontain”>
 				<label for="tags">タグ:</label>
@@ -218,7 +212,7 @@ if (location.hash != "" && location.hash != null) {
 
 			<div data-role=“fieldcontain”>
 				<label>営業時間:</label>
-				<table width="100%">
+				<table width="100%" cellspacing="0">
 					<tr>
 						<td width="1%">昼</td>
 						<td><select class="TimeSelector" ></select></td>
@@ -236,8 +230,9 @@ if (location.hash != "" && location.hash != null) {
 						<td colspan="3">
 							<a id="spotDays" data-role="button"
 								data-iconpos="right" 
-								data-icon=arrow-d
-								href="#spotDaysDialog" data-rel="dialog">無休</a>
+								data-icon="arrow-d"
+								href="#"
+								onclick="Util.dialog('#spotDaysDialog')" >無休</a>
 <!--
 							<select label="closedDay" name="closedDay" id="closedDay"
 								multiple=“multiple” tabindex="-1" 
@@ -270,6 +265,15 @@ if (location.hash != "" && location.hash != null) {
 					<input type="text" name="comment" placeholder="備考"/>
 				</div>
 			</div>
+			
+			<div data-role=“fieldcontain”>
+				<label>住所:</label>
+				<div class="FullSizeInput">
+					<input type="text" name="address" placeholder="住所"/>
+				</div>
+				<div id="mapCanvas2"></div>
+				<br/>
+			</div>
 
 			<hr/>
 		</form>
@@ -279,13 +283,16 @@ if (location.hash != "" && location.hash != null) {
 	</div>
 	
 <!-- == Spot Days Dialog ============================================================= -->
-	<div id="spotDaysDialog" data-role="page"  >
+	<div id="spotDaysDialog" data-role="dialog" >
 		<div data-role="header" data-position="fixed" data-theme="a">
 			<h1>定休日</h1>
 		</div>
+		
 		<div data-role="content" >
+		<br/>
 			<ul data-role="listview" id="spotDaysList" >
 			</ul>
+		<br/>
 		</div>
 	</div>
 

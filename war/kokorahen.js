@@ -63,7 +63,97 @@ $(function(){
 		},
 		"酒": {
 			"日本酒": null,
-			"ワイン": null,
+			"ワイン0": null,
+			"日本酒1": null,
+			"日本酒2": null,
+			"ワイン3": null,
+			"日本酒4": null,
+			"ワイン5": null,
+			"日本酒6": null,
+			"ワイン7": null,
+			"日本酒8": null,
+			"ワイン9": null,
+			"ワイン10": null,
+			"日本酒11": null,
+			"日本酒12": null,
+			"ワイン13": null,
+			"日本酒14": null,
+			"ワイン15": null,
+			"日本酒16": null,
+			"ワイン17": null,
+			"日本酒18": null,
+			"ワイン19": null,
+			"ワイン20": null,
+			"日本酒21": null,
+			"日本酒22": null,
+			"ワイン23": null,
+			"日本酒24": null,
+			"ワイン25": null,
+			"日本酒26": null,
+			"ワイン27": null,
+			"日本酒28": null,
+			"ワイン29": null,
+			"ワイン30": null,
+			"日本酒31": null,
+			"日本酒32": null,
+			"ワイン33": null,
+			"日本酒34": null,
+			"ワイン35": null,
+			"日本酒36": null,
+			"ワイン37": null,
+			"日本酒38": null,
+			"ワイン39": null,
+			"ワイン40": null,
+			"日本酒41": null,
+			"日本酒42": null,
+			"ワイン43": null,
+			"日本酒44": null,
+			"ワイン45": null,
+			"日本酒46": null,
+			"ワイン47": null,
+			"日本酒48": null,
+			"ワイン49": null,
+			"ワイン50": null,
+			"日本酒51": null,
+			"日本酒52": null,
+			"ワイン53": null,
+			"日本酒54": null,
+			"ワイン55": null,
+			"日本酒56": null,
+			"ワイン57": null,
+			"日本酒58": null,
+			"ワイン59": null,
+			"ワイン60": null,
+			"日本酒61": null,
+			"日本酒62": null,
+			"ワイン63": null,
+			"日本酒64": null,
+			"ワイン65": null,
+			"日本酒66": null,
+			"ワイン67": null,
+			"日本酒68": null,
+			"ワイン69": null,
+			"ワイン70": null,
+			"日本酒71": null,
+			"日本酒72": null,
+			"ワイン73": null,
+			"日本酒74": null,
+			"ワイン75": null,
+			"日本酒76": null,
+			"ワイン77": null,
+			"日本酒78": null,
+			"ワイン79": null,
+			"ワイン80": null,
+			"日本酒81": null,
+			"日本酒82": null,
+			"ワイン83": null,
+			"日本酒84": null,
+			"ワイン85": null,
+			"日本酒86": null,
+			"ワイン87": null,
+			"日本酒88": null,
+			"ワイン89": null,
+			"ワイン80": null,
 		}
 	};
 	Spot.tagsSelector = new Selector("#spotTags", tagTree, "タグを選択(複数可)");
@@ -80,6 +170,11 @@ $(function(){
 	}
 	html += "<option>24:00</option>"
 	$(".TimeSelector").html(html);
+
+	$("div.ui-dialog>div a").live('click', function(ev) {
+		$.mobile.pageLoading();
+		return Util.eventBreaker(ev);
+	});
 	
 });
 
@@ -120,7 +215,9 @@ Map.init = function() {
 		Map.infobox = new InfoBox(Map.map);
 
 		// 現在位置マーカー生成
-		marker = new google.maps.Marker({position: Map.DEFAULT_CENTER, map: Map.map });
+		Map.marker = new google.maps.Marker({
+			position: Map.DEFAULT_CENTER, map: Map.map 
+		});
 
 		// マップ、バルーンのイベントハンドラ設定。
 		google.maps.event.addListener(Map.map, 'click', Map.onMapClick);
@@ -153,17 +250,14 @@ Map.onMapClick = function(ev) {
 	Map.marker.setVisible(true);
 }
 Map.onBalloonClick = function(ev) {
-	$(Map.WAITING).show();
-	$.mobile.changePage(Spot.ID, "slide");
+	Util.changePage(Spot.ID);
 	return Util.eventBreaker(ev);
 }
 Map.onMarkerClick = function(ev) {
-	$(Map.WAITING).show();
-	Map.infobox.close();
 	Spot.setCurrent({marker:this});
-	//jqt.goTo(Spot.ID, "slideleft");
-	$.mobile.changePage(Spot.ID, "slide");
-
+	Map.infobox.close();
+	Util.changePage(Spot.ID);
+	return Util.eventBreaker(ev);
 }
 
 Map.updateOrientation = function(ev) {
@@ -499,7 +593,7 @@ SpotReview.onReviewClick = function(reviewId) {
 	} else {
 		Review.current = Review.all[reviewId];
 	}
-	$.mobile.changePage(Review.ID, "slide");
+	Util.changePage(Review.ID);
 }
 
 
@@ -546,7 +640,7 @@ List.onBeforeShow = function() {
 
 List.onItemClick = function(id) {
 	Spot.setCurrent(Spot.all[id]);
-	$.mobile.changePage(Spot.ID, "slide");
+	Util.changePage(Spot.ID);
 }
 
 //-----------------------------------------------------------------
@@ -591,7 +685,7 @@ Timeline.getListItem = function(data) {
 
 Timeline.onItemClick = function(id) {
 	Review.current = Review.all[id];
-	$.mobile.changePage(Review.ID, "slide");
+	Util.changePage(Review.ID);
 }
 
 
@@ -623,7 +717,7 @@ Memo.onItemClick = function(id) {
 	Review.current = {
 		id: "", spotId: sd.id, appraise: 0, comment: ""
 	};
-	$.mobile.changePage(Review.ID, "slide");
+	Util.changePage(Review.ID);
 }
 
 //-----------------------------------------------------------------
@@ -697,7 +791,7 @@ Login.init = function() {
 }
 Login.onBeforeShow = function() {
 	if (Login.user != null) {
-		$.mobile.changePage(Map.ID);
+		$.mobile.changePage(Map.ID, "none");
 	}
 }
 Login.login = function(provider) {
@@ -716,6 +810,25 @@ Login.logout = function() {
 //-------------------------------------------------------------------
 //Util
 function Util() {}
+Util.changePage = function(id) {
+	$.mobile.pageLoading();
+	setTimeout(function(){
+		//jqt.goTo(Spot.ID, "slideleft");
+		$.mobile.changePage(id, "slide");
+	},100);
+}
+Util.backPage = function() {
+	$.mobile.pageLoading();
+	setTimeout(function(){
+		history.back();
+	},100);
+}
+Util.dialog = function(id) {
+	$.mobile.pageLoading();
+	setTimeout(function(){
+		$.mobile.changePage(id, "pop");
+	},100);
+}
 
 Util.getAreas = function(minLat, minLng, maxLat, maxLng){
 	var list = [];
@@ -753,7 +866,7 @@ Util.toZeroPrefix = function(zeros, val, len) {
 }
 Util.eventBreaker = function(ev) {
 	if(ev.stopPropagation) ev.stopPropagation();
-	ev.preventDefault();
+	if(ev.stopPropagation) ev.preventDefault();
 	return false;
 }
 
