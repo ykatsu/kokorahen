@@ -15,7 +15,7 @@ $(function(){
 		//var modules = [Login, Map, Timeline, List, Memo, User, Spot, SpotReview, Review];
 	$.mobile.pageLoading();
 	var modules = [Login, User, Map, Timeline, List, Memo, Spot, 
-	               SpotReview, Review, DaysSelector];
+	               SpotReview, Review, SpotTagsDialog, DaysSelector];
 
 	function init(m) {
 		if (m.init != undefined) m.init();
@@ -39,52 +39,48 @@ $(function(){
 				}
 			});
 		}
+		if (m.onHide) {
+			$(m.ID).bind('pagehide', function(ev, ui) {
+				try {
+					m.onHide(ev,ui);
+				} catch(e) {
+					// TODO: 例外が上がるとJQM(b2)が止まる。
+					alert(e.message+"\n"+e.url+":"+e.line);
+				}
+			});
+		}
 	};
 	for (var i=0; i<modules.length; i++) init(modules[i]);
 
-	$("//div[data-role='dialog']").live('pageshow', function(ev, ui) {
-		$("#spotTags").selectmenu('refresh');
-	});
+	//$("//div[data-role='dialog']").live('pageshow', function(ev, ui) {
+	//	$("#spotTags").selectmenu('refresh');
+	//});
 	
 	
 	// TODO: JQMがβのせいかFooterの共有が出来ないので自前で対処。
 	var footers = $("//div[data-id='tabfooter']");
 	footers.html($("#tabfooter").html());
 
-	
-	var tagTree = {
-		"食事": {
-			"ラーメン": null,
-			"豚カツ": null,
-			"エスニック": {
-				"タイ料理": null,
-				"台湾料理": null
-			}
-		},
-		"酒": {
-			"日本酒": null,
-			"ワイン0": null,
-		}
-	};
-	Spot.tagsSelector = new Selector("#spotTags", tagTree, "タグを選択(複数可)");
 
 	new DaysSelector("#spotDaysList");
-	
-	var html = "<option value=''>--:--</option>";
-	for (var h=0; h<24; h++) {
-		var hh = ("0"+h).match(/[0-9]{2}$/)[0];
-		for (var m=0; m<60; m+=30) {
-			var hhmm = hh + ":" + ("0"+m).match(/[0-9]{2}$/)[0];
-			html += "<option>"+hhmm+"</option>"
-		}
-	}
-	html += "<option>24:00</option>"
-	$(".TimeSelector").html(html);
 
-	$("div.ui-dialog>div a").live('click', function(ev) {
+/*
+	$("//div[data-role='dialog']/div[0]/a[0]").live('click', function(ev) {
 		$.mobile.pageLoading();
+		setTimeout(function(ev){
+			$("//div[data-role='dialog']").dialog('close');
+			//$(".ui-dialog").dialog('close');
+		},100);
 		return Util.eventBreaker(ev);
 	});
+*/
+	$("//div[data-role='footer']").live('scrollstart',function(ev){
+		//$(this).hide(0);
+		this.style.display="none";
+	}).live('scrollend',function(ev){
+		$(this).show();
+	});
+
 	
 });
 
@@ -100,7 +96,6 @@ function updateOrientation() {
 function Map() {};
 Map.ID = "#map";
 Map.CANVAS = "#mapCanvas";
-Map.WAITING = "#waiting";
 Map.map = null;
 Map.marker = null;
 Map.markers = null;
@@ -183,7 +178,7 @@ Map.onShow = function(ev, info){
 	// Note: 地図が初期状態で非表示だと誤動作するのでその対処。
 	google.maps.event.trigger(Map.map, "resize");
 	//Map.map.setCenter(Map.marker.getPosition());
-	$(Map.WAITING).hide();
+	Map.setCenterFromGPS();
 }
 
 /**
@@ -279,7 +274,6 @@ Spot.MAP = "#mapCanvas2";
 Spot.MAP_MASK = "#mapCanvas2Mask";
 Spot.HOME_IMG = "/images/Home.png";
 Spot.current = null;
-Spot.tagsSelector = null;
 
 //ピンイメージ。
 Spot.PIN = new google.maps.MarkerImage(
@@ -332,11 +326,61 @@ Spot.init = function() {
 	$(Spot.ID).click( function(){
 		$(document.spot).blur();
 	});
-	$(document.spot.address).focus( function(){
+
+	var form = document.spot;
+	$(form.address).focus( function(){
 		$(Spot.MAP_MASK).hide();
 	}).blur( function(){
 		$(Spot.MAP_MASK).show();
 	});
+
+
+	$(form.timeLunchMax).focus(function(ev) {
+		var min = $(form.timeLunchMin);
+		var max = $(this);
+		if (min.val() > max.val()) {
+			max.val(min.val());
+			//max.selectmenu("refresh");
+			max.blur();
+			max.focus();
+		}
+	});
+	$(form.timeDinnerMax).focus(function(ev) {
+		var min = $(form.timeDinnerMin);
+		var max = $(this);
+		if (min.val() > max.val()) {
+			max.val(min.val());
+			//max.selectmenu("refresh");
+			max.blur();
+			max.focus();
+		}
+	});
+
+	function getTimeHtml(start, end) {
+		var html = "";
+		for (var h=start; h<=end; h++) {
+			var hh = ("0"+h).match(/[0-9]{2}$/)[0];
+			for (var m=0; m<60; m+=30) {
+				var hhmm = hh + ":" + ("0"+m).match(/[0-9]{2}$/)[0];
+				html += "<option>"+hhmm+"</option>"
+			}
+		}
+		return html;
+	}
+	
+	var optNil = "<option value=''>--:--</option>";
+	var opt0_6   = getTimeHtml(0,6);
+	var opt7_13  = getTimeHtml(7,13);
+	var opt14_23 = getTimeHtml(14,23);
+	var opt24_30 = getTimeHtml(24,30);
+
+	var lunch = optNil+opt7_13+opt14_23+opt0_6;
+	var dinner = optNil+opt14_23+opt24_30+opt7_13;
+	$(form.timeLunchMin).html(lunch);
+	$(form.timeLunchMax).html(lunch);
+	$(form.timeDinnerMin).html(dinner);
+	$(form.timeDinnerMax).html(dinner);
+
 }
 
 Spot.all = {};
@@ -424,16 +468,16 @@ Spot.setCurrent = function(cur){
 	//Spot.marker2.setVisible(true);
 	//Spot.map.setCenter(pos);
 };
-
+/*
 Spot.onBeforeShow = function(ev, info){
 	// Note:このタイミングでないとselectmenuの準備まに合わず。
 	$(document.spot.tags).selectmenu('refresh');
-	Selector.setup();
 	
 	$(document.spot.address).live('blur', function(){
 		Spot.map.setOptions({draggable: false});
 	});
 };
+*/
 
 Spot.onShow = function(ev, info){
 	// Note: 地図が初期状態で非表示だと誤動作するのでその対処。
@@ -723,9 +767,12 @@ Login.init = function() {
 	//	Login.nickname = Login.username;
 	//}
 }
-Login.onBeforeShow = function() {
+Login.onShow = function() {
 	if (Login.user != null) {
-		$.mobile.changePage(Map.ID, "none");
+		$.mobile.changePage(Map.ID, "slide");
+		//setTimeout(function(){
+		//	$.mobile.changePage(Map.ID, "none");
+		//},100);
 	}
 }
 Login.login = function(provider) {
@@ -806,120 +853,158 @@ Util.eventBreaker = function(ev) {
 
 //-------------------------------------------------------------------
 //Util-Selector
-function Selector(xpath, tree, pleceMsg){
+function SpotTagsDialog(){}
+SpotTagsDialog.ID = "#spotTagsDialog";
+SpotTagsDialog.SELECTOR = "#spotTagsList";
+SpotTagsDialog.button = null;
+
+SpotTagsDialog.init = function() {
+	var tagTree = {
+			"食事": {
+				"ラーメン": null,
+				"豚カツ": null,
+				"エスニック": {
+					"タイ料理": null,
+					"台湾料理": null
+				}
+			},
+			"酒": {
+				"日本酒": null,
+				"ワイン0": null,
+			}
+	};
+	SpotTagsDialog.selector = 
+		new Selector(SpotTagsDialog.SELECTOR, tagTree);
+}
+SpotTagsDialog.onShow = function() {
+	SpotTagsDialog.selector.refresh();
+}
+SpotTagsDialog.open = function(btn, placeMsg, isSingle) {
+	SpotTagsDialog.button = btn;
+	SpotTagsDialog.placeMsg = placeMsg;
+	SpotTagsDialog.selector.clear();
+	SpotTagsDialog.selector.isSingle = isSingle;
+
+	Util.dialog(SpotTagsDialog.ID);
+}
+SpotTagsDialog.onHide = function() {
+	var label = SpotTagsDialog.selector.getValue().join(",");
+	if (label == "") label = SpotTagsDialog.placeMsg;
+	var span = $(".ui-btn-text",$(SpotTagsDialog.button));
+	span.text(label);
+}
+
+function Selector(xpath, tree){
 	this.xpath = xpath;
 	this.mapping = {};
+	this.values = {};
+	this.isSingle = false;
 
 	var sel = $(xpath);
-	var html = "<option value=''>"+pleceMsg+"</option>"
-		+ this.tree2html(tree,"",0);
+	var html = 
+		this.tree2html(tree,"",0);
 	sel.html(html);
 	sel.data("Selector", this);
+	//$(".ui-icon", sel).live('click',Selector.onClick);
+	//$("li", sel).live('click',Selector.onClick);
 }
-Selector.isSetuped = false;
-Selector.SPACE="                 ";
 
 Selector.prototype.tree2html = function(tree, parent, indent) {
 	var html = "";
-	var spc = Selector.SPACE.substr(0, indent);
 	for (var key in tree) {
 		var val = parent+"/"+key;
-		html += "<option value='"+val+"'>"+spc+key+"</option>"
+		html += "<li data-icon='checkbox-off' val='"+val+"'"
+					+" onclick='Selector.onClick(event,this)'"
+					+"><a href='#'"
+					+" style='margin-left:"+indent+"em;'>"
+					+key+"</a></li>";
 		if (tree[key] != null) {
 			html += this.tree2html(tree[key], parent+"/"+key, indent+1);
 		}
 		this.mapping[key] = val;
+		//this.values[val] = false;
 	}
 	return html;
 }
 
-Selector.prototype.setValue = function(vals) {
-	var sel = $(this.xpath);
-	var list = [];
-	for (var i=0; i<vals.length; i++) {
-		var val = this.mapping[vals[i]];
-		if (val != null) list.push(val);
+Selector.prototype.setValue = function(list) {
+	this.values = {};
+	for (var i=0; i<list.length; i++) {
+		var val = this.mapping[list[i]];
+		if (val != null) {
+			this.values[val] = true;
+		}
 	}
-	sel.val(list);
-	//sel.selectmenu("refresh");	
+}
+Selector.prototype.clear = function() {
+	this.values = {};
 }
 Selector.prototype.getValue = function() {
-	var sel = $(this.xpath);
-	var vals = sel.val();
 	var list = [];
-	for (var i=0; i<vals.length; i++) {
-		var val = vals[i].match(/[^/]*$/)[0];
-		list.push(val);
+	for (var val in this.values) {
+		if (this.values[val]) {
+			list.push(val.match(/[^/]*$/)[0]);
+		}
 	}
 	return list;
 }
-Selector.onChangeWithParent = function(ev, _this) {
-	var sel = $(_this);
-	var vals = sel.val();
-	if (vals == null) return;
-	var keys = {};
 
-	for (var i=0; i<vals.length; i++) {
-		var val = vals[i];
-		while(val.length > 0) {
-			keys[val] = true;
-			val = val.replace(/[/][^/]*$/,"");
+Selector.prototype.refresh = function() {
+	var sel = $(this.xpath);
+	var lis = $("li", sel);
+	var values = this.values;
+	lis.each(function(){
+		var li = $(this).removeClass( "ui-btn-active");
+		var val = li.attr("val");
+		var icon = li.find(".ui-icon")
+			.removeClass( "ui-icon-checkbox-on")
+			.removeClass( "ui-icon-checkbox-off");
+		
+		var val = li.attr("val");
+		if (values[val]) {
+			li.addClass( "ui-btn-active" );
+			icon.addClass( "ui-icon-checkbox-on" );
+		} else {
+			icon.addClass( "ui-icon-checkbox-off" );
 		}
-	}
-
-	var list = [];
-	for (var k in keys) {
-		list.push(k);
-	}
-	//alert(list);
-	sel.val(list);	
-	sel.selectmenu("refresh");	
-}
-Selector.onChangeIntensive = function(ev, _this) {
-	var sel = $(_this);
-	var vals = sel.val();
-	if (vals == null) return;
-	var keys = {};
-
-	for (var i=0; i<vals.length; i++) {
-		keys[vals[i]] = true;
-	}
-	for (var i=0; i<vals.length; i++) {
-		var val = vals[i].replace(/[/][^/]*$/,"");
-		while (val.length > 1) {
-			if (keys[val]) {
-				keys[vals[i]] = false;
-				break;
-			}
-			val = val.replace(/[/][^/]*$/,"");
-		}
-	}
-	keys[""] = false;
-	
-	var list = [];
-	for (var k in keys) {
-		if (keys[k]) list.push(k);
-	}
-
-	//alert(list);
-	sel.val(list);	
-	sel.selectmenu("refresh");	
-}
-
-Selector.setup = function() {
-	if (Selector.isSetuped) return;
-
-	var atags = $("a.ui-link-inherit");
-	atags.each(function(i) {
-		var atag = $(this);
-		var text = atag.text();
-		var indent = text.match(/^[ ]*/)[0];
-		if (indent.length == 0) return;
-		atag.css("margin-left",indent.length+"em");
-		atag.text(text.replace(/^[ ]*/,""));
 	});
-	Selector.isSetuped = true;
 }
+
+Selector.onClick = function(ev, ui) {
+	//var li = $(ev.target).parents("li");
+	var li = $(ui);
+	var sel = li.parent("ul");
+	var val = li.attr("val");
+	var _this = sel.data("Selector");
+
+	if (_this.isSingle) {
+		_this.values = {};
+		_this.values[val] = true;
+		_this.refresh();
+		return;
+	}
+	
+	var values = _this.values;
+	var flag = !values[val];
+	values[val] = flag;
+	if (flag) {
+		// 祖先をtrueにする
+		while(val.length > 0) {
+			values[val] = true;
+			val = val.replace(/[/][^/]*$/,"");
+		}
+	} else {
+		// 子孫をfalseにする
+		var prefix = val+"/";
+		for (var v in values) {
+			if (v.indexOf(prefix) == 0) {
+				values[v] = false;
+			}
+		}
+	}
+	_this.refresh();	
+}
+
 //-------------------------------------------------------------------
 //Util-DaysSelector
 function DaysSelector(xpath, pleceMsg){
