@@ -6,7 +6,7 @@
 	<meta id="viewport" name="viewport"
 		content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
 	<title>Page Title</title> 
-
+	
 	<script>
 if (location.hash != "" && location.hash != null) {
 	location.href = "/";
@@ -23,11 +23,24 @@ if (location.hash != "" && location.hash != null) {
 	<!-- google map -->
 	<script src="http://maps.google.com/maps/api/js?libraries=geometry&amp;sensor=true"></script>
 
+
 	<!-- This apps -->
 	<script src="/js/Jsrpc.js?v=1" ></script>
 	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=2" ></script>
 	<script src="/InfoBox.js" ></script>
-	<script src="kokorahen.js"></script>
+	<script src="/js/kokorahen/ClosedDays.js"></script>
+	<script src="/js/kokorahen/List.js"></script>
+	<script src="/js/kokorahen/Login.js"></script>
+	<script src="/js/kokorahen/Map.js"></script>
+	<script src="/js/kokorahen/Memo.js"></script>
+	<script src="/js/kokorahen/Review.js"></script>
+	<script src="/js/kokorahen/Spot.js"></script>
+	<script src="/js/kokorahen/SpotReview.js"></script>
+	<script src="/js/kokorahen/SpotTags.js"></script>
+	<script src="/js/kokorahen/Timeline.js"></script>
+	<script src="/js/kokorahen/User.js"></script>
+	<script src="/js/kokorahen/Util.js"></script>
+	<script src="/js/kokorahen/onload.js"></script>
 	
 
 	<style type="text/css">
@@ -38,6 +51,7 @@ if (location.hash != "" && location.hash != null) {
 		}
 		body > div {
 			max-width: 320px;
+			display: none;
 		}
 .ui-header {
     height: 40px!important;
@@ -87,7 +101,7 @@ if (location.hash != "" && location.hash != null) {
 			top: 0;
 			width: 100%;
 			height: 100%;
-			z-index: 1000000;
+			z-index: 10;
 		}
 
 		.BalloonLine1 {
@@ -145,7 +159,8 @@ if (location.hash != "" && location.hash != null) {
 <body
 	onorientationchange="updateOrientation();"
 	onresize="updateOrientation();"
-> 
+>
+
 	<div style="display:none;" id="tabfooter" style="max-width:480px;"  >
 		<div data-role="navbar" data-grid="d" class="nav-glyphish-example" >
 			<ul>
@@ -172,10 +187,10 @@ if (location.hash != "" && location.hash != null) {
 <!-- == Map =================================================================== -->
 	<div id="map" data-role="page" >
 		<div data-role="header" data-position="fixed" data-theme="a">
-			<h3><a href="#" onclick="SpotTagsDialog.open(this,'ジャンル',true)" 
+			<h3><a href="#" onclick="SpotTags.open(this,'ジャンル','search')" 
 					data-role="button"  >ジャンル</a></h3>
 			<a href="javascript:Map.setCenterFromGPS()" data-role="button" data-icon="home" data-iconpos="notext"></a>
-			<a href="#spot" data-role="button" data-icon="plus" data-iconpos="notext"></a>
+			<a href="javascript:Map.onMarkerClick()" data-role="button" data-icon="plus" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content" id="mapCanvas">
 		</div>
@@ -213,10 +228,12 @@ if (location.hash != "" && location.hash != null) {
 				</div>
 				<div class="ui-block-b">
 					<div id="spotNameWrap">
-					<input type="text" name="name" placeholder="名前" />
+						<input type="text" name="name" placeholder="名前" />
 					</div>
-					<a href="#spotReview" data-role="button" data-icon="arrow-r" data-iconpos="right">Review</a>
-				 	<a href="#spotReview" data-role="button" data-icon="arrow-r" data-iconpos="right">つぶやく</a>
+					<div id="spotReviewBtn">
+					<a href="#spotReview"  data-role="button" data-icon="arrow-r" data-iconpos="right">Review</a>
+				 	<a href="#spotReview"  data-role="button" data-icon="arrow-r" data-iconpos="right">つぶやく</a>
+					</div>
 				</div>
 			</div>
 			
@@ -233,11 +250,11 @@ if (location.hash != "" && location.hash != null) {
 
 			<div data-role=“fieldcontain”>
 				<label for="tags">タグ:</label>
-					<a id="tag" data-role="button"
+					<a id="spotTags" data-role="button"
 						data-iconpos="right" 
 						data-icon="arrow-d"
 						href="#"
-						onclick="SpotTagsDialog.open(this,'ジャンル選択(複数可)',false)" 
+						onclick="SpotTags.open(this,'ジャンル選択(複数可)','form')" 
 					>ジャンル選択(複数可)</a>
 <!-- 
 					<select label="tags" name="tags" id="spotTags"
@@ -267,11 +284,11 @@ if (location.hash != "" && location.hash != null) {
 					<tr>
 						<td width="1%">休</td>
 						<td colspan="3">
-							<a id="spotDays" data-role="button"
+							<a id="closedDays" data-role="button"
 								data-iconpos="right" 
 								data-icon="arrow-d"
 								href="#"
-								onclick="Util.dialog('#spotDaysDialog')" >無休</a>
+								onclick="ClosedDays.open()" >無休</a>
 <!--
 							<select label="closedDay" name="closedDay" id="closedDay"
 								multiple=“multiple” tabindex="-1" 

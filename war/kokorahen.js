@@ -13,7 +13,7 @@ $(document).bind("mobileinit", function(){
 $(function(){
 //$("body").live('pagecreate',function(event){
 		//var modules = [Login, Map, Timeline, List, Memo, User, Spot, SpotReview, Review];
-	$.mobile.pageLoading();
+	
 	var modules = [Login, User, Map, Timeline, List, Memo, Spot, 
 	               SpotReview, Review, SpotTagsDialog, DaysSelector];
 
@@ -61,8 +61,6 @@ $(function(){
 	var footers = $("//div[data-id='tabfooter']");
 	footers.html($("#tabfooter").html());
 
-
-	new DaysSelector("#spotDaysList");
 
 /*
 	$("//div[data-role='dialog']/div[0]/a[0]").live('click', function(ev) {
@@ -450,7 +448,7 @@ Spot.setCurrent = function(cur){
 		spotForm.lng.value = sd.lng;
 		spotForm.address.value = sd.address;
 		spotForm.name.value = sd.name;
-		spotForm.openHours.value = sd.openHours;
+		//spotForm.openHours.value = sd.openHours;
 		//spotForm.closedDay.value = sd.closedDay;
 		spotForm.email.value = sd.email;
 		spotForm.url.value = sd.url;
@@ -509,7 +507,8 @@ Spot.write = function(){
 	for (var i=0; i<elems.length; i++) {
 		params[elems[i].name] = elems[i].value;
 	}
-	params.tags = Spot.tagsSelector.getValue().join(",");
+	params.tags = SpotTagsDialog.selector.getValue();
+	params.closedDay = DaysSelector.getValue().join(",");
 	var id = Kokorahen.writeSpot(params);
 	alert("sopt id="+id);
 }
@@ -1037,6 +1036,7 @@ function DaysSelector(xpath, pleceMsg){
 	$(xpath).html(html);
 }
 DaysSelector.ID = "#spotDaysDialog";
+DaysSelector.INSTANCE;
 
 DaysSelector.BASE_DATA = [
                       	{label:"月曜日", id:"Mon"},
@@ -1050,6 +1050,10 @@ DaysSelector.BASE_DATA = [
                      	{label:"祝日",   id:"Fet"}
 ];
 
+DaysSelector.init = function() {
+	DaysSelector.INSTANCE = new DaysSelector("#spotDaysList");
+}
+
 DaysSelector.onShow = function(ev, ui) {
 	var days = DaysSelector.BASE_DATA;
 	for (var i=0; i<days.length; i++) {
@@ -1060,8 +1064,8 @@ DaysSelector.onShow = function(ev, ui) {
 	}
 }
 
-DaysSelector.onChange = function(ev, _this) {
-	var label = "";
+DaysSelector.getValue = function() {
+	var list = [];
 	var days = DaysSelector.BASE_DATA;
 	for (var i=0; i<days.length; i++) {
 		var name1 = days[i].id+"-L";
@@ -1070,21 +1074,24 @@ DaysSelector.onChange = function(ev, _this) {
 		var isL = $("#"+name1).is(':checked');
 		var isD = $("#"+name2).is(':checked');
 
-		if (isL || isD) {
-			label += ","+days[i].label.substr(0,1);
-		}
-		if (isL && !isD) {
-			label += "昼";
+		var youbi = days[i].label.substr(0,1)
+		if (isL && isD) {
+			list.push(youbi);
+		} else if (isL && !isD) {
+			list.push(youbi+"昼");
 		} else if (!isL && isD) {
-			label += "夜";
+			list.push(youbi+"夜");
 		}
 	}
-
-	if (label.length == 0) {
-		label = ",無休"
+	return list;
+}
+DaysSelector.onChange = function(ev, _this) {
+	var list = DaysSelector.getValue();
+	if (list.length == 0) {
+		$("#closedDays .ui-btn-text").text("無休");
+	} else {
+		$("#closedDays .ui-btn-text").text(list.join(","));
 	}
-	
-	$("#spotDays .ui-btn-text").text(label.substr(1));
 }
 
 

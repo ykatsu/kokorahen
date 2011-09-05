@@ -238,14 +238,17 @@ System.out.println("--->"+map);
 		model.setUpdateDate(new Date());
 		model.setLat(params.getDouble("lat"));
 		model.setLng(params.getDouble("lng"));
-		model.setArea(toArea(model.getLat(), model.getLng()));
+		model.setAreas(toAreaList(model.getLat(), model.getLng()));
 		model.setAddress(params.getString("address"));
 		//model.setAppraise(params.getInteger("appraise"));
-		model.setTags(Arrays.asList(params.getString("tags").split(",")));
+		model.setTags((List<String>)map.get("tags"));
 		model.setImage(params.getString("image"));
 		model.setComment(params.getString("comment"));
 		model.setClosedDay(params.getString("closedDay"));
-		model.setOpenHours(params.getString("openHours"));
+		model.setTimeLunchMin(params.getString("timeLunchMin"));
+		model.setTimeLunchMax(params.getString("timeLunchMax"));
+		model.setTimeDinnerMin(params.getString("timeDinnerMin"));
+		model.setTimeDinnerMax(params.getString("timeDinnerMax"));
 		model.setEmail(params.getString("email"));
 		model.setUrl(params.getString("url"));
 		//model.setImage(imgKey);
@@ -275,7 +278,7 @@ System.out.println("--->"+map);
 		model.setUpdateDate(new Date());
 		model.setLat(params.getDouble("lat"));
 		model.setLng(params.getDouble("lng"));
-		model.setArea(toArea(model.getLat(), model.getLng()));
+		model.setAreas(toAreaList(model.getLat(), model.getLng()));
 		model.setAddress(params.getString("address"));
 		model.setAppraise(params.getInteger("appraise"));
 		model.setTags(Arrays.asList(params.getString("tags").split(",")));
@@ -332,6 +335,23 @@ System.out.println("--->"+map);
 		return area;
 	}
 
+	private  List<String> toAreaList(double lat, double lng) {
+		// 10K
+		double lat1 = Math.floor(lat*10)/10;
+		double lng1 = Math.floor(lng*10)/10;
+		// 1K
+		double lat2 = Math.floor(lat*100)/100;
+		double lng2 = Math.floor(lng*100)/100;
+		// 100m
+		double lat3 = Math.floor(lat*1000)/1000;
+		double lng3 = Math.floor(lng*1000)/1000;
+		List<String> list = Arrays.asList(
+			String.format("%05.1f,%05.1f", lat1, lng1),
+			String.format("%06.2f,%06.2f", lat2, lng2),
+			String.format("%07.3f,%07.3f", lat3, lng3)
+		);
+		return list;
+	}
 
 
 	public  ImageModel getImage(long id) {
@@ -364,11 +384,14 @@ System.out.println("--->"+map);
 
 	public  List<SpotModel> listSpot(Map params){
 		String area = (String) params.get("area");
+		String tag = (String) params.get("tag");
 
 		SpotModelMeta e = SpotModelMeta.get();
 		ModelQuery q = Datastore.query(e);
-		q.filter(e.area.equal(area));
+		q.filter(e.areas.in(area));
+		if (tag != null) q.filter(e.tags.in(tag));
 		List<SpotModel> list = q.asList();
+
 		System.out.println("datas="+list+"\n"+params);
 		return list;
 	}
@@ -378,7 +401,7 @@ System.out.println("--->"+map);
 
 		MemoModelMeta e = MemoModelMeta.get();
 		ModelQuery q = Datastore.query(e);
-		q.filter(e.area.equal(area));
+		q.filter(e.areas.in(area));
 		List<MemoModel> list = q.asList();
 		System.out.println("datas="+list+"\n"+params);
 		return list;

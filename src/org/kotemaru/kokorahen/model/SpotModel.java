@@ -20,14 +20,17 @@ public class SpotModel extends ModelBase {
 	private Date updateDate;
 	private Double lat;
 	private Double lng;
-	private String area;
+	private List<String> areas;
 	private String address;
 	private List<String> tags;
 	private Integer level = 0;
 	private Integer appraise = -1;
 	private String image;
 	private String comment;
-	private String openHours;
+	private String timeLunchMin;
+	private String timeDinnerMin;
+	private String timeLunchMax;
+	private String timeDinnerMax;
 	private String closedDay;
 	private String email;
 	private String url;
@@ -88,13 +91,14 @@ public class SpotModel extends ModelBase {
 	}
 
 
-	public String getArea() {
-		return area;
+
+	public List<String> getAreas() {
+		return areas;
 	}
 
 
-	public void setArea(String area) {
-		this.area = area;
+	public void setAreas(List<String> areas) {
+		this.areas = areas;
 	}
 
 
@@ -158,13 +162,45 @@ public class SpotModel extends ModelBase {
 	}
 
 
-	public String getOpenHours() {
-		return openHours;
+
+
+	public String getTimeLunchMin() {
+		return timeLunchMin;
 	}
 
 
-	public void setOpenHours(String openHours) {
-		this.openHours = openHours;
+	public void setTimeLunchMin(String timeLunchMin) {
+		this.timeLunchMin = timeLunchMin;
+	}
+
+
+	public String getTimeDinnerMin() {
+		return timeDinnerMin;
+	}
+
+
+	public void setTimeDinnerMin(String timeDinnerMin) {
+		this.timeDinnerMin = timeDinnerMin;
+	}
+
+
+	public String getTimeLunchMax() {
+		return timeLunchMax;
+	}
+
+
+	public void setTimeLunchMax(String timeLunchMax) {
+		this.timeLunchMax = timeLunchMax;
+	}
+
+
+	public String getTimeDinnerMax() {
+		return timeDinnerMax;
+	}
+
+
+	public void setTimeDinnerMax(String timeDinnerMax) {
+		this.timeDinnerMax = timeDinnerMax;
 	}
 
 

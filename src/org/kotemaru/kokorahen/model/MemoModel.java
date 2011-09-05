@@ -20,7 +20,7 @@ public class MemoModel extends ModelBase {
 	private Date updateDate;
 	private Double lat;
 	private Double lng;
-	private String area;
+	private List<String> areas;
 	private String address;
 	private String comment;
 	private List<String> tags;
@@ -73,12 +73,13 @@ public class MemoModel extends ModelBase {
 		this.lng = lng;
 	}
 
-	public String getArea() {
-		return area;
+
+	public List<String> getAreas() {
+		return areas;
 	}
 
-	public void setArea(String area) {
-		this.area = area;
+	public void setAreas(List<String> areas) {
+		this.areas = areas;
 	}
 
 	public String getAddress() {
