@@ -7,6 +7,8 @@ Timeline.init = function() {
 	// nop.
 }
 Timeline.onBeforeShow = function() {
+	Util.setNavbar(Timeline.ID);
+
 	Kokorahen.listTimelineAsync({
 		success: function(list) {
 			var div = $("#timeLineList");

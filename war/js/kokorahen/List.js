@@ -26,16 +26,26 @@ List.sortNear = function() {
 }
 
 List.onBeforeShow = function() {
+	Map.onTagChange();
+	Util.setNavbar(List.ID);
+
 	var list = List.sortNear();
 	var div = $("#listSpots");
+
+	if (list.length == 0) {
+		div.html("周辺にSpotは有りません。");
+		return;
+	}
+	
 	var ul = $('<ul data-role="listview" data-inset="true" ></ul>');
 	div.html("");
 	div.append(ul);
-	
+
 	for (var i=0; i<list.length && i<50; i++) {
 		ul.append($("<li ><a href='javascript:List.onItemClick("
 			+list[i].id+")'>"+list[i].name+"</a></li>"));
 	}
+	
 	//jqt.setPageHeight();
 	ul.listview();
 }

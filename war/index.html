@@ -51,7 +51,6 @@ if (location.hash != "" && location.hash != null) {
 		}
 		body > div {
 			max-width: 320px;
-			display: none;
 		}
 .ui-header {
     height: 40px!important;
@@ -61,11 +60,11 @@ if (location.hash != "" && location.hash != null) {
    margin-bottom: 0px!important;
 }
 
-.nav-glyphish-example .ui-btn .ui-btn-inner {
+.Navbar .ui-btn .ui-btn-inner {
 	padding-top: 32px !important;
 	padding-bottom: 0px !important;
 }
-.nav-glyphish-example .ui-btn .ui-icon {
+.Navbar .ui-btn .ui-icon {
 	width: 32px!important;
 	height: 32px!important;
 	margin-left: -15px !important;
@@ -75,7 +74,7 @@ if (location.hash != "" && location.hash != null) {
 	-webkit-border-radius: none !important;
 	border-radius: none !important;
 }
-.nav-glyphish-example .ui-btn .ui-btn-inner .ui-btn-text{
+.Navbar .ui-btn .ui-btn-inner .ui-btn-text{
 	font-size: 10px !important;
 }
 
@@ -130,6 +129,9 @@ if (location.hash != "" && location.hash != null) {
 .FullSizeInput input, select, textarea, .ui-select{
 	width: 100%!important;
 }
+.FullSizeInput .ui-slider-switch {
+	float:right;
+}
 
 #waiting {
 	display: block;
@@ -161,14 +163,14 @@ if (location.hash != "" && location.hash != null) {
 	onresize="updateOrientation();"
 >
 
-	<div style="display:none;" id="tabfooter" style="max-width:480px;"  >
-		<div data-role="navbar" data-grid="d" class="nav-glyphish-example" >
+	<div style="display:none;"  style="max-width:480px;"  >
+		<div id="navbar" data-role="navbar" data-grid="d" class="Navbar" >
 			<ul>
-				<li><a href="#map" class="tab-map" data-icon="custom" data-transition="none" >Map</a></li>
-				<li><a href="#timeline" class="tab-timeline" data-icon="custom" data-transition="none" >TimeLine</a></li>
-				<li><a href="#list" class="tab-list" data-icon="custom" data-transition="none" >List</a></li>
-				<li><a href="#memo" class="tab-memo" data-icon="custom" data-transition="none" >Memo</a></li>
-				<li><a href="#user" class="tab-user" data-icon="custom" data-transition="none" >User</a></li>
+				<li><a href="#map" class="tab-map ui-btn-active" myid="tab-map" data-icon="custom" data-transition="none">Map</a></li>
+				<li><a href="#timeline" class="tab-timeline" myid="tab-timeline" data-icon="custom" data-transition="none" >TimeLine</a></li>
+				<li><a href="#list" class="tab-list" myid="tab-list" data-icon="custom" data-transition="none" >List</a></li>
+				<li><a href="#memo" class="tab-memo" myid="tab-memo" data-icon="custom" data-transition="none" >Memo</a></li>
+				<li><a href="#user" class="tab-user" myid="tab-user" data-icon="custom" data-transition="none" >User</a></li>
 			</ul>
 		</div>
 	</div>
@@ -187,8 +189,11 @@ if (location.hash != "" && location.hash != null) {
 <!-- == Map =================================================================== -->
 	<div id="map" data-role="page" >
 		<div data-role="header" data-position="fixed" data-theme="a">
-			<h3><a href="#" onclick="SpotTags.open(this,'ジャンル','search')" 
-					data-role="button"  >ジャンル</a></h3>
+			<h3>
+				<a href="#" data-role="button" class="TagSelectBtn"
+					onclick="SpotTags.open(this,'ジャンル','search')" 
+				>ジャンル</a>
+			</h3>
 			<a href="javascript:Map.setCenterFromGPS()" data-role="button" data-icon="home" data-iconpos="notext"></a>
 			<a href="javascript:Map.onMarkerClick()" data-role="button" data-icon="plus" data-iconpos="notext"></a>
 		</div>
@@ -204,7 +209,7 @@ if (location.hash != "" && location.hash != null) {
 		<div data-role="header" data-position="fixed" data-theme="a" data-add-back-btn="true">
 			<h1>Spot情報</h1>
 			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
-			<a data-icon=“plus” href="javascript:Spot.write()" data-iconpos="notext"></a>
+			<a data-icon="check" href="javascript:Spot.write()" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content">
 		<form action="" name="spot">
@@ -325,8 +330,9 @@ if (location.hash != "" && location.hash != null) {
 			<hr/>
 		</form>
 		</div>
-		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
-		</div>
+		<!--
+		<div data-role="footer" data-id="tabfooter" data-position="fixed" ></div>
+		-->
 	</div>
 	
 <!-- == Spot Days Dialog ============================================================= -->
@@ -360,21 +366,6 @@ if (location.hash != "" && location.hash != null) {
 
 
 
-<!-- == SpotReview =================================================================== -->
-	<div id="spotReview" data-role="page"  >
-		<div data-role="header" data-position="fixed" data-theme="a">
-			<h1>Spotレビュー</h1>
-			<a data-rel="back" data-icon="back" href="#map" >Back</a>
-		</div>
-		<div data-role="content" >
-			<a href="javascript:SpotReview.onReviewClick()" data-role="button" data-icon="arrow-r" data-iconpos="right">レビューを書く</a>
-			<br/>
-			<div id="spotReviewList" >
-			</div>
-		</div>
-		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
-		</div>
-	</div>
 	
 <!-- == TimeLine =================================================================== -->
 	<div id="timeline" data-role="page" >
@@ -391,7 +382,11 @@ if (location.hash != "" && location.hash != null) {
 <!-- == LIst =================================================================== -->
 	<div id="list" data-role="page">
 		<div data-role="header" data-position="fixed">
-			<h1>List</h1>
+			<h3>
+				<a href="#" data-role="button" 
+					onclick="SpotTags.open(this,'ジャンル','search')" 
+				>ジャンル</a>
+			</h3>
 		</div>
 		<div data-role="content">
 			<div id="listSpots">
@@ -415,13 +410,31 @@ if (location.hash != "" && location.hash != null) {
 		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
 	</div>
+	
+<!-- == SpotReview =================================================================== -->
+	<div id="spotReview" data-role="page"  >
+		<div data-role="header" data-position="fixed" data-theme="a">
+			<h1>Spotレビュー</h1>
+			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
+			<a data-icon=“plus” href="javascript:SpotReview.onReviewClick()" data-iconpos="notext"></a>
+		</div>
+		<div data-role="content" >
+			<br/>
+			<div id="spotReviewList" >
+			</div>
+		</div>
+		<!--
+		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
+		</div>
+		-->
+	</div>
 
 <!-- == Review =================================================================== -->
 	<div id="review"  data-role="page">
 		<div data-role="header" data-position="fixed">
 			<h1>Review</h1>
-			<a data-rel="back" data-icon="back" href="#map" >Back</a>
-			<a data-icon=“plus” data-iconpos="right" href="javascript:Review.write()">登録</a>
+			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
+			<a data-icon="check" href="javascript:Review.write()" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content">
 		<form action="" name="review">
@@ -429,13 +442,19 @@ if (location.hash != "" && location.hash != null) {
 			<input name="spotId" type="hidden"/>
 			<input name="appraise" type="hidden"/>
 
-			<input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" />
+			<div class="FullSizeInput">
+				<input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" />
+			</div>
 			<div style="width:300px" id="appraise_raty"></div>
-			<textarea name="comment"  cols="100%" placeholder="コメント" ></textarea>
+			<div class="FullSizeInput">
+				<textarea name="comment"  cols="100%" rows="10" placeholder="コメント" ></textarea>
+			</div>
 		</form>
 		</div>
+		<!--
 		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
+		-->
 	</div>
 
 
@@ -444,22 +463,29 @@ if (location.hash != "" && location.hash != null) {
 	<div id="user" data-role="page">
 		<div data-role="header" data-position="fixed">
 			<h1>User</h1>
-			<a class="button" id="infoButton" href="javascript:"><img src="/images/config.png"/></a>
+			<a data-icon="gear" href="javascript:" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content">
-			<div>
 				<form action="" name="user">
-					<div data-role="fieldcontain">
-						<label for="username">User ID:</label>
-						<input name="username" type="text" />
-						<br/>
-						<label for="nickname">Nick name:</label>
-						<input name="nickname" type="text" />
-						<br/>
-						<a href="javascript:Login.logout()" data-role="button">Logout</a>
+					<div class="FullSizeInput">
+						<label ><nobr>User name:</nobr></label><br/>
+						<input  name="username" type="text" readonly="true"/>
 					</div>
+					<div class="FullSizeInput">
+						<label ><nobr>Nick name:</nobr></label><br/>
+						<input name="nickname" type="text" />
+					</div>
+					<div class="FullSizeInput">
+						<label><nobr style="vertical-align:top;">Auto twit:</nobr></label>
+						<select  name="autoTwit" data-role="slider">
+							<option value="false">Off</option>
+							<option value="true">On</option>
+						</select>
+						<br clear="all"/>
+					</div>
+					<br clear="all"/>
+					<a href="javascript:Login.logout()" data-role="button">Logout</a>
 				</form>
-			</div>
 		</div>
 		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>

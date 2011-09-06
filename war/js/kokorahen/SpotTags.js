@@ -7,20 +7,38 @@ SpotTags.SELECTOR = "#spotTagsList";
 SpotTags.button = null;
 
 SpotTags.init = function() {
-	var tagTree = {
-			"食事": {
-				"ラーメン": null,
-				"豚カツ": null,
-				"エスニック": {
-					"タイ料理": null,
-					"台湾料理": null
-				}
-			},
-			"酒": {
-				"日本酒": null,
-				"ワイン0": null,
-			}
-	};
+	var tagTree = 
+	[
+		"めし処",[
+			"ラーメン",[
+				"醤油ラーメン",
+				"味噌ラーメン",
+				"豚骨ラーメン",
+				"塩ラーメン",
+				"二郎系",
+			],
+			"カレー",[
+				"インドカレー",
+				"アジアンカレー",
+				"洋風カレー",
+			],
+		],
+		"飲み処",[
+			"酒",[
+				"日本酒",
+				"焼酎",
+				"ワイン",
+				"ビール",
+				"洋酒",
+			],
+			"居酒屋",[
+				"和風居酒屋",
+				"洋風居酒屋",
+				"和民",
+			],
+			"バー"
+		],
+	];
 	SpotTags.selector = 
 		new Selector(SpotTags.SELECTOR, tagTree);
 }
@@ -89,15 +107,17 @@ function Selector(xpath, tree){
 
 Selector.prototype.tree2html = function(tree, parent, indent) {
 	var html = "";
-	for (var key in tree) {
+	for (var i=0; i<tree.length; i++) {
+		var key = tree[i];
 		var val = parent+"/"+key;
 		html += "<li data-icon='checkbox-off' val='"+val+"'"
 					+" onclick='Selector.onClick(event,this)'"
 					+"><a href='#'"
 					+" style='margin-left:"+indent+"em;'>"
 					+key+"</a></li>";
-		if (tree[key] != null) {
-			html += this.tree2html(tree[key], parent+"/"+key, indent+1);
+
+		if (typeof tree[i+1] == "object") {
+			html += this.tree2html(tree[++i], val, indent+1);
 		}
 		this.mapping[key] = val;
 		//this.values[val] = false;
@@ -156,8 +176,9 @@ Selector.onClick = function(ev, ui) {
 	var _this = sel.data("Selector");
 
 	if (_this.isSingle) {
+		var flag = !_this.values[val];
 		_this.values = {};
-		_this.values[val] = true;
+		_this.values[val] = flag;
 		_this.refresh();
 		return;
 	}

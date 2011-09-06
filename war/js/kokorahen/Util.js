@@ -2,6 +2,20 @@
 //-------------------------------------------------------------------
 //Util
 function Util() {}
+Util.navbar = null;
+
+Util.init = function() {
+	Util.navbar = $("#navbar")[0];
+	Util.setNavbar(Map.ID);
+	$("#navbar a").live('click', function(){
+		$(this).addClass("ui-btn-active");
+	})
+}
+Util.setNavbar = function(id) {
+	// TODO: JQMがβのせいかFooterの共有が出来ないので自前で対処。
+	$(id).find("[data-role='footer']").append(Util.navbar);
+}
+
 Util.changePage = function(id) {
 	$.mobile.pageLoading();
 	setTimeout(function(){
@@ -67,7 +81,8 @@ Util.toZeroPrefix = function(val, len) {
 	return str.substr(idx-3,len);
 }
 Util.eventBreaker = function(ev) {
-	if(ev.stopPropagation) ev.stopPropagation();
-	if(ev.stopPropagation) ev.preventDefault();
+	if (ev == undefined) return;
+	if (ev.stopPropagation) ev.stopPropagation();
+	if (ev.stopPropagation) ev.preventDefault();
 	return false;
 }

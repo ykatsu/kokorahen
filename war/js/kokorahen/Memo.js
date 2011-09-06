@@ -7,6 +7,8 @@ Memo.init = function() {
 	// nop.
 }
 Memo.onBeforeShow = function() {
+	Util.setNavbar(Memo.ID);
+
 	var list = List.sortNear();
 	var ul = $("#memoSpots");
 	ul.html("");

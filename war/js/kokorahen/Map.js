@@ -38,6 +38,7 @@ Map.init = function() {
 		google.maps.event.addListener(Map.map, 'idle', Map.onMapIdol);
 		google.maps.event.addListener(Map.marker, 'click', Map.onMarkerClick);
 		Map.infobox.addEventListener('click', Map.onBalloonClick, false);
+		Map.setCenterFromGPS();
 	}
 }
 /**
@@ -62,6 +63,7 @@ Map.onMapClick = function(ev) {
 	// 現在位置マーカをクリック位置に移動。
 	Map.marker.setPosition(ev.latLng);
 	Map.marker.setVisible(true);
+	Map.infobox.close();
 }
 Map.onBalloonClick = function(ev) {
 	Util.changePage(Spot.ID);
@@ -82,12 +84,18 @@ Map.updateOrientation = function(ev) {
 }
 
 Map.onBeforeShow = function(ev) {
+	Map.onTagChange();
+	Util.setNavbar(Map.ID);
+}
+Map.onTagChange = function() {
 	var tag = SpotTags.getSearchTag();
 	if (tag != Map.searchTag) {
 		// reload.
 		Map.searchTag = tag;
 		Map.clearSpot();
 		Map.loadSpot();
+		var label = (tag==null) ? "ジャンル" : tag;
+		$(".TagSelectBtn .ui-btn-text").text(label);
 	}
 }
 
@@ -95,7 +103,6 @@ Map.onShow = function(ev, info){
 	// Note: 地図が初期状態で非表示だと誤動作するのでその対処。
 	google.maps.event.trigger(Map.map, "resize");
 	//Map.map.setCenter(Map.marker.getPosition());
-	Map.setCenterFromGPS();
 }
 
 /**
@@ -160,5 +167,6 @@ Map.protMarkers = {
 
 Map.clearSpot = function() {
 	Spot.clearCache();
+	Map.infobox.close();
 	Map.areaFlags = {};
 }

@@ -13,7 +13,7 @@ $(function(){
 		//var modules = [Login, Map, Timeline, List, Memo, User, Spot, SpotReview, Review];
 	
 	var modules = [Login, User, Map, Timeline, List, Memo, Spot, 
-	               SpotReview, Review, SpotTags, ClosedDays];
+	               SpotReview, Review, SpotTags, ClosedDays, Util];
 
 	function init(m) {
 		if (m.init != undefined) m.init();
@@ -55,10 +55,6 @@ $(function(){
 	//});
 	
 	
-	// TODO: JQMがβのせいかFooterの共有が出来ないので自前で対処。
-	var footers = $("//div[data-id='tabfooter']");
-	footers.html($("#tabfooter").html());
-
 
 /*
 	$("//div[data-role='dialog']/div[0]/a[0]").live('click', function(ev) {
@@ -70,13 +66,14 @@ $(function(){
 		return Util.eventBreaker(ev);
 	});
 */
+/*
 	$("//div[data-role='footer']").live('scrollstart',function(ev){
 		//$(this).hide(0);
 		this.style.display="none";
 	}).live('scrollend',function(ev){
 		$(this).show();
 	});
-
+*/
 	
 });
 

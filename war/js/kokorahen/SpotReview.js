@@ -16,7 +16,12 @@ SpotReview.load = function(spotId) {
 	$(SpotReview.LIST_ID).html("");
 	Kokorahen.listReviewAsync({
 		success: function(list) {
-			var div = $("#spotReviewList");
+			var div = $(SpotReview.LIST_ID);
+			if (list.length == 0) {
+				div.html("まだレビューはありません。");
+				return;
+			}
+
 			var ul = $('<ul data-role="listview" data-inset="true" ></ul>');
 			div.html("");
 			div.append(ul);

@@ -243,4 +243,8 @@ Spot.write = function(){
 	params.closedDay = ClosedDays.getValue().join(",");
 	var id = Kokorahen.writeSpot(params);
 	alert("sopt id="+id);
+
+	if (params.id == "") {
+		Map.clearSpot();
+	}
 }
