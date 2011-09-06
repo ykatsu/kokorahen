@@ -425,5 +425,13 @@ System.out.println("--->"+map);
 		System.out.println("review="+list);
 		return list;
 	}
+	public  void deleteDummyData(){
+		SpotModelMeta e = SpotModelMeta.get();
+		ModelQuery q = Datastore.query(e);
+		q.filter(e.address.equal("ダミー"));
+		List<Key> list = q.asKeyList();
+		Datastore.delete(list);
+		System.out.println("delete dummy");
+	}
 
 }

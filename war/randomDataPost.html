@@ -1,0 +1,143 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta id="viewport" name="viewport"
+		content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+	<title>Page Title</title> 
+	<!-- This apps Server -->
+	<script src="/js/Jsrpc.js?v=1" ></script>
+	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=2" ></script>
+
+	<script>
+var lngMin = 139.73-0.3;
+var lngMax = 139.73+0.3;
+var latMin = 35.6-0.3;
+var latMax = 35.6+0.3;
+function lat() {
+	return latMin + (latMax-latMin) * Math.random();
+}
+function _lng() {
+	return lngMin + (lngMax-lngMin) * Math.random();
+}
+function name() {
+	return ""+ Math.random();
+}
+function time(data) {
+	var n = Math.floor( Math.random() * data.length);
+	return data[n];
+}
+function timeLunchMin() {
+	return time([
+		"09:00","09:30",
+		"10:00","10:30",
+		"11:00","11:30",
+		"12:00","12:30",
+	]);
+};
+function timeLunchMax() {
+	return time([
+		"13:00","13:30",
+		"14:00","14:30",
+		"15:00","15:30",
+		"16:00","16:30",
+	]);
+};
+function timeDinnerMin() {
+	return time([
+		"14:00","14:30",
+		"15:00","15:30",
+		"16:00","16:30",
+		"17:00","17:30",
+		"18:00","18:30",
+	]);
+};
+function timeDinnerMax() {
+	return time([
+		"19:00","19:30",
+		"20:00","20:30",
+		"21:00","21:30",
+		"22:00","22:30",
+		"23:00","23:30",
+		"24:00","24:30",
+		"25:00","25:30",
+	]);
+};
+
+var DAYS = [
+		"月", "火", "水", "木",
+		"金", "土", "日", "祝",
+];
+function closedDay() {
+	return time(DAYS);
+};
+
+var TAGS = [
+            "めし処"
+            ,"めし処/ラーメン"
+            ,"めし処/ラーメン/醤油ラーメン"
+            ,"めし処/ラーメン/味噌ラーメン"
+            ,"めし処/ラーメン/豚骨ラーメン"
+            ,"めし処/ラーメン/塩ラーメン"
+            ,"めし処/ラーメン/二郎系"
+            ,"めし処/カレー"
+            ,"めし処/カレー/インドカレー"
+            ,"めし処/カレー/アジアンカレー"
+            ,"めし処/カレー/洋風カレー"
+            ,"飲み処"
+            ,"飲み処/酒"
+            ,"飲み処/酒/日本酒"
+            ,"飲み処/酒/焼酎"
+            ,"飲み処/酒/ワイン"
+            ,"飲み処/酒/ビール"
+            ,"飲み処/酒/洋酒"
+            ,"飲み処/居酒屋"
+            ,"飲み処/居酒屋/和風居酒屋"
+            ,"飲み処/居酒屋/洋風居酒屋"
+            ,"飲み処/居酒屋/和民"
+            ,"飲み処/バー"
+];
+function tags() {
+	return time(TAGS).split("/");
+};
+
+function makeData() {
+
+	var aaa = {
+lat:lat(),
+lng:_lng(),
+image:"",
+name:name(),
+address:"ダミー",
+timeLunchMin:timeLunchMin(),
+timeLunchMax:timeLunchMax(),
+timeDinnerMin:timeDinnerMin(),
+timeDinnerMax:timeDinnerMax(),
+email:"",
+url:"",
+comment:"",
+tags:tags(),
+closedDay:closedDay()
+};
+	return aaa;
+}
+
+function go() {
+	for (var i=0; i<100; i++) {
+		Kokorahen.writeSpot(makeData());
+	}
+}
+function clean() {
+		Kokorahen.deleteDummyData();
+}
+
+
+</script>
+</head>
+<body>
+<button type="button" onclick="go()">Post x100</button>
+<button type="button" onclick="clean()">Clean</button>
+</body>
+
+</html>

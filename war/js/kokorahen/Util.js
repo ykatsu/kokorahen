@@ -78,8 +78,14 @@ Util.getAreas = function(minLat, minLng, maxLat, maxLng){
 	return list;
 }
 Util.toZeroPrefix = function(val, len) {
-	var str = "00"+ val+"00000000";
+	var str = "00"+ val;
 	var idx = str.indexOf(".");
+	if (idx == -1) {
+		str += ".0000000";
+		idx = str.indexOf(".");
+	} else {
+		str += "0000000";
+	}
 	return str.substr(idx-3,len);
 }
 Util.eventBreaker = function(ev) {
