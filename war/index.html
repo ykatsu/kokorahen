@@ -6,8 +6,16 @@
 	<meta id="viewport" name="viewport"
 		content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
 	<title>Page Title</title> 
+	<!-- This apps Server -->
+	<script src="/js/Jsrpc.js?v=1" ></script>
+	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=2" ></script>
 	
 	<script>
+var __Login_user = Kokorahen.getLoginUser();
+if (__Login_user == null) {
+	location.href = "login.html";
+}
+
 if (location.hash != "" && location.hash != null) {
 	location.href = "/";
 }
@@ -25,8 +33,6 @@ if (location.hash != "" && location.hash != null) {
 
 
 	<!-- This apps -->
-	<script src="/js/Jsrpc.js?v=1" ></script>
-	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=2" ></script>
 	<script src="/InfoBox.js" ></script>
 	<script src="/js/kokorahen/ClosedDays.js"></script>
 	<script src="/js/kokorahen/List.js"></script>
@@ -175,16 +181,6 @@ if (location.hash != "" && location.hash != null) {
 		</div>
 	</div>
 
-<!-- == Login =================================================================== -->
-	<div id="login" data-role="page">
-		<div data-role="header" data-position="fixed">
-			<h1>Login</h1>
-		</div>
-		<div data-role="content">
-			<a href="javascript:Login.login('google')" data-role="button" >Google</a>
-			<a href="javascript:Login.login('twitter')" data-role="button" >Twitter</a>
-		</div>
-	</div>
 
 <!-- == Map =================================================================== -->
 	<div id="map" data-role="page" >
@@ -490,6 +486,18 @@ if (location.hash != "" && location.hash != null) {
 		<div data-role="footer" data-id="tabfooter" data-position="fixed" >
 		</div>
 	</div>
-
+	
+<!-- == Login =================================================================== -->
+<!-- 
+	<div id="login" data-role="page">
+		<div data-role="header" data-position="fixed">
+			<h1>Login</h1>
+		</div>
+		<div data-role="content">
+			<a href="javascript:Login.login('google')" data-role="button" >Google</a>
+			<a href="javascript:Login.login('twitter')" data-role="button" >Twitter</a>
+		</div>
+	</div>
+-->
 </body>
 </html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta id="viewport" name="viewport"
+		content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+	<title>ここらへん</title> 
+
+	<script src="/js/Jsrpc.js?v=1" ></script>
+	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=2" ></script>
+	<link rel="stylesheet" href="/jqm/jquery.mobile-1.0b2.min.css" />
+	<script>
+	function login(provider) {
+		location.href = Kokorahen.login(provider);
+	}
+	</script>
+
+</head>
+
+<body>
+	<div id="login" data-role="page" data-url="login" 
+		class="ui-page ui-body-c ui-page-active" style="display:block;">
+		<div data-role="header" data-position="fixed" 
+			class="ui-header ui-bar-a ui-header-fixed fade ui-fixed-overlay" 
+			role="banner" style="top: 0px; ">
+			<h1 class="ui-title" tabindex="0" role="heading" aria-level="1">Login</h1>
+		</div>
+		<div data-role="content" class="ui-content ui-body-c" role="main">
+			<a href="javascript:login('google')" data-role="button" data-theme="c" class="ui-btn ui-btn-corner-all ui-shadow ui-btn-up-c"><span class="ui-btn-inner ui-btn-corner-all"><span class="ui-btn-text">Google</span></span></a>
+			<a href="javascript:login('twitter')" data-role="button" data-theme="c" class="ui-btn ui-btn-corner-all ui-shadow ui-btn-up-c"><span class="ui-btn-inner ui-btn-corner-all"><span class="ui-btn-text">Twitter</span></span></a>
+		</div>
+	</div>
+
+</body>
+</html>

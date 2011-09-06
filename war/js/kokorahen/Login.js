@@ -6,7 +6,8 @@ Login.ID = "#login";
 Login.user = {username: null};
 
 Login.init = function() {
-	Login.user = Kokorahen.getLoginUser();
+	//Login.user = Kokorahen.getLoginUser();
+	Login.user = __Login_user;
 	//if (Login.nickname == null || Login.nickname == "") {
 	//	Login.nickname = Login.username;
 	//}
