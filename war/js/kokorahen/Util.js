@@ -8,12 +8,14 @@ Util.init = function() {
 	Util.navbar = $("#navbar")[0];
 	Util.setNavbar(Map.ID);
 	$("#navbar a").live('click', function(){
+		$("a",Util.navbar).removeClass("ui-btn-active");
 		$(this).addClass("ui-btn-active");
 	})
 }
 Util.setNavbar = function(id) {
 	// TODO: JQMがβのせいかFooterの共有が出来ないので自前で対処。
 	$(id).find("[data-role='footer']").append(Util.navbar);
+	$.mobile.silentScroll(0);
 }
 
 Util.changePage = function(id) {
