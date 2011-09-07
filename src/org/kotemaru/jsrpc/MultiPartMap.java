@@ -10,36 +10,36 @@ public class MultiPartMap extends HashMap<String,Object> {
 		super();
 	}
 
-	public String getString(String key) {
+	public String toString(String key) {
 		Object val = super.get(key);
 		if (val == null) return null;
 		return val.toString();
 	}
-	public String getStringNull(String key) {
+	public String toStringNull(String key) {
 		Object val = super.get(key);
 		if (val == null) return null;
 		String str = val.toString().trim();
 		if (str.length() == 0) return null;
 		return str;
 	}
-	public Double getDouble(String key) {
-		String val = getStringNull(key);
+	public Double toDouble(String key) {
+		String val = toStringNull(key);
 		if (val == null) return null;
 		return Double.parseDouble(val);
 	}
-	public Integer getInteger(String key) {
-		String val = getStringNull(key);
+	public Integer toInteger(String key) {
+		String val = toStringNull(key);
 		if (val == null) return null;
 		return Integer.parseInt(val);
 	}
-	public Long getLong(String key) {
-		String val = getStringNull(key);
+	public Long toLong(String key) {
+		String val = toStringNull(key);
 		if (val == null) return null;
 		return Long.parseLong(val);
 	}
 
 	
-	public FileItem getFileItem(String key) {
+	public FileItem toFileItem(String key) {
 		Object val = super.get(key);
 		if (val == null) return null;
 		return (FileItem) val;

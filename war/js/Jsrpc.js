@@ -43,7 +43,7 @@ JSRPC.callAsync = function(url, mname, args) {
 					var res = JSON.parse(xreq.responseText);
 					if (res.error) JSRPC.error(callback, res.error);
 					if (callback.success) {
-						callback.success(res.result);
+						callback.success(res.result, args);
 					} else {
 						callback(res.result);
 					}

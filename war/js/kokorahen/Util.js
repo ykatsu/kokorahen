@@ -52,15 +52,23 @@ Util.getAreas = function(minLat, minLng, maxLat, maxLng){
 
 	var mode = 100; // 1Km
 	var len = 6;
-	var w = maxLat - minLat;
+	var w = maxLng - minLng;
 	if (w > 0.05) { // >5Km
 		mode = 10; // 10Km
 		len = 5;
-	} else if (w < 0.01) { // <1Km
-		mode = 1000;
+	} else if (w < 0.004) { // <400m
+		mode = 1000; // <100m
 		len = 7;
 	}
-
+	if (w < 0.0009) { // <90m
+		mode = 10000; // <10m
+		len = 8;
+	}
+	if (w > 0.5) { // >50Km
+		mode = 1; // 100Km
+		len = 3;
+	}
+//console.log("====>"+w+":"+len);
 	minLat = Math.floor(minLat*mode);
 	minLng = Math.floor(minLng*mode);
 	maxLat = Math.floor(maxLat*mode);

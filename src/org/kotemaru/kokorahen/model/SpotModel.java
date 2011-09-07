@@ -24,7 +24,7 @@ public class SpotModel extends ModelBase {
 	private String address;
 	private List<String> tags;
 	private Integer level = 0;
-	private Integer appraise = -1;
+	private Float appraise = -1.0F;
 	private String image;
 	private String comment;
 	private String timeLunchMin;
@@ -132,12 +132,14 @@ public class SpotModel extends ModelBase {
 	}
 
 
-	public Integer getAppraise() {
+
+
+	public Float getAppraise() {
 		return appraise;
 	}
 
 
-	public void setAppraise(Integer appraise) {
+	public void setAppraise(Float appraise) {
 		this.appraise = appraise;
 	}
 

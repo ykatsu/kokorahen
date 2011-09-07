@@ -206,7 +206,7 @@ System.out.println("logour:"+provider);
 	}
 
 	public  String writeImage(MultiPartMap params) {
-		FileItem fileItem = params.getFileItem("file");
+		FileItem fileItem = params.toFileItem("file");
 		if (fileItem == null || fileItem.getData().length == 0) {
 			return "";
 		}
@@ -225,7 +225,7 @@ System.out.println("--->"+map);
 		//String imgKey = writeImage(params);
 
 		SpotModel model = null;
-		Long id = params.getLong("id");
+		Long id = params.toLong("id");
 		if (id != null) {
 			Key key = Datastore.createKey(SpotModel.class, id);
 			model = Datastore.get(SpotModel.class, key);
@@ -233,25 +233,31 @@ System.out.println("--->"+map);
 			model = new SpotModel();
 		}
 
-		model.setName(params.getString("name"));
+		model.setName(params.toString("name"));
 		model.setCreateDate(new Date());
 		model.setUpdateDate(new Date());
-		model.setLat(params.getDouble("lat"));
-		model.setLng(params.getDouble("lng"));
+		model.setLat(params.toDouble("lat"));
+		model.setLng(params.toDouble("lng"));
 		model.setAreas(toAreaList(model.getLat(), model.getLng()));
-		model.setAddress(params.getString("address"));
-		//model.setAppraise(params.getInteger("appraise"));
+		model.setAddress(params.toString("address"));
 		model.setTags((List<String>)map.get("tags"));
-		model.setImage(params.getString("image"));
-		model.setComment(params.getString("comment"));
-		model.setClosedDay(params.getString("closedDay"));
-		model.setTimeLunchMin(params.getString("timeLunchMin"));
-		model.setTimeLunchMax(params.getString("timeLunchMax"));
-		model.setTimeDinnerMin(params.getString("timeDinnerMin"));
-		model.setTimeDinnerMax(params.getString("timeDinnerMax"));
-		model.setEmail(params.getString("email"));
-		model.setUrl(params.getString("url"));
+		model.setImage(params.toString("image"));
+		model.setComment(params.toString("comment"));
+		model.setClosedDay(params.toString("closedDay"));
+		model.setTimeLunchMin(params.toString("timeLunchMin"));
+		model.setTimeLunchMax(params.toString("timeLunchMax"));
+		model.setTimeDinnerMin(params.toString("timeDinnerMin"));
+		model.setTimeDinnerMax(params.toString("timeDinnerMax"));
+		model.setEmail(params.toString("email"));
+		model.setUrl(params.toString("url"));
 		//model.setImage(imgKey);
+
+		// for Dummy data
+		Float appraise = params.toFloat("appraise");
+		if (appraise != null) {
+			model.setAppraise(appraise);
+		}
+		
 		Key key = Datastore.put(model);
 
 		return key.getId();
@@ -262,7 +268,7 @@ System.out.println("--->"+map);
 		Params params = new Params(map);
 
 		MemoModel model = null;
-		Long id = params.getLong("id");
+		Long id = params.toLong("id");
 		if (id != null) {
 			Key key = Datastore.createKey(MemoModel.class, id);
 			model = Datastore.get(MemoModel.class, key);
@@ -271,21 +277,21 @@ System.out.println("--->"+map);
 		}
 
 		List<String> images = new ArrayList<String>(1);
-		images.add(params.getString("image"));
+		images.add(params.toString("image"));
 
 		model.setUsername(null); // TODO:
 		model.setCreateDate(new Date());
 		model.setUpdateDate(new Date());
-		model.setLat(params.getDouble("lat"));
-		model.setLng(params.getDouble("lng"));
+		model.setLat(params.toDouble("lat"));
+		model.setLng(params.toDouble("lng"));
 		model.setAreas(toAreaList(model.getLat(), model.getLng()));
-		model.setAddress(params.getString("address"));
-		model.setAppraise(params.getInteger("appraise"));
-		model.setTags(Arrays.asList(params.getString("tags").split(",")));
-		model.setComment(params.getString("comment"));
+		model.setAddress(params.toString("address"));
+		model.setAppraise(params.toInteger("appraise"));
+		model.setTags(Arrays.asList(params.toString("tags").split(",")));
+		model.setComment(params.toString("comment"));
 		model.setImages(images);
-		model.setPublish(params.getBoolean("publish"));
-		model.setTested(params.getBoolean("tested"));
+		model.setPublish(params.toBoolean("publish"));
+		model.setTested(params.toBoolean("tested"));
 		Key key = Datastore.put(model);
 
 		return key.getId();
@@ -299,7 +305,7 @@ System.out.println("--->"+map);
 		Params params = new Params(map);
 
 		ReviewModel model = null;
-		Long id = params.getLong("id");
+		Long id = params.toLong("id");
 		if (id != null) {
 			Key key = Datastore.createKey(ReviewModel.class, id);
 			model = Datastore.get(ReviewModel.class, key);
@@ -308,18 +314,18 @@ System.out.println("--->"+map);
 		}
 
 		List<String> images = new ArrayList<String>(1);
-		images.add(params.getString("image"));
+		images.add(params.toString("image"));
 
 		model.setUsername(user.getUsername());
 		model.setNickname(user.getNickname());
-		model.setSpotId(params.getLong("spotId"));
+		model.setSpotId(params.toLong("spotId"));
 		model.setCreateDate(new Date());
 		model.setUpdateDate(new Date());
-		model.setAppraise(params.getInteger("appraise"));
-		model.setComment(params.getString("comment"));
+		model.setAppraise(params.toInteger("appraise"));
+		model.setComment(params.toString("comment"));
 		Key key = Datastore.put(model);
 
-		twit(params.getString("comment")+"@"+params.getString("name"));
+		twit(params.toString("comment")+"@"+params.toString("name"));
 
 		return key.getId();
 	}
@@ -336,6 +342,9 @@ System.out.println("--->"+map);
 	}
 
 	private  List<String> toAreaList(double lat, double lng) {
+		// 100K
+		int lat0 = (int)Math.floor(lat);
+		int lng0 = (int)Math.floor(lng);
 		// 10K
 		double lat1 = Math.floor(lat*10)/10;
 		double lng1 = Math.floor(lng*10)/10;
@@ -345,10 +354,16 @@ System.out.println("--->"+map);
 		// 100m
 		double lat3 = Math.floor(lat*1000)/1000;
 		double lng3 = Math.floor(lng*1000)/1000;
+		// 10m
+		double lat4 = Math.floor(lat*10000)/10000;
+		double lng4 = Math.floor(lng*10000)/10000;
+		
 		List<String> list = Arrays.asList(
+			String.format("%03d,%03d", lat0, lng0),
 			String.format("%05.1f,%05.1f", lat1, lng1),
 			String.format("%06.2f,%06.2f", lat2, lng2),
-			String.format("%07.3f,%07.3f", lat3, lng3)
+			String.format("%07.3f,%07.3f", lat3, lng3),
+			String.format("%07.4f,%07.4f", lat4, lng4)
 		);
 		return list;
 	}
@@ -363,12 +378,13 @@ System.out.println("--->"+map);
 			return null;
 		}
 	}
-
-	public  List<String> getAreas(Map params){
-		double minLat = (Double) params.get("minLat");
-		double minLng = (Double) params.get("minLng");
-		double maxLat = (Double) params.get("maxLat");
-		double maxLng = (Double) params.get("maxLng");
+/*--- move client
+	public  List<String> getAreas(Map map){
+		Params params = new Params(map);
+		double minLat =  params.toDouble("minLat");
+		double minLng =  params.toDouble("minLng");
+		double maxLat =  params.toDouble("maxLat");
+		double maxLng =  params.toDouble("maxLng");
 
 		List<String> list = new ArrayList<String>();
 		for (double lat = minLat; lat<maxLat; lat += 0.01) {
@@ -376,28 +392,34 @@ System.out.println("--->"+map);
 				list.add(toArea(lat,lng));
 			}
 		}
+		
 		// TODO:センターに近い順にソートはクライアントでやるべき？
 		System.out.println("areas="+list+"\n"+params);
 		return list;
 	}
+---*/
 
-
-	public  List<SpotModel> listSpot(Map params){
-		String area = (String) params.get("area");
-		String tag = (String) params.get("tag");
+	public  List<SpotModel> listSpot(Map map){
+		Params params = new Params(map);
+		String area = params.toString("area");
+		String tag = params.toString("tag");
+		Integer limit = params.toInteger("limit");
 
 		SpotModelMeta e = SpotModelMeta.get();
 		ModelQuery q = Datastore.query(e);
 		q.filter(e.areas.in(area));
+		q.sort(e.appraise.desc);
 		if (tag != null) q.filter(e.tags.in(tag));
+		if (limit != null) q.limit(limit);
 		List<SpotModel> list = q.asList();
 
 		System.out.println("datas="+list+"\n"+params);
 		return list;
 	}
 
-	public  List<MemoModel> listMemo(Map params){
-		String area = (String) params.get("area");
+	public  List<MemoModel> listMemo(Map map){
+		Params params = new Params(map);
+		String area = params.toString("area");
 
 		MemoModelMeta e = MemoModelMeta.get();
 		ModelQuery q = Datastore.query(e);

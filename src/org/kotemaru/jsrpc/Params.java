@@ -9,10 +9,10 @@ public class Params  {
 		this.map = map;
 	}
 
-	public String getString(String key) {
+	public String toString(String key) {
 		return (String) map.get(key);
 	}
-	public Double getDouble(String key) {
+	public Double toDouble(String key) {
 		Object val = map.get(key);
 		if (val == null) return null;
 		if (val instanceof Double) return (Double) val;
@@ -20,7 +20,7 @@ public class Params  {
 		if (strVal.length() == 0) return null;
 		return Double.valueOf(strVal);
 	}
-	public Integer getInteger(String key) {
+	public Integer toInteger(String key) {
 		Object val = map.get(key);
 		if (val == null) return null;
 		if (val instanceof Integer) return (Integer) val;
@@ -28,7 +28,7 @@ public class Params  {
 		if (strVal.length() == 0) return null;
 		return Integer.valueOf(strVal);
 	}
-	public Long getLong(String key) {
+	public Long toLong(String key) {
 		Object val = map.get(key);
 		if (val == null) return null;
 		if (val instanceof Long) return (Long) val;
@@ -36,8 +36,20 @@ public class Params  {
 		if (strVal.length() == 0) return null;
 		return Long.valueOf(strVal);
 	}
-	public Boolean getBoolean(String key) {
+	public Boolean toBoolean(String key) {
 		return (Boolean) map.get(key);
+	}
+
+	public Float toFloat(String key) {
+		Object val = map.get(key);
+		if (val == null) return null;
+		if (val instanceof Float) return (Float)val;
+		String strVal = val.toString();
+		if (strVal.length() == 0) return null;
+		return Float.valueOf(strVal);
+	}
+	public String toString() {
+		return map.toString();
 	}
 
 }

@@ -4,11 +4,13 @@
 function Spot(data) {
 	this.data = data;
 	var pos = new google.maps.LatLng(data.lat, data.lng);
+	var level = Math.floor(data.appraise);
+	if (level < 0) level = 0;
 	this.marker = new google.maps.Marker({position: pos, map: Map.map,
-		//icon:Spot.PIN, shadow:Spot.PIN_SHADOW
-		icon:Spot.PIN2, shadow:Spot.PIN2_SHADOW
+		icon:Spot.PIN[level] , shadow:Spot.PIN_SHADOW
 	});
 	this.marker.spot = this;
+	this.marker.setVisible(false);
 	google.maps.event.addListener(this.marker, 'click', Spot.onSpotMarkerClick);
 }
 Spot.ID = "#spot";
@@ -17,34 +19,33 @@ Spot.MAP_MASK = "#mapCanvas2Mask";
 Spot.HOME_IMG = "/images/Home.png";
 Spot.current = null;
 
+
+Spot.makePinImg = function(color) {
+	return new google.maps.MarkerImage(
+		"/images/pin-"+color+".png", // url
+		new google.maps.Size(24,24), // size
+		new google.maps.Point(0,0),  // origin
+		new google.maps.Point(12,24) // anchor
+	);
+}
 //ピンイメージ。
-Spot.PIN = new google.maps.MarkerImage(
-	"http://maps.google.co.jp/mapfiles/ms/icons/blue-pushpin.png", // url
-	new google.maps.Size(32,32), // size
-	new google.maps.Point(0,0),  // origin
-	new google.maps.Point(10,30) // anchor
-);
+Spot.PIN = [
+	Spot.makePinImg("blue"),
+	Spot.makePinImg("blue"),
+	Spot.makePinImg("green"),
+	Spot.makePinImg("orange"),
+	Spot.makePinImg("red"),
+	Spot.makePinImg("red")
+];
 //ピンの影イメージ
 Spot.PIN_SHADOW = new google.maps.MarkerImage(
- "http://maps.google.co.jp/mapfiles/ms/icons/pushpin_shadow.png", // url
- new google.maps.Size(32,32), // size
- new google.maps.Point(0,0),  // origin
- new google.maps.Point(8,31) // anchor
-);
-//ピンイメージ。
-Spot.PIN2 = new google.maps.MarkerImage(
-	"/images/pin-blue.png", // url
-	new google.maps.Size(24,24), // size
-	new google.maps.Point(0,0),  // origin
-	new google.maps.Point(12,24) // anchor
-);
-//ピンの影イメージ
-Spot.PIN2_SHADOW = new google.maps.MarkerImage(
  "/images/pin-shadow.png", // url
  new google.maps.Size(40,24), // size
  new google.maps.Point(0,0),  // origin
  new google.maps.Point(14,24) // anchor
 );
+
+
 
 Spot.init = function() {
 	var mapopts2 = {
@@ -126,12 +127,14 @@ Spot.init = function() {
 }
 
 Spot.all = {};
+Spot.list = [];
 Spot.isMapFocus = false;
 
 Spot.getSpot = function(data) {
 	if (Spot.all[data.id]) return Spot.all[data.id];
 	var spot = new Spot(data);
 	Spot.all[data.id] = spot;
+	Spot.list.push(spot);
 	return spot;
 }
 Spot.clearCache = function() {
@@ -140,8 +143,44 @@ Spot.clearCache = function() {
 		Spot.all[id].marker = undefined;
 		delete Spot.all[id];
 	}
+	delete Spot.list;
+	Spot.list = [];
 }
+Spot.visible = function(limit) {
+	// マップの表示範囲取得。
+	var rect = Map.map.getBounds();
+	if (rect == null) return;
+	var latNE = rect.getNorthEast().lat();
+	var lngNE = rect.getNorthEast().lng();
+	var latSW = rect.getSouthWest().lat();
+	var lngSW = rect.getSouthWest().lng();
 
+	// サーバーから表示範囲内のマーカー取得。非同期。
+	var latMin = Math.min(latNE, latSW);
+	var lngMin = Math.min(lngNE, lngSW);
+	var latMax = Math.max(latNE, latSW);
+	var lngMax = Math.max(lngNE, lngSW);
+
+	function inBounds(data) {
+		return (latMin <= data.lat && data.lat < latMax
+			&& lngMin <= data.lng && data.lng < lngMax) 
+			? 10000 : 0;
+	}
+
+	var list = Spot.list.sort(function(a,b){
+		var ap = a.data.appraise + inBounds(a.data);
+		var bp = b.data.appraise + inBounds(b.data);
+		if (ap == bp) return 0;
+		return (ap < bp) ? 1 : -1;
+	});
+	//console.log("----->"+list.length);
+	for (var i=0; i<limit && i<list.length; i++) {
+		list[i].marker.setVisible(true);
+	}
+	for (var i=limit; i<list.length; i++) {
+		list[i].marker.setVisible(false);
+	}
+}
 Spot.onSpotMarkerClick = function(ev) {
 	Spot.setCurrent(this.spot);
 	if (Spot.current == null) return;

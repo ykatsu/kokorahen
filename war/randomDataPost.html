@@ -102,23 +102,28 @@ function tags() {
 	return time(TAGS).split("/");
 };
 
+function appraise() {
+	return Math.floor(Math.random() * 400000)/100000+1.0;
+}
+
 function makeData() {
 
 	var aaa = {
-lat:lat(),
-lng:_lng(),
-image:"",
-name:name(),
-address:"ダミー",
-timeLunchMin:timeLunchMin(),
-timeLunchMax:timeLunchMax(),
-timeDinnerMin:timeDinnerMin(),
-timeDinnerMax:timeDinnerMax(),
-email:"",
-url:"",
-comment:"",
-tags:tags(),
-closedDay:closedDay()
+lat: lat(),
+lng: _lng(),
+image: "",
+name: name(),
+address: "ダミー",
+timeLunchMin: timeLunchMin(),
+timeLunchMax: timeLunchMax(),
+timeDinnerMin: timeDinnerMin(),
+timeDinnerMax: timeDinnerMax(),
+email: "",
+url: "",
+comment: "",
+tags: tags(),
+closedDay: closedDay(),
+appraise: appraise()
 };
 	return aaa;
 }
