@@ -21,6 +21,7 @@ import org.kotemaru.jsrpc.JsrpcException;
 import org.kotemaru.jsrpc.MultiPartMap;
 import org.kotemaru.jsrpc.Params;
 import org.kotemaru.jsrpc.annotation.JsRpc;
+import org.kotemaru.kokorahen.bean.AreaSpotBean;
 import org.kotemaru.kokorahen.meta.MemoModelMeta;
 import org.kotemaru.kokorahen.meta.ReviewModelMeta;
 import org.kotemaru.kokorahen.meta.SpotModelMeta;
@@ -363,7 +364,7 @@ System.out.println("--->"+map);
 			String.format("%05.1f,%05.1f", lat1, lng1),
 			String.format("%06.2f,%06.2f", lat2, lng2),
 			String.format("%07.3f,%07.3f", lat3, lng3),
-			String.format("%07.4f,%07.4f", lat4, lng4)
+			String.format("%08.4f,%08.4f", lat4, lng4)
 		);
 		return list;
 	}
@@ -399,22 +400,36 @@ System.out.println("--->"+map);
 	}
 ---*/
 
-	public  List<SpotModel> listSpot(Map map){
+	public  List<AreaSpotBean> listSpot(Map map){
 		Params params = new Params(map);
-		String area = params.toString("area");
+		//String area = params.toString("area");
+		List<String> areas = (List<String>) params.get("areas");
 		String tag = params.toString("tag");
 		Integer limit = params.toInteger("limit");
+		Integer range = params.toInteger("range");
 
+		if (areas.size() <= 4) limit = limit * 2;
+		if (range != null && range >= (7*2+1)) { // 100m
+			limit = 999;
+		}
+	
+		List<AreaSpotBean> result = new ArrayList<AreaSpotBean>(areas.size());
 		SpotModelMeta e = SpotModelMeta.get();
-		ModelQuery q = Datastore.query(e);
-		q.filter(e.areas.in(area));
-		q.sort(e.appraise.desc);
-		if (tag != null) q.filter(e.tags.in(tag));
-		if (limit != null) q.limit(limit);
-		List<SpotModel> list = q.asList();
+		for (String area : areas) {
+			if (area == null) continue; // ignore null.
 
-		System.out.println("datas="+list+"\n"+params);
-		return list;
+			ModelQuery q = Datastore.query(e);
+			q.filter(e.areas.in(area));
+			q.sort(e.appraise.desc);
+			if (tag != null) q.filter(e.tags.in(tag));
+			if (limit != null) q.limit(limit);
+			List<SpotModel> list = q.asList();
+
+			result.add(new AreaSpotBean(area, list));
+		}
+
+		System.out.println("listSpot:"+areas);
+		return result;
 	}
 
 	public  List<MemoModel> listMemo(Map map){

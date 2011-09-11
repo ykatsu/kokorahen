@@ -52,5 +52,5 @@ List.onBeforeShow = function() {
 
 List.onItemClick = function(id) {
 	Spot.setCurrent(Spot.all[id]);
-	Util.changePage(Spot.ID);
+	Util.changePage(SpotInfo.ID);
 }

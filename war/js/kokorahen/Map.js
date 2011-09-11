@@ -7,11 +7,8 @@ Map.CANVAS = "#mapCanvas";
 Map.map = null;
 Map.marker = null;
 Map.markers = null;
-Map.areaFlags = {};
 Map.DEFAULT_CENTER = new google.maps.LatLng(35.684699,139.753897);
-Map.LIMIT = 30;
 Map.searchTag = null;
-Map.currentRange = 0;
 
 Map.options = {
 	zoom: 14,
@@ -68,14 +65,14 @@ Map.onMapClick = function(ev) {
 	Map.infobox.close();
 }
 Map.onBalloonClick = function(ev) {
-	Util.changePage(Spot.ID);
+	Util.changePage(SpotInfo.ID);
 	return Util.eventBreaker(ev);
 }
 
 Map.onMarkerClick = function(ev) {
 	Spot.setCurrent({marker:Map.marker});
 	Map.infobox.close();
-	Util.changePage(Spot.ID);
+	Util.changePage(SpotInfo.ID);
 	return Util.eventBreaker(ev);
 }
 
@@ -87,7 +84,7 @@ Map.updateOrientation = function(ev) {
 
 Map.onBeforeShow = function(ev) {
 	Map.onTagChange();
-	Spot.visible(Map.LIMIT);
+	//Spot.visible(Map.LIMIT);
 	Util.setNavbar(Map.ID);
 }
 Map.onTagChange = function() {
@@ -112,73 +109,6 @@ Map.onShow = function(ev, info){
  * マップクリックイベント処理。
  */
 Map.onMapIdol = function(ev) {
-	Map.loadSpot();
-	Spot.visible(Map.LIMIT);
-}
-Map.loadSpot = function() {
-	// マップの表示範囲取得。
-	var rect = Map.map.getBounds();
-	if (rect == null) return;
-	var latNE = rect.getNorthEast().lat();
-	var lngNE = rect.getNorthEast().lng();
-	var latSW = rect.getSouthWest().lat();
-	var lngSW = rect.getSouthWest().lng();
-
-	// サーバーから表示範囲内のマーカー取得。非同期。
-	var areas = Util.getAreas(
-			Math.min(latNE, latSW),
-			Math.min(lngNE, lngSW),
-			Math.max(latNE, latSW),
-			Math.max(lngNE, lngSW)
-	);
-	if (areas[0].length != Map.currentRange) {
-		Spot.clearCache();
-		Map.areaFlags = {};
-		Map.currentRange = areas[0].length;
-//console.log("------->Map.currentRange="+Map.currentRange+":"+areas.length);
-	}
-
-	for(var i=0; i<areas.length; i++) {
-		var area = areas[i];
-		if (!Map.areaFlags[area]) {
-			Kokorahen.listSpotAsync(Map.protMarkers, {
-				area: area, tag:Map.searchTag, limit: Map.LIMIT
-			});
-			Map.areaFlags[area] = true;
-		}
-	}
-	$("//a[target='_blank']").attr("href","#");
-};
-
-/**
- * 表示範囲内のマーカー取得コールバック。
- */
-Map.protMarkers = {
-	success: function(list, args) {
-		//console.log("------->list.len="+list.length+":"+args[1].area);
-		var isUpdate = false;
-		for (var i=0; i<list.length; i++) {
-			if (isUpdate == false && Spot.all[list[i]] == undefined) {
-				isUpdate = true;
-			}
-			Spot.getSpot(list[i]);
-		}
-		var page = $.mobile.activePage.attr("id");
-		if (isUpdate == true) {
-			if (page=="list") {
-				List.onBeforeShow();
-			} else {
-				Spot.visible(Map.LIMIT);
-			}
-		}
-	},
-	fail: function(e) {
-		alert(e);
-	}
-}
-
-Map.clearSpot = function() {
-	Spot.clearCache();
+	Spot.load(Map.map);
 	Map.infobox.close();
-	Map.areaFlags = {};
 }

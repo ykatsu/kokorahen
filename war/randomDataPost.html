@@ -103,7 +103,8 @@ function tags() {
 };
 
 function appraise() {
-	return Math.floor(Math.random() * 400000)/100000+1.0;
+	var x = Math.floor(Math.random() * 5);
+	return Math.floor(Math.random() * 100000 * x)/100000+1.0;
 }
 
 function makeData() {
@@ -128,8 +129,8 @@ appraise: appraise()
 	return aaa;
 }
 
-function go() {
-	for (var i=0; i<100; i++) {
+function go(n) {
+	for (var i=0; i<n; i++) {
 		Kokorahen.writeSpot(makeData());
 	}
 }
@@ -141,7 +142,8 @@ function clean() {
 </script>
 </head>
 <body>
-<button type="button" onclick="go()">Post x100</button>
+<button type="button" onclick="go(100)">Post x100</button>
+<button type="button" onclick="go(1000)">Post x1000</button>
 <button type="button" onclick="clean()">Clean</button>
 </body>
 

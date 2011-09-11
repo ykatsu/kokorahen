@@ -8,6 +8,9 @@ public class Params  {
 	public Params(Map map) {
 		this.map = map;
 	}
+	public Object get(String key) {
+		return map.get(key);
+	}
 
 	public String toString(String key) {
 		return (String) map.get(key);

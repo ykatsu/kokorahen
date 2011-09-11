@@ -13,11 +13,6 @@ function Spot(data) {
 	this.marker.setVisible(false);
 	google.maps.event.addListener(this.marker, 'click', Spot.onSpotMarkerClick);
 }
-Spot.ID = "#spot";
-Spot.MAP = "#mapCanvas2";
-Spot.MAP_MASK = "#mapCanvas2Mask";
-Spot.HOME_IMG = "/images/Home.png";
-Spot.current = null;
 
 
 Spot.makePinImg = function(color) {
@@ -46,89 +41,25 @@ Spot.PIN_SHADOW = new google.maps.MarkerImage(
 );
 
 
-
 Spot.init = function() {
-	var mapopts2 = {
-			zoom: 18, noClear: true,
-			center: Map.DEFAULT_CENTER,
-			scaleControl: false, disableDefaultUI: true,
-			mapTypeId: google.maps.MapTypeId.ROADMAP
-	}
-
-	Spot.map = new google.maps.Map(document.getElementById("mapCanvas2"),mapopts2);
-	Spot.marker2 = new google.maps.Marker({
-		position: Map.DEFAULT_CENTER, map: Spot.map,
-		draggable: true
-	});
-	google.maps.event.addListener(Spot.map, 'idle', Spot.onMap2Idle);
-	google.maps.event.addListener(Spot.map, 'click', Spot.onMap2Click);
-
-	$(Spot.MAP_MASK).click( function(){
-		$(document.spot.address).focus();
-	});
-	$(Spot.ID).click( function(){
-		$(document.spot).blur();
-	});
-
-	var form = document.spot;
-	$(form.address).focus( function(){
-		$(Spot.MAP_MASK).hide();
-	}).blur( function(){
-		$(Spot.MAP_MASK).show();
-	});
-
-
-	$(form.timeLunchMax).focus(function(ev) {
-		var min = $(form.timeLunchMin);
-		var max = $(this);
-		if (min.val() > max.val()) {
-			max.val(min.val());
-			//max.selectmenu("refresh");
-			max.blur();
-			max.focus();
-		}
-	});
-	$(form.timeDinnerMax).focus(function(ev) {
-		var min = $(form.timeDinnerMin);
-		var max = $(this);
-		if (min.val() > max.val()) {
-			max.val(min.val());
-			//max.selectmenu("refresh");
-			max.blur();
-			max.focus();
-		}
-	});
-
-	function getTimeHtml(start, end) {
-		var html = "";
-		for (var h=start; h<=end; h++) {
-			var hh = ("0"+h).match(/[0-9]{2}$/)[0];
-			for (var m=0; m<60; m+=30) {
-				var hhmm = hh + ":" + ("0"+m).match(/[0-9]{2}$/)[0];
-				html += "<option>"+hhmm+"</option>"
-			}
-		}
-		return html;
-	}
-	
-	var optNil = "<option value=''>--:--</option>";
-	var opt0_6   = getTimeHtml(0,6);
-	var opt7_13  = getTimeHtml(7,13);
-	var opt14_23 = getTimeHtml(14,23);
-	var opt24_30 = getTimeHtml(24,30);
-
-	var lunch = optNil+opt7_13+opt14_23+opt0_6;
-	var dinner = optNil+opt14_23+opt24_30+opt7_13;
-	$(form.timeLunchMin).html(lunch);
-	$(form.timeLunchMax).html(lunch);
-	$(form.timeDinnerMin).html(dinner);
-	$(form.timeDinnerMax).html(dinner);
-
+	// nop.
+}
+Spot.onSpotMarkerClick = function(ev) {
+	Spot.setCurrent(this.spot);
+	if (Spot.current == null) return;
+	var addr = Spot.current.data.address.replace(/^日本,/,"");
+	var msg = "<div class='BalloonLine1'>"+Spot.current.data.name+"</div>"
+		+"<div class='BalloonLine2'>"+addr+"</div>";
+	Map.infobox.open(this, msg);
 }
 
+//--------------------------------------------------------------
+// Spot Cache
 Spot.all = {};
 Spot.list = [];
-Spot.isMapFocus = false;
+Spot.areaFlags = {};
+Spot.currentRange = 0;
+Spot.LIMIT = 30;
 
 Spot.getSpot = function(data) {
 	if (Spot.all[data.id]) return Spot.all[data.id];
@@ -137,7 +68,7 @@ Spot.getSpot = function(data) {
 	Spot.list.push(spot);
 	return spot;
 }
-Spot.clearCache = function() {
+Spot.clearCache= function() {
 	for (var id in Spot.all) {
 		Spot.all[id].marker.setMap(null);
 		Spot.all[id].marker = undefined;
@@ -145,7 +76,60 @@ Spot.clearCache = function() {
 	}
 	delete Spot.list;
 	Spot.list = [];
+	Spot.areaFlags = {};
 }
+
+Spot.load = function(map) {
+	var areas = Spot.getAreas(map);
+	var range = areas[0].length;
+	if (Spot.currentRange != range) {
+		Spot.clearCache();
+		Spot.currentRange = range;
+	}
+	
+	var alive = 0;
+	for (var i=0; i<areas.length; i++) {
+		if (Spot.areaFlags[areas[i]]) {
+			areas[i] = null;
+		} else{
+			alive++;
+		}
+	}
+	if (alive == 0) return;
+	
+	Kokorahen.listSpotAsync(Spot.onload, {
+		areas: areas, tag:Spot.searchTag, limit: Spot.LIMIT+1, range: range
+	});
+	
+	// TODO:なんだっけ？
+	//$("//a[target='_blank']").attr("href","#");
+};
+
+
+/**
+ * 表示範囲内のマーカー取得コールバック。
+ */
+Spot.onload = {
+	success: function(data, args) {
+		// レンジが変更されていたら処理中止
+		if (data.length <= 0) return;
+		if (Spot.currentRange != data[0].area.length) return; 
+
+		for (var j=0; j<data.length; j++) {
+			var area = data[j].area;
+			var list = data[j].spots;
+			Spot.areaFlags[area] = true;
+			for (var i=0; i<list.length; i++) {
+				Spot.getSpot(list[i]);
+			}
+		}
+		Spot.visible(Spot.LIMIT);
+	},
+	fail: function(e) {
+		alert(e.stack);
+	}
+}
+
 Spot.visible = function(limit) {
 	// マップの表示範囲取得。
 	var rect = Map.map.getBounds();
@@ -161,129 +145,100 @@ Spot.visible = function(limit) {
 	var latMax = Math.max(latNE, latSW);
 	var lngMax = Math.max(lngNE, lngSW);
 
-	function inBounds(data) {
-		return (latMin <= data.lat && data.lat < latMax
-			&& lngMin <= data.lng && data.lng < lngMax) 
-			? 10000 : 0;
+	function inBounds(spot) {
+		return (latMin <= spot.data.lat && spot.data.lat < latMax
+			&& lngMin <= spot.data.lng && spot.data.lng < lngMax);
 	}
-
-	var list = Spot.list.sort(function(a,b){
-		var ap = a.data.appraise + inBounds(a.data);
-		var bp = b.data.appraise + inBounds(b.data);
+	
+	
+	var spots = Spot.list;
+	for (var i=0; i<spots.length; i++) {
+		spots[i].inBounds = inBounds(spots[i]);
+	}
+console.log("--->"+spots.length);
+	spots.sort(function(a,b){
+		var ap = a.data.appraise + (a.inBounds?1000.0:0.0);
+		var bp = b.data.appraise + (b.inBounds?1000.0:0.0);
 		if (ap == bp) return 0;
 		return (ap < bp) ? 1 : -1;
 	});
-	//console.log("----->"+list.length);
-	for (var i=0; i<limit && i<list.length; i++) {
-		list[i].marker.setVisible(true);
+	//console.log("----->"+spots.length);
+	if (Spot.currentRange >= (7*2+1)) limit = 1000;
+	for (var i=0; i<limit && i<spots.length; i++) {
+		if (! spots[i].inBounds) break;
+		spots[i].marker.setVisible(true);
 	}
-	for (var i=limit; i<list.length; i++) {
-		list[i].marker.setVisible(false);
+	if (i<spots.length) {
+		for (; i<spots.length; i++) {
+			spots[i].marker.setVisible(false);
+		}
+		return false;
 	}
-}
-Spot.onSpotMarkerClick = function(ev) {
-	Spot.setCurrent(this.spot);
-	if (Spot.current == null) return;
-	var addr = Spot.current.data.address.replace(/^日本,/,"");
-	var msg = "<div class='BalloonLine1'>"+Spot.current.data.name+"</div>"
-		+"<div class='BalloonLine2'>"+addr+"</div>";
-	Map.infobox.open(this, msg);
-}
-Spot.onMap2Click = function(ev) {
-	Spot.marker2.setPosition(ev.latLng);
-	Spot.marker2.setVisible(true);
-	Spot.setSpotPos(Spot.marker2.getPosition());
-	//Spot.map.setCenter(Spot.marker2.getPosition());
-}
-Spot.onMap2Idle = function(ev) {
-	$("//a[target='_blank']").attr("href","#");
+	return true;
 }
 
+Spot.AREA_RANGE = [
+	{width:5.0,    mode:1,      len:3}, // 100Km
+	{width:0.5,    mode:10,     len:5}, // 10Km
+	{width:0.05,   mode:100,    len:6}, // 1Km
+	{width:0.004,  mode:1000,   len:7}, // 100m
+	{width:0.0005, mode:10000,  len:8}  // 10m
+];
 
-Spot.setCurrent = function(cur){
-	Spot.current = cur;
-	var pos;
 
-	var spotForm = document.spot;
-	var spotImage = $("#spotImage");
-	spotImage.attr("src", Spot.HOME_IMG);
-
-	var sd = Spot.current.data;
-	if (sd == null) {
-		pos = Spot.current.marker.getPosition();
-
-		for (var i=0; i<spotForm.length; i++) {
-			spotForm[i].value = "";
-		}
-		SpotTags.setFormTags([]);
-		ClosedDays.clear();
-		Spot.setSpotPos(pos);
-
-		$("#spotReviewBtn").hide();
-
-	} else {
-		pos = new google.maps.LatLng(sd.lat, sd.lng);
-
-		for (var key in sd) {
-			if (spotForm[key]) spotForm[key].value = sd[key];
-		}
-		SpotTags.setFormTags(sd.tags);
-		ClosedDays.setValue(sd.closedDay.split(","));
+Spot.getAreas = function(map, range){
+	// マップの表示範囲取得。
+	var rect = map.getBounds();
+	if (rect == null) return;
+	var latNE = rect.getNorthEast().lat();
+	var lngNE = rect.getNorthEast().lng();
+	var latSW = rect.getSouthWest().lat();
+	var lngSW = rect.getSouthWest().lng();
+	// サーバーから表示範囲内のマーカー取得。非同期。
+	var minLat = Math.min(latNE, latSW);
+	var minLng = Math.min(lngNE, lngSW);
+	var maxLat = Math.max(latNE, latSW);
+	var maxLng = Math.max(lngNE, lngSW);
 	
-		if (sd.image != null && sd.image != "") {
-			spotImage.attr("src", sd.image);
+	
+	if (undefined === range) {
+		var w = maxLng - minLng;
+		range = 0;
+		for (var i=1; i<Spot.AREA_RANGE.length; i++) {
+			if (w < Spot.AREA_RANGE[i].width) range = i;
 		}
-		$("#spotReviewBtn").show();
 	}
 
-	Spot.marker2.setPosition(pos);
-	//Spot.marker2.setVisible(true);
-	//Spot.map.setCenter(pos);
-};
+	var list = [];
+	var mode = Spot.AREA_RANGE[range].mode;
+	var len = Spot.AREA_RANGE[range].len;
+	
+	minLat = Math.floor(minLat*mode);
+	minLng = Math.floor(minLng*mode);
+	maxLat = Math.floor(maxLat*mode);
+	maxLng = Math.floor(maxLng*mode);
 
-//Spot.onBeforeShow = function(ev, info){
-	//Util.dialogFinally();
-//}
-
-Spot.onShow = function(ev, info){
-	Util.dialogFinally();
-	// Note: 地図が初期状態で非表示だと誤動作するのでその対処。
-	google.maps.event.trigger(Spot.map, "resize");
-	Spot.marker2.setVisible(true);
-	Spot.map.setCenter(Spot.marker2.getPosition());
-	SpotTags.setLabel($("#spotTags")[0],SpotTags.formTags,"ジャンル選択");
-	ClosedDays.updateLabel();
-};
-
-Spot.setSpotPos = function(pos){
-	var spotForm = document.spot;
-	spotForm.lat.value = pos.lat();
-	spotForm.lng.value = pos.lng();
-
-	// 座標から住所を取得しinputタグに設定。
-	var geocoder = new google.maps.Geocoder();
-	geocoder.geocode({latLng: pos}, function(results, status){
-		var addr = "???";
-		if(status == google.maps.GeocoderStatus.OK){
-			addr = results[0].formatted_address;
+	for (var lat = minLat; lat<=maxLat; lat+=1) {
+		for (var lng = minLng; lng<=maxLng; lng+=1) {
+			var area =
+				Util.toZeroPrefix((lat/mode),len)+","+
+				Util.toZeroPrefix((lng/mode),len);
+			list.push(area);
+			if (list.length>100) return list;
 		}
-		spotForm.address.value = addr;
-		spotForm.address.scrollLeft = 1000;
-	});
-};
-
-Spot.write = function(){
-	var params = {};
-	var elems = document.spot.elements;
-	for (var i=0; i<elems.length; i++) {
-		params[elems[i].name] = elems[i].value;
 	}
-	params.tags = SpotTags.formTags;
-	params.closedDay = ClosedDays.getValue().join(",");
-	var id = Kokorahen.writeSpot(params);
-	alert("sopt id="+id);
-
-	if (params.id == "") {
-		Map.clearSpot();
+	return list;
+	
+	/*
+	if (list.length <= 1) return list;
+	// center sort.
+	var res = [];
+	var center = Math.floor(list.length/2);
+	for (var i=0; i<center; i++) {
+		res.push(list[center-i]);
+		if (list.length > center+i+1) res.push(list[center+i+1]);
 	}
+	
+	return res;
+	*/
 }
