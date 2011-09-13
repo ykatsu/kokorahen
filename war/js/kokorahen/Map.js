@@ -70,7 +70,7 @@ Map.onBalloonClick = function(ev) {
 }
 
 Map.onMarkerClick = function(ev) {
-	Spot.setCurrent({marker:Map.marker});
+	SpotInfo.setCurrent({marker:Map.marker});
 	Map.infobox.close();
 	Util.changePage(SpotInfo.ID);
 	return Util.eventBreaker(ev);

@@ -9,7 +9,7 @@ SpotReview.init = function() {
 	// nop.
 }
 SpotReview.onBeforeShow = function(ev, info){
-	SpotReview.load(Spot.current.data.id);
+	SpotReview.load(SpotInfo.current.data.id);
 }
 
 SpotReview.load = function(spotId) {

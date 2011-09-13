@@ -12,7 +12,7 @@ $(function(){
 //$("body").live('pagecreate',function(event){
 		//var modules = [Login, Map, Timeline, List, Memo, User, Spot, SpotReview, Review];
 	
-	var modules = [Login, User, Map, Timeline, List, Memo, Spot, 
+	var modules = [Login, User, Map, Timeline, List, Memo, Spot, SpotInfo,
 	               SpotReview, Review, SpotTags, ClosedDays, Util];
 
 	function init(m) {

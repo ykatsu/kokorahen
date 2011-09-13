@@ -45,10 +45,10 @@ Spot.init = function() {
 	// nop.
 }
 Spot.onSpotMarkerClick = function(ev) {
-	Spot.setCurrent(this.spot);
-	if (Spot.current == null) return;
-	var addr = Spot.current.data.address.replace(/^日本,/,"");
-	var msg = "<div class='BalloonLine1'>"+Spot.current.data.name+"</div>"
+	SpotInfo.setCurrent(this.spot);
+	if (SpotInfo.current == null) return;
+	var addr = SpotInfo.current.data.address.replace(/^日本,/,"");
+	var msg = "<div class='BalloonLine1'>"+SpotInfo.current.data.name+"</div>"
 		+"<div class='BalloonLine2'>"+addr+"</div>";
 	Map.infobox.open(this, msg);
 }
