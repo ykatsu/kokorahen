@@ -59,7 +59,10 @@ Spot.all = {};
 Spot.list = [];
 Spot.areaFlags = {};
 Spot.currentRange = 0;
+Spot.currentAreas = null;
+Spot.currentZoom = 0;
 Spot.LIMIT = 30;
+Spot.visibleStack = 0;
 
 Spot.getSpot = function(data) {
 	if (Spot.all[data.id]) return Spot.all[data.id];
@@ -78,6 +81,11 @@ Spot.clearCache= function() {
 	Spot.list = [];
 	Spot.areaFlags = {};
 }
+Spot.onZoomChanged = function(zoom) {
+	Spot.currentZoom = zoom;
+	Spot.currentAreas = null;
+	//console.log("==========>zoom="+zoom);
+}
 
 Spot.load = function(map) {
 	var areas = Spot.getAreas(map);
@@ -86,7 +94,7 @@ Spot.load = function(map) {
 		Spot.clearCache();
 		Spot.currentRange = range;
 	}
-	
+/*
 	var alive = 0;
 	for (var i=0; i<areas.length; i++) {
 		if (Spot.areaFlags[areas[i]]) {
@@ -100,11 +108,36 @@ Spot.load = function(map) {
 	Kokorahen.listSpotAsync(Spot.onload, {
 		areas: areas, tag:Spot.searchTag, limit: Spot.LIMIT+1, range: range
 	});
+*/
+	console.log(areas);
+	Spot.currentAreas = areas;
+	Spot.visibleStack = 0;
+	Spot.loadDelay(areas, 0);
 	
 	// TODO:なんだっけ？
 	//$("//a[target='_blank']").attr("href","#");
 };
 
+Spot.loadDelay = function(areas, i) {
+	if (i >= areas.length) return;
+	if (Spot.currentAreas != areas) {
+		console.log("==========>CANCEL:"+i+":"+areas.length);
+		return; 
+	}
+
+	if (Spot.areaFlags[areas[i]]) {
+		Spot.loadDelay(areas, i+1);
+	} else {
+		Kokorahen.listSpotAsync(Spot.onload, {
+			areas: [areas[i]], tag:Spot.searchTag, 
+			limit: Spot.LIMIT, range: Spot.currentRange
+		})
+		
+		setTimeout(function(){
+			Spot.loadDelay(areas, i+1);
+		}, 100);
+	}
+}
 
 /**
  * 表示範囲内のマーカー取得コールバック。
@@ -123,12 +156,24 @@ Spot.onload = {
 				Spot.getSpot(list[i]);
 			}
 		}
-		Spot.visible(Spot.LIMIT);
+		Spot.visibleDelay();
 	},
 	fail: function(e) {
 		alert(e.stack);
 	}
 }
+
+Spot.visibleDelay = function() {
+	Spot.visibleStack++;
+	setTimeout(function(){
+		if (--Spot.visibleStack <= 0) {
+			Spot.visible(Spot.LIMIT);
+			Spot.visibleStack = 0;
+		}
+		//console.log("-->"+Spot.visibleStack);
+	}, 200);
+}
+
 
 Spot.visible = function(limit) {
 	// マップの表示範囲取得。
@@ -155,7 +200,7 @@ Spot.visible = function(limit) {
 	for (var i=0; i<spots.length; i++) {
 		spots[i].inBounds = inBounds(spots[i]);
 	}
-console.log("--->"+spots.length);
+//console.log("--->"+spots.length);
 	spots.sort(function(a,b){
 		var ap = a.data.appraise + (a.inBounds?1000.0:0.0);
 		var bp = b.data.appraise + (b.inBounds?1000.0:0.0);
@@ -163,7 +208,7 @@ console.log("--->"+spots.length);
 		return (ap < bp) ? 1 : -1;
 	});
 	//console.log("----->"+spots.length);
-	if (Spot.currentRange >= (7*2+1)) limit = 1000;
+	if (Spot.currentZoom >= 20) limit = 1000;
 	for (var i=0; i<limit && i<spots.length; i++) {
 		if (! spots[i].inBounds) break;
 		spots[i].marker.setVisible(true);

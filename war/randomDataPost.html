@@ -11,10 +11,11 @@
 	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=2" ></script>
 
 	<script>
-var lngMin = 139.73-0.3;
-var lngMax = 139.73+0.3;
-var latMin = 35.6-0.3;
-var latMax = 35.6+0.3;
+var LEN = 0.3;
+var lngMin = 139.73-LEN;
+var lngMax = 139.73+LEN;
+var latMin = 35.6-LEN;
+var latMax = 35.6+LEN;
 function lat() {
 	return latMin + (latMax-latMin) * Math.random();
 }

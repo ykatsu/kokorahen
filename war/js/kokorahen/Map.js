@@ -35,6 +35,7 @@ Map.init = function() {
 		// マップ、バルーンのイベントハンドラ設定。
 		google.maps.event.addListener(Map.map, 'click', Map.onMapClick);
 		google.maps.event.addListener(Map.map, 'idle', Map.onMapIdol);
+		google.maps.event.addListener(Map.map, 'zoom_changed', Map.onZoomChanged);
 		google.maps.event.addListener(Map.marker, 'click', Map.onMarkerClick);
 		Map.infobox.addEventListener('click', Map.onBalloonClick, false);
 		Map.setCenterFromGPS();
@@ -74,6 +75,9 @@ Map.onMarkerClick = function(ev) {
 	Map.infobox.close();
 	Util.changePage(SpotInfo.ID);
 	return Util.eventBreaker(ev);
+}
+Map.onZoomChanged = function(ev) {
+	Spot.onZoomChanged(Map.map.getZoom());
 }
 
 Map.updateOrientation = function(ev) {

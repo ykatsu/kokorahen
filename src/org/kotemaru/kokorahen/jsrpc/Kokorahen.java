@@ -408,11 +408,7 @@ System.out.println("--->"+map);
 		Integer limit = params.toInteger("limit");
 		Integer range = params.toInteger("range");
 
-		if (areas.size() <= 4) limit = limit * 2;
-		if (range != null && range >= (7*2+1)) { // 100m
-			limit = 999;
-		}
-	
+
 		List<AreaSpotBean> result = new ArrayList<AreaSpotBean>(areas.size());
 		SpotModelMeta e = SpotModelMeta.get();
 		for (String area : areas) {
