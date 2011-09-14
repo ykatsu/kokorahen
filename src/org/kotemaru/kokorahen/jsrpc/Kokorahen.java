@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -399,7 +400,67 @@ System.out.println("--->"+map);
 		return list;
 	}
 ---*/
+	public List<SpotModel> getSpots(Map map){
+		Params params = new Params(map);
+		double latMin =  params.toDouble("latMin");
+		double lngMin =  params.toDouble("lngMin");
+		double latMax =  params.toDouble("latMax");
+		double lngMax =  params.toDouble("lngMax");
+		Integer limit = params.toInteger("limit");
+		List<String> areas = (List<String>) params.get("areas");
 
+		SpotModelMeta e = SpotModelMeta.get();
+		Iterator<SpotModel>[] qs = new Iterator[areas.size()];
+		for (int i=0; i<qs.length; i++) {
+			ModelQuery q = Datastore.query(e);
+			q.filter(e.areas.in(areas.get(i)));
+			q.sort(e.appraise.desc);
+			qs[i] = q.asIterator();
+		}
+		
+		SpotModel[] spots = new SpotModel[qs.length];
+		for (int i=0; i<qs.length; i++) {
+			while (spots[i] == null && qs[i].hasNext()) {
+				spots[i] = qs[i].next();
+				if (!inBounds(spots[i],latMin,lngMin,latMax,lngMax)) {
+					spots[i] = null;
+				}
+			}
+		}
+
+		List<SpotModel> list = new ArrayList<SpotModel>(limit);
+		for (int i=0; i<limit; i++) {
+			int maxJ = -1;
+			float maxA = -10000.0F;
+			for (int j=0; j<spots.length; j++) {
+				if (spots[j] != null && spots[j].getAppraise() > maxA) {
+					maxJ = j;
+					maxA = spots[j].getAppraise();
+				}
+			}
+			if (maxJ == -1) break;
+			list.add(spots[maxJ]);
+			spots[maxJ] = null;
+			while (spots[maxJ] == null && qs[maxJ].hasNext()) {
+				spots[maxJ] = qs[maxJ].next();
+				if (!inBounds(spots[maxJ],latMin,lngMin,latMax,lngMax)) {
+					spots[maxJ] = null;
+				}
+			}
+		}
+		
+		System.out.println("spots="+list.size()+"\n"+params);
+
+		return list;
+	}
+
+	private boolean inBounds(SpotModel spot, double latMin, double lngMin,
+			double latMax, double lngMax) {
+		double lat = spot.getLat();
+		double lng = spot.getLng();
+		return latMin<=lat && lat<=latMax && lngMin<=lng && lng<=lngMax;
+	}
+	
 	public  List<AreaSpotBean> listSpot(Map map){
 		Params params = new Params(map);
 		//String area = params.toString("area");

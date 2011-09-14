@@ -36,6 +36,7 @@ Map.init = function() {
 		google.maps.event.addListener(Map.map, 'click', Map.onMapClick);
 		google.maps.event.addListener(Map.map, 'idle', Map.onMapIdol);
 		google.maps.event.addListener(Map.map, 'zoom_changed', Map.onZoomChanged);
+		google.maps.event.addListener(Map.map, 'center_changed', Map.onCenterChanged);
 		google.maps.event.addListener(Map.marker, 'click', Map.onMarkerClick);
 		Map.infobox.addEventListener('click', Map.onBalloonClick, false);
 		Map.setCenterFromGPS();
@@ -78,6 +79,9 @@ Map.onMarkerClick = function(ev) {
 }
 Map.onZoomChanged = function(ev) {
 	Spot.onZoomChanged(Map.map.getZoom());
+}
+Map.onCenterChanged = function(ev) {
+	Spot.onCenterChanged();
 }
 
 Map.updateOrientation = function(ev) {

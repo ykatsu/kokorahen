@@ -86,6 +86,9 @@ Spot.onZoomChanged = function(zoom) {
 	Spot.currentAreas = null;
 	//console.log("==========>zoom="+zoom);
 }
+Spot.onCenterChanged = function() {
+	Spot.currentAreas = null;
+}
 
 Spot.load = function(map) {
 	var areas = Spot.getAreas(map);
@@ -109,34 +112,82 @@ Spot.load = function(map) {
 		areas: areas, tag:Spot.searchTag, limit: Spot.LIMIT+1, range: range
 	});
 */
+/*
 	console.log(areas);
 	Spot.currentAreas = areas;
 	Spot.visibleStack = 0;
-	Spot.loadDelay(areas, 0);
+	setTimeout(function(){
+		Spot.loadDelay(areas, 0, 1, Spot.currentZoom);
+	}, 200);
+*/
+
+	Spot.currentAreas = areas;
+	setTimeout(function(){
+		if (Spot.currentAreas != areas) return;
+		console.log("==========>POST="+areas);
+
+		var params =  {
+				areas: areas, tag:Spot.searchTag, 
+				limit: Spot.LIMIT, range: Spot.currentRange
+		};
+		Spot.getBounds(Map.map, params);
+		Kokorahen.getSpotsAsync(Spot.onloadGetSpots, params);
+	}, 200);
+	
 	
 	// TODO:なんだっけ？
 	//$("//a[target='_blank']").attr("href","#");
 };
+Spot.onloadGetSpots = {
+		success: function(list, args) {
+			if (args[1].areas != Spot.currentAreas) return;
+			
+			
+			for (var i=0; i<list.length; i++) {
+				Spot.getSpot(list[i]);
+			}
+			Spot.visibleDelay();
+		},
+		fail: function(e) {
+			alert(e.stack);
+		}
+}
 
-Spot.loadDelay = function(areas, i) {
-	if (i >= areas.length) return;
-	if (Spot.currentAreas != areas) {
+
+Spot.loadDelay = function(areas, i, n, zoom) {
+	if (i >= areas.length) {
+		Spot.visible();
+		return;
+	}
+	if (Spot.currentAreas != areas || Spot.currentZoom != zoom) {
 		console.log("==========>CANCEL:"+i+":"+areas.length);
 		return; 
 	}
 
-	if (Spot.areaFlags[areas[i]]) {
-		Spot.loadDelay(areas, i+1);
-	} else {
-		Kokorahen.listSpotAsync(Spot.onload, {
-			areas: [areas[i]], tag:Spot.searchTag, 
-			limit: Spot.LIMIT, range: Spot.currentRange
-		})
-		
-		setTimeout(function(){
-			Spot.loadDelay(areas, i+1);
-		}, 100);
+	var _areas = [];
+	for (; i<areas.length; i++) {
+		if (! Spot.areaFlags[areas[i]]) {
+			_areas.push(areas[i]);
+			if (_areas.length >= n) break;
+		}
 	}
+	if (_areas.length == 0) {
+		Spot.visible();
+		return;
+	}
+
+	var limit = Spot.LIMIT;
+	if (Spot.currentRange >= 20) limit = 999;
+	console.log("==========>POST:"+_areas);
+	Kokorahen.listSpotAsync(Spot.onload, {
+		areas: _areas, tag:Spot.searchTag, 
+		limit: limit, range: Spot.currentRange
+	})
+		
+	setTimeout(function(){
+		Spot.loadDelay(areas, i+1, (n+1)*(n+1),zoom);
+	}, 500);
+
 }
 
 /**
@@ -167,7 +218,7 @@ Spot.visibleDelay = function() {
 	Spot.visibleStack++;
 	setTimeout(function(){
 		if (--Spot.visibleStack <= 0) {
-			Spot.visible(Spot.LIMIT);
+			Spot.visible();
 			Spot.visibleStack = 0;
 		}
 		//console.log("-->"+Spot.visibleStack);
@@ -176,6 +227,8 @@ Spot.visibleDelay = function() {
 
 
 Spot.visible = function(limit) {
+	if (undefined === limit) limit = Spot.LIMIT;
+		
 	// マップの表示範囲取得。
 	var rect = Map.map.getBounds();
 	if (rect == null) return;
@@ -213,9 +266,11 @@ Spot.visible = function(limit) {
 		if (! spots[i].inBounds) break;
 		spots[i].marker.setVisible(true);
 	}
+	console.log("----->visible="+i+":"+limit+":"+spots.length);
+
 	if (i<spots.length) {
 		for (; i<spots.length; i++) {
-			spots[i].marker.setVisible(false);
+			if (spots[i].inBounds) spots[i].marker.setVisible(false);
 		}
 		return false;
 	}
@@ -272,18 +327,35 @@ Spot.getAreas = function(map, range){
 			if (list.length>100) return list;
 		}
 	}
-	return list;
+	//return list;
 	
-	/*
+
 	if (list.length <= 1) return list;
 	// center sort.
 	var res = [];
 	var center = Math.floor(list.length/2);
-	for (var i=0; i<center; i++) {
-		res.push(list[center-i]);
-		if (list.length > center+i+1) res.push(list[center+i+1]);
+	for (var i=0; i<=center; i++) {
+		if (0 <= center-i-1) res.push(list[center-i-1]);
+		if (list.length > center+i) res.push(list[center+i]);
 	}
-	
+//console.log("===>"+list);	
+//console.log("--->"+res);	
 	return res;
-	*/
+
 }
+
+Spot.getBounds = function(map, params){
+	// マップの表示範囲取得。
+	var rect = map.getBounds();
+	if (rect == null) return null;
+	var latNE = rect.getNorthEast().lat();
+	var lngNE = rect.getNorthEast().lng();
+	var latSW = rect.getSouthWest().lat();
+	var lngSW = rect.getSouthWest().lng();
+
+	params.latMin = Math.min(latNE, latSW);
+	params.lngMin = Math.min(lngNE, lngSW);
+	params.latMax = Math.max(latNE, latSW);
+	params.lngMax = Math.max(lngNE, lngSW);
+	return params;
+}	
