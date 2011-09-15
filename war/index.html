@@ -9,9 +9,13 @@
 	<!-- This apps Server -->
 	<script src="/js/Jsrpc.js?v=1" ></script>
 	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=2" ></script>
+	<script src="/js/kokorahen/PCookie.js"></script>
 	
 	<script>
+console.log(document.cookie);
 var __Login_user = Kokorahen.getLoginUser();
+PCookie.setMaxAge("JSESSIONID",1000000);
+
 if (__Login_user == null) {
 	location.href = "login.html";
 }

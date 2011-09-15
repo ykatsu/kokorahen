@@ -88,6 +88,7 @@ public class Kokorahen implements JsrpcEnvironment {
 	// 公開メソッド
 
 	public  UserModel getLoginUser() {
+System.out.println("getLoginUser:"+loginUser+":"+getSession(false).getId());
 		return loginUser;
 	}
 

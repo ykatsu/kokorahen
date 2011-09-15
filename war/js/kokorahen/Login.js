@@ -32,3 +32,4 @@ Login.logout = function() {
 	}
 	Login.user = null;
 }
+

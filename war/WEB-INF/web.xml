@@ -7,7 +7,7 @@
 >
 
 
-
+<!--
 	<filter>
 		<filter-name>SessionFilter</filter-name>
 		<filter-class>org.kotemaru.jsrpc.SessionFilter</filter-class>
@@ -16,7 +16,7 @@
 		<filter-name>SessionFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-
+-->
 	<servlet>
 		<servlet-name>Calljava</servlet-name>
 		<servlet-class>org.kotemaru.jsrpc.CalljavaServlet</servlet-class>
