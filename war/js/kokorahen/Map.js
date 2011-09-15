@@ -100,8 +100,8 @@ Map.onTagChange = function() {
 	if (tag != Map.searchTag) {
 		// reload.
 		Map.searchTag = tag;
-		Map.clearSpot();
-		Map.loadSpot();
+		Spot.clearCache();
+		Spot.load(Map.map);
 		var label = (tag==null) ? "ジャンル" : tag;
 		$(".TagSelectBtn .ui-btn-text").text(label);
 	}

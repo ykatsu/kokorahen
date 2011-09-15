@@ -127,7 +127,7 @@ Spot.load = function(map) {
 		console.log("==========>POST="+areas);
 
 		var params =  {
-				areas: areas, tag:Spot.searchTag, 
+				areas: areas, tag: SpotTags.getSearchTag(), 
 				limit: Spot.LIMIT, range: Spot.currentRange
 		};
 		Spot.getBounds(Map.map, params);

@@ -409,6 +409,7 @@ System.out.println("--->"+map);
 		double lngMax =  params.toDouble("lngMax");
 		Integer limit = params.toInteger("limit");
 		List<String> areas = (List<String>) params.get("areas");
+		String tag = params.toString("tag");
 
 		SpotModelMeta e = SpotModelMeta.get();
 		Iterator<SpotModel>[] qs = new Iterator[areas.size()];
@@ -416,6 +417,7 @@ System.out.println("--->"+map);
 			ModelQuery q = Datastore.query(e);
 			q.filter(e.areas.in(areas.get(i)));
 			q.sort(e.appraise.desc);
+			if (tag != null) q.filter(e.tags.in(tag));
 			qs[i] = q.asIterator();
 		}
 		
