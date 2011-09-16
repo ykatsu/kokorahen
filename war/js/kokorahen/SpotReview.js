@@ -56,7 +56,8 @@ SpotReview.onReviewClick = function(reviewId) {
 		if (spotId == "") return;
 		var sd = Spot.all[spotId].data;
 		Review.current = {
-			id: "", spotId: sd.id, appraise: 0, comment: ""
+			id: "", spotId: sd.id, appraise: 0, comment: "",
+			nickname: Login.user.nickname, isNewReview:true
 		};
 	} else {
 		Review.current = Review.all[reviewId];

@@ -50,6 +50,7 @@ if (location.hash != "" && location.hash != null) {
 	<script src="/js/kokorahen/SpotTags.js"></script>
 	<script src="/js/kokorahen/Timeline.js"></script>
 	<script src="/js/kokorahen/User.js"></script>
+	<script src="/js/kokorahen/UserConf.js"></script>
 	<script src="/js/kokorahen/Util.js"></script>
 	<script src="/js/kokorahen/onload.js"></script>
 	
@@ -420,6 +421,8 @@ if (location.hash != "" && location.hash != null) {
 			<a data-icon=“plus” href="javascript:SpotReview.onReviewClick()" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content" >
+			<a data-role="button" data-icon=“plus” data-iconpos="right"
+				href="javascript:SpotReview.onReviewClick()" >レビューを書く</a>
 			<br/>
 			<div id="spotReviewList" >
 			</div>
@@ -444,8 +447,18 @@ if (location.hash != "" && location.hash != null) {
 			<input name="appraise" type="hidden"/>
 
 			<div class="FullSizeInput">
-				<input type="text" name="name" placeholder="名前" style="font-size:20px;width:50%;" />
+				<label>Reviewer:</label>
+				<input type="text" name="nickname"  readonly="readonly" />
+				<a id="reviewAddFollowBtn"
+					data-role="button" data-icon=“plus” data-iconpos="right"
+					href="javascript:Review.addFollow()" >この人をフォロー</a>
 			</div>
+			<div class="FullSizeInput">
+				<label>Spot:</label>
+				<input type="text" name="name" placeholder="Spot名" style="font-size:20px;width:50%;" />
+			</div>
+			
+				<label>評価:</label>
 			<div style="width:300px" id="appraise_raty"></div>
 			<div class="FullSizeInput">
 				<textarea name="comment"  cols="100%" rows="10" placeholder="コメント" ></textarea>
@@ -464,10 +477,32 @@ if (location.hash != "" && location.hash != null) {
 	<div id="user" data-role="page">
 		<div data-role="header" data-position="fixed">
 			<h1>User</h1>
-			<a data-icon="gear" href="javascript:" data-iconpos="notext"></a>
+			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
+			<a data-icon="gear" href="#userConf" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content">
 				<form action="" name="user">
+						<input name="username" type="hidden"  readonly="readonly"/>
+					<div class="FullSizeInput">
+						<label ><nobr>ログインユーザ:</nobr></label><br/>
+						<input name="nickname" type="text"  readonly="readonly"/>
+					</div>
+					<a href="javascript:Login.logout()" data-role="button">Logout</a>
+				</form>
+		</div>
+		<div data-role="footer"  data-position="fixed" >
+		</div>
+	</div>
+
+<!-- == UserConf =================================================================== -->
+	<div id="userConf" data-role="page">
+		<div data-role="header" data-position="fixed">
+			<h1>User設定</h1>
+			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
+			<a data-icon="check" href="javascript:User.write()" data-iconpos="notext"></a>
+		</div>
+		<div data-role="content">
+				<form action="" name="userConf">
 					<div class="FullSizeInput">
 						<label ><nobr>User name:</nobr></label><br/>
 						<input  name="username" type="text" readonly="true"/>
@@ -485,7 +520,13 @@ if (location.hash != "" && location.hash != null) {
 						<br clear="all"/>
 					</div>
 					<br clear="all"/>
-					<a href="javascript:Login.logout()" data-role="button">Logout</a>
+					
+					<label ><nobr>Follow users:</nobr></label><br/>
+					<div id="userFollowList" >
+					</div>
+
+					<br clear="all"/>
+					<a href="javascript:UserConf.write()" data-role="button">更新</a>
 				</form>
 		</div>
 		<div data-role="footer"  data-position="fixed" >

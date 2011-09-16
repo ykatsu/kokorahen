@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -124,7 +125,7 @@ System.out.println("getLoginUser:"+loginUser+":"+getSession(false).getId());
 			user.setLastLogin(new Date());
 			Datastore.put(user);
 
-			this.loginUser = user;
+			this.loginUser = collectUserInfo(user);
 			return "/";
 		}
 
@@ -171,10 +172,26 @@ System.out.println("getLoginUser:"+loginUser+":"+getSession(false).getId());
 		}
 		user.setLastLogin(new Date());
 		Datastore.put(user);
-		this.loginUser = user;
+		this.loginUser = collectUserInfo(user);
 		redirect("/");
 		return;
 	}
+
+	private UserModel collectUserInfo(UserModel user) {
+		Map <String,String> nicknameMap = new HashMap<String,String>();
+		for (String name : user.getFollows()) {
+			Key key = Datastore.createKey(UserModel.class, name);
+			try {
+				UserModel u = Datastore.get(UserModel.class, key);
+				nicknameMap.put(name, u.getNickname());
+			} catch (EntityNotFoundRuntimeException e) {
+				LOG.warning("Follow not exitst user:"+name);
+			}
+		}
+		user.setFollowsNickname(nicknameMap);
+		return user;
+	}
+
 
 	public  String logout(String provider) throws Exception {
 		this.loginUser = null;
@@ -199,7 +216,31 @@ System.out.println("logour:"+provider);
 		return url;
 	}
 
+	
+	public  void writeUser(Map map) throws Exception {
+		Params params = new Params(map);
+		String name = params.toString("username");
+		
+		Key key = Datastore.createKey(UserModel.class, name);
+		UserModel user;
+		try {
+			user = Datastore.get(UserModel.class, key);
+		} catch (EntityNotFoundRuntimeException e) {
+			throw e;
+		}
+		user.setNickname(params.toString("nickname"));
+		user.setUpdateDate(new Date());
+		user.setAutoTwit(params.toBoolean("autoTwit"));
+		user.setFollows((List<String>)params.get("follows"));
+		Datastore.put(user);
 
+		if (this.loginUser != null 
+			&& name.equals(this.loginUser.getUsername())) {
+			this.loginUser = collectUserInfo(user);
+		}
+	}
+	
+//------------------------------------------------------------------------------
 	private void twit(String msg) throws Exception {
 		if (twitter == null) {
 			LOG.warning("not twit");

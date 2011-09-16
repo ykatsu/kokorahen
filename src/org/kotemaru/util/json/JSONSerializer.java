@@ -187,35 +187,50 @@ public class JSONSerializer {
 		Method[] methods = obj.getClass().getMethods();
 		for (int i=0; i<methods.length; i++) {
 			String mname = methods[i].getName();
-			// 引数が無く、Objectのメソッドで無く、get[A-Z]で始まるもの。
+			// 引数が無く、Objectのメソッドで無く、get[A-Z]or is[A-Z]で始まるもの。
 			if (methods[i].getParameterTypes().length == 0
 				&& methods[i].getDeclaringClass() != Object.class
-				&& mname.length()>3
-				&& mname.startsWith("get")
-				&& Character.isUpperCase(mname.charAt(3))
 			) {
-				if (count++>0) append(',');
+				String key = getGetterName(mname);
+				if (key != null) {
+					if (count++>0) append(',');
 
-				String key = mname.substring(3);
-				if (key.length() > 1) {
-					key = key.substring(0,1).toLowerCase() + key.substring(1);
-				} else {
-					key = key.toLowerCase();
-				}
-
-				sString(key.toString());
-				append(':');
-				try {
-					sObject(methods[i].invoke(obj));
-				} catch (IOException e) {
-					throw e;
-				} catch (Exception e) {
-					throw new IOException(e);
+					sString(key.toString());
+					append(':');
+					try {
+						sObject(methods[i].invoke(obj));
+					} catch (IOException e) {
+						throw e;
+					} catch (Exception e) {
+						throw new IOException(e);
+					}
 				}
 			}
 		}
 		append('}');
 	}
 
+	private String getGetterName(String mname) {
+		if (mname.startsWith("get")) {
+			if (mname.length()<=3) return null;
+			if (!Character.isUpperCase(mname.charAt(3))) return null;
+			String key = mname.substring(3);
+			if (key.length() > 1) {
+				return key.substring(0,1).toLowerCase() + key.substring(1);
+			} else {
+				return key.toLowerCase();
+			}
+		} else if (mname.startsWith("is")) {
+			if (mname.length()<=2) return null;
+			if (!Character.isUpperCase(mname.charAt(2))) return null;
+			String key = mname.substring(2);
+			if (key.length() > 1) {
+				return key.substring(0,1).toLowerCase() + key.substring(1);
+			} else {
+				return key.toLowerCase();
+			}
+		}
+		return null;
+	}
 }
 

@@ -21,17 +21,26 @@ Review.init = function() {
 }
 
 Review.onBeforeShow = function() {
-	if (Review.current == null) return;
 	var reviewForm = document.review;
+	if (Review.current == null) return;
 	reviewForm.id.value        = Review.current.id;
+	reviewForm.nickname.value  = Review.current.nickname;
 	reviewForm.spotId.value    = Review.current.spotId;
 	reviewForm.comment.value   = Review.current.comment;
 	reviewForm.appraise.value  = Review.current.appraise;
 	$.fn.raty.start(Review.current.appraise, "#appraise_raty");
 
 	reviewForm.name.value = Spot.all[Review.current.spotId].data.name;
+	if (Review.current.isNewReview) {
+		$("#reviewAddFollowBtn").hide();
+	} else {
+		$("#reviewAddFollowBtn").show();
+	}
 }
 
+Review.addFollow = function() {
+	UserConf.addFollow(Review.current.username);
+}
 
 Review.write = function() {
 	var params = {};

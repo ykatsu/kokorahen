@@ -32,4 +32,6 @@ Login.logout = function() {
 	}
 	Login.user = null;
 }
-
+Login.refresh = function() {
+	Login.user = Kokorahen.getLoginUser();
+}

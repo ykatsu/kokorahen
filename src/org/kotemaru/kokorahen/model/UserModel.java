@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.slim3.datastore.Attribute;
 import org.slim3.datastore.Datastore;
@@ -25,6 +26,10 @@ public class UserModel extends ModelBase {
 	private Date lastLogin;
 
 	private boolean autoTwit = false;
+	private List<String> follows = null;
+
+	@Attribute(persistent = false)
+	private Map<String,String> followsNickname = null;
 
 	public String getUsername() {
 		Key key = super.getKey();
@@ -83,6 +88,23 @@ public class UserModel extends ModelBase {
 	public void setLastLogin(Date lastLogin) {
 		this.lastLogin = lastLogin;
 	}
+
+	public List<String> getFollows() {
+		return follows;
+	}
+
+	public void setFollows(List<String> follows) {
+		this.follows = follows;
+	}
+
+	public Map<String, String> getFollowsNickname() {
+		return followsNickname;
+	}
+
+	public void setFollowsNickname(Map<String, String> followsNickname) {
+		this.followsNickname = followsNickname;
+	}
+
 
 
 }
