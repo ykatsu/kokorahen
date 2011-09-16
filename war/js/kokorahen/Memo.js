@@ -8,7 +8,7 @@ Memo.init = function() {
 }
 Memo.onBeforeShow = function() {
 	Util.setNavbar(Memo.ID);
-
+/*
 	var list = List.sortNear();
 	var ul = $("#memoSpots");
 	ul.html("");
@@ -17,6 +17,7 @@ Memo.onBeforeShow = function() {
 				+list[i].id+")'>"+list[i].name+"</a></li>"));
 	}
 	//jqt.setPageHeight();
+*/
 }
 
 Memo.onItemClick = function(id) {

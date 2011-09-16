@@ -167,6 +167,10 @@ if (location.hash != "" && location.hash != null) {
 	padding: 3px 1.5em;
 }
 
+.ui-icon-submit {
+	background: url("images/icon-submit-w.png") no-repeat scroll 0 0 rgba(0, 0, 0, 0.4);
+}
+
 	</style>
 
 </head>
@@ -211,7 +215,7 @@ if (location.hash != "" && location.hash != null) {
 		<div data-role="header" data-position="fixed" data-theme="a" data-add-back-btn="true">
 			<h1>Spot情報</h1>
 			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
-			<a data-icon="check" href="javascript:SpotInfo.write()" data-iconpos="notext"></a>
+			<a data-icon="submit" href="javascript:SpotInfo.write()" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content">
 		<form action="" name="spot">
@@ -330,6 +334,8 @@ if (location.hash != "" && location.hash != null) {
 			</div>
 			
 			<hr/>
+			<a data-role="button" data-icon="submit" data-iconpos="right"
+					href="javascript:SpotInfo.write()">登録</a>
 		</form>
 		</div>
 		<!--
@@ -438,7 +444,7 @@ if (location.hash != "" && location.hash != null) {
 		<div data-role="header" data-position="fixed">
 			<h1>Review</h1>
 			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
-			<a data-icon="check" href="javascript:Review.write()" data-iconpos="notext"></a>
+			<a data-icon="submit" href="javascript:Review.write()" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content">
 		<form action="" name="review">
@@ -464,6 +470,8 @@ if (location.hash != "" && location.hash != null) {
 				<textarea name="comment"  cols="100%" rows="10" placeholder="コメント" ></textarea>
 			</div>
 		</form>
+			<a data-role="button" data-icon="submit" data-iconpos="right"
+					href="javascript:Review.write()">登録</a>
 		</div>
 		<!--
 		<div data-role="footer"  data-position="fixed" >
@@ -499,7 +507,7 @@ if (location.hash != "" && location.hash != null) {
 		<div data-role="header" data-position="fixed">
 			<h1>User設定</h1>
 			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
-			<a data-icon="check" href="javascript:User.write()" data-iconpos="notext"></a>
+			<a data-icon="submit" href="javascript:User.write()" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content">
 				<form action="" name="userConf">
