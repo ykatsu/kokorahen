@@ -41,6 +41,7 @@ SpotInfo.init = function() {
 		$(SpotInfo.MAP_MASK).show();
 	});
 
+	$(form.name).blur(SpotInfo.onNameBlur);
 
 	$(form.timeLunchMax).focus(function(ev) {
 		var min = $(form.timeLunchMin);
@@ -108,6 +109,19 @@ SpotInfo.onMap2Idle = function(ev) {
 	$("//a[target='_blank']").attr("href","#");
 }
 
+SpotInfo.onNameBlur = function(ev) {
+	var spotForm = document.spot;
+	if (spotForm.name.value != ""
+		&& spotForm.furikana.value == "") {
+		Kokorahen.getKanaAsync({
+			success:function(kana){
+				if (spotForm.furikana.value == "") {
+					spotForm.furikana.value = kana;
+				}
+			}
+		}, spotForm.name.value);
+	}
+}
 
 SpotInfo.setCurrent = function(cur){
 	SpotInfo.current = cur;

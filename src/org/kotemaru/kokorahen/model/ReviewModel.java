@@ -16,12 +16,20 @@ public class ReviewModel extends ModelBase {
 	private static final long serialVersionUID = 1L;
 
 	private String username;
-	private String nickname;
 	private Long spotId;
+	private String spotName;
+	private String spotKana;
 	private Date createDate;
 	private Date updateDate;
 	private String comment;
-	private Integer appraise = -1;
+	private Float appraise;
+	private List<String> tags;
+	private String area; // 1Km
+	
+	@Attribute(persistent = false)
+	private String nickname;
+	@Attribute(persistent = false)
+	private String photoUrl;
 
 	public long getId() {
 		return getKey().getId();
@@ -75,12 +83,55 @@ public class ReviewModel extends ModelBase {
 		this.comment = comment;
 	}
 
-	public Integer getAppraise() {
+	public Float getAppraise() {
 		return appraise;
 	}
 
-	public void setAppraise(Integer appraise) {
+	public void setAppraise(Float appraise) {
 		this.appraise = appraise;
 	}
+
+	public List<String> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<String> tags) {
+		this.tags = tags;
+	}
+
+	public String getArea() {
+		return area;
+	}
+
+	public void setArea(String area) {
+		this.area = area;
+	}
+
+	public String getSpotName() {
+		return spotName;
+	}
+
+	public void setSpotName(String spotName) {
+		this.spotName = spotName;
+	}
+
+	public String getSpotKana() {
+		return spotKana;
+	}
+
+	public void setSpotKana(String spotKana) {
+		this.spotKana = spotKana;
+	}
+
+	public String getPhotoUrl() {
+		return photoUrl;
+	}
+
+	public void setPhotoUrl(String photoUrl) {
+		this.photoUrl = photoUrl;
+	}
+
+
+
 
 }

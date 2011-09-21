@@ -24,7 +24,8 @@ import org.kotemaru.jsrpc.MultiPartMap;
 import org.kotemaru.jsrpc.Params;
 import org.kotemaru.jsrpc.annotation.JsRpc;
 import org.kotemaru.kokorahen.bean.AreaSpotBean;
-import org.kotemaru.kokorahen.logic.KakasiLogic;
+import org.kotemaru.kokorahen.logic.LoginLogic;
+import org.kotemaru.kokorahen.logic.UserLogic;
 import org.kotemaru.kokorahen.meta.MemoModelMeta;
 import org.kotemaru.kokorahen.meta.ReviewModelMeta;
 import org.kotemaru.kokorahen.meta.SpotModelMeta;
@@ -38,7 +39,6 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
-import twitter4j.User;
 import twitter4j.auth.RequestToken;
 
 @JsRpc()
@@ -50,6 +50,7 @@ public class Kokorahen implements JsrpcEnvironment {
 	private static final String  GOOGLE = "google";
 	private static final String  TWITTER = "twitter";
 
+	private static final String TOP_PAGE = "/"
 	private static final String BASE_PATH = "/classes/"
 		+ Kokorahen.class.getName().replace('.','/');
 
@@ -96,47 +97,18 @@ System.out.println("getLoginUser:"+loginUser+":"+getSession(false).getId());
 	}
 
 	public  String login(String provider) throws Exception {
-		String url = getServerUrl();
-		if (GOOGLE.equals(provider)) {
-			return loginGoogle(url);
-		} else if (TWITTER.equals(provider)) {
-			return loginTwitter(url);
-		} else {
-			throw new RuntimeException("Unsupported login provider "+provider);
+		LoginLogic ll = LoginLogic.getInstance(this, provider);
+		this.loginUser = ll.getLoginUserModel();
+		if (this.loginUser == null) {
+			return ll.getLoginUrl(getServerUrl()+BASE_PATH+".loginCallback");
 		}
+		return TOP_PAGE;
 	}
 
-
-	public  String loginGoogle(String url) throws Exception {
-		UserService us = UserServiceFactory.getUserService();
-		if (us.getCurrentUser() != null) {
-			String name = us.getCurrentUser().getEmail();
-			Key key = Datastore.createKey(UserModel.class, name);
-			UserModel user;
-			try {
-				user = Datastore.get(UserModel.class, key);
-			} catch (EntityNotFoundRuntimeException e) {
-				user = new UserModel();
-				user.setUsername(name);
-				user.setNickname(name);
-				user.setProvider(GOOGLE);
-				user.setCreateDate(new Date());
-				user.setUpdateDate(new Date());
-				user.setLastLogin(new Date());
-				//user.setFollows(new ArrayList<String>(0));
-			}
-			user.setLastLogin(new Date());
-			Datastore.put(user);
-
-			this.loginUser = collectUserInfo(user);
-			return "/";
-		}
-
-		String callback = url+ BASE_PATH+".googleCallback";
-		return us.createLoginURL(callback);
-	}
-	public  void googleCallback() throws Exception {
-		redirect(login(GOOGLE));
+	public  void loginCallback(String provider) throws Exception {
+		LoginLogic ll = LoginLogic.getInstance(this, provider);
+		ll.loginCallback();
+		redirect(login(provider));
 	}
 
 	private  String loginTwitter(String url) throws Exception {
@@ -159,25 +131,17 @@ System.out.println("getLoginUser:"+loginUser+":"+getSession(false).getId());
 
 		twitter.getOAuthAccessToken(twitterRequestToken, verifier);
 
+		UserLogic ul = UserLogic.getInstance();
 		String name = "@"+twitter.getScreenName();
-		Key key = Datastore.createKey(UserModel.class, name);
-		UserModel user;
-		try {
-			user = Datastore.get(UserModel.class, key);
-		} catch (EntityNotFoundRuntimeException e) {
-			twitter4j.User tuser = twitter.showUser(twitter.getId());
-			user = new UserModel();
-			user.setUsername(name);
-			user.setNickname(tuser.getName());
-			user.setProvider(TWITTER);
-			user.setPhotoUrl(tuser.getProfileImageURL().toExternalForm());
-			user.setCreateDate(new Date());
-			user.setUpdateDate(new Date());
-			user.setAutoTwit(true);
+		UserModel user = ul.getUserModel(name);
+		if (user == null) {
+			String nickname = twitter.showUser(twitter.getId()).getName();
+			user = ul.newUserModel(TWITTER, name, nickname);
 		}
 		user.setLastLogin(new Date());
-		Datastore.put(user);
-		this.loginUser = collectUserInfo(user);
+		ul.putUserModel(user);
+		
+		this.loginUser = ul.collectUserInfo(user);
 		redirect("/");
 		return;
 	}
@@ -223,32 +187,24 @@ System.out.println("logour:"+provider);
 		return url;
 	}
 
-	private HashMap<String,UserModel> cacheUserModel = new HashMap<String,UserModel>();
-	private UserModel getUserModel(String name) {
-		UserModel user = cacheUserModel.get(name);
-		if (user != null) return user;
-		
-		Key key = Datastore.createKey(UserModel.class, name);
-		try {
-			user = Datastore.get(UserModel.class, key);
-			cacheUserModel.put(name, user);
-			return user;
-		} catch (EntityNotFoundRuntimeException e) {
-			return null;
-		}
-	}
+	
 	public  void writeUser(Map map) throws Exception {
 		Params params = new Params(map);
 		String name = params.toString("username");
 		
-		UserModel user =  getUserModel(name);
+		Key key = Datastore.createKey(UserModel.class, name);
+		UserModel user;
+		try {
+			user = Datastore.get(UserModel.class, key);
+		} catch (EntityNotFoundRuntimeException e) {
+			throw e;
+		}
 		user.setNickname(params.toString("nickname"));
 		user.setUpdateDate(new Date());
 		user.setAutoTwit(params.toBoolean("autoTwit"));
 		user.setFollows((List<String>)params.get("follows"));
 		Datastore.put(user);
-		cacheUserModel.remove(name);
-		
+
 		if (this.loginUser != null 
 			&& name.equals(this.loginUser.getUsername())) {
 			this.loginUser = collectUserInfo(user);
@@ -293,7 +249,6 @@ System.out.println("--->"+map);
 		}
 
 		model.setName(params.toString("name"));
-		model.setFurikana(params.toString("furikana"));
 		model.setCreateDate(new Date());
 		model.setUpdateDate(new Date());
 		model.setLat(params.toDouble("lat"));
@@ -379,8 +334,6 @@ System.out.println("--->"+map);
 		model.setUsername(user.getUsername());
 		model.setNickname(user.getNickname());
 		model.setSpotId(params.toLong("spotId"));
-		model.setSpotName(params.toString("spotName"));
-		model.setSpotKana(params.toString("spotKana"));
 		model.setArea(toArea(params.toDouble("lat"),params.toDouble("lng")));
 		model.setCreateDate(new Date());
 		model.setUpdateDate(new Date());
@@ -567,7 +520,7 @@ System.out.println("--->"+map);
 		q.limit(20);
 		List<ReviewModel> list = q.asList();
 		System.out.println("review="+list);
-		return collectReviewModels(list);
+		return list;
 	}
 	
 	public  List<ReviewModel> listTimeline(Map map){
@@ -589,18 +542,17 @@ System.out.println("listTimeline:"+map);
 			System.out.println("review=" + list);
 			return list;
 		} else if (lat != null && follows == null) {
-			return listTimeline(params, lat, lng, limit);
+			return listTimeline(tag, lat, lng, limit);
 		} else if (lat == null && follows != null) {
-			return listTimeline(params, follows, limit);
+			return listTimeline(tag, follows, limit);
 		} else if (lat != null && follows != null) {
-			return listTimeline(params, lat, lng, follows, limit);
+			return listTimeline(tag, lat, lng, follows, limit);
 		}
 		return null; // error
 	}
-	private List<ReviewModel> listTimeline(Params params, 
+	private List<ReviewModel> listTimeline(String tag, 
 			Double lat, Double lng, List<String> follows, 
 			Integer limit) {
-		String tag = params.toString("tag");
 		List<String> areas = getAreas5km(lat,lng);
 
 		ReviewModelMeta e = ReviewModelMeta.get();
@@ -615,14 +567,13 @@ System.out.println("listTimeline:"+map);
 				qs[i] = q.asIterator();
 			}
 		}
-		return listTimeline(params,qs, limit);
+		return listTimeline(qs, limit);
 	}
 	
-	private List<ReviewModel> listTimeline(Params params, 
+	private List<ReviewModel> listTimeline(String tag, 
 			Double lat, Double lng,
 			Integer limit) {
 
-		String tag = params.toString("tag");
 		List<String> areas = getAreas5km(lat,lng);
 		
 		ReviewModelMeta e = ReviewModelMeta.get();
@@ -634,7 +585,7 @@ System.out.println("listTimeline:"+map);
 			q.sort(e.updateDate.desc);
 			qs[i] = q.asIterator();
 		}
-		return listTimeline(params, qs, limit);
+		return listTimeline(qs, limit);
 	}
 	
 	private List<String> getAreas5km(Double lat, Double lng) {
@@ -653,10 +604,9 @@ System.out.println("listTimeline:"+map);
 		return areas;
 	}
 	
-	private List<ReviewModel> listTimeline(Params params, 
+	private List<ReviewModel> listTimeline(String tag, 
 			List<String> follows, Integer limit) {
 		
-		String tag = params.toString("tag");
 
 		ReviewModelMeta e = ReviewModelMeta.get();
 		Iterator<ReviewModel>[] qs = new Iterator[follows.size()];
@@ -667,21 +617,14 @@ System.out.println("listTimeline:"+map);
 			q.sort(e.updateDate.desc);
 			qs[i] = q.asIterator();
 		}
-		return listTimeline(params, qs, limit);
+		return listTimeline(qs, limit);
 	}
-	private List<ReviewModel> listTimeline(Params params, Iterator<ReviewModel>[] qs, Integer limit) {
-		String search = params.toString("search");
+	private List<ReviewModel> listTimeline(Iterator<ReviewModel>[] qs, Integer limit) {
 		
 		ReviewModel[] models = new ReviewModel[qs.length];
 		for (int i=0; i<qs.length; i++) {
 			while (models[i] == null && qs[i].hasNext()) {
 				models[i] = qs[i].next();
-				if (search != null 
-						&& ! isMatch(models[i].getSpotName(), search)
-						&& ! isMatch(models[i].getSpotKana(), search)
-				) {
-						models[i] = null;
-				}
 			}
 		}
 
@@ -700,34 +643,10 @@ System.out.println("listTimeline:"+map);
 			models[maxJ] = null;
 			while (models[maxJ] == null && qs[maxJ].hasNext()) {
 				models[maxJ] = qs[maxJ].next();
-				if (search != null 
-					&& ! isMatch(models[maxJ].getSpotName(), search)
-					&& ! isMatch(models[maxJ].getSpotKana(), search)
-				) {
-					models[maxJ] = null;
-				}
 			}
-		}
-		return collectReviewModels(list);
-	}
-
-	private List<ReviewModel> collectReviewModels(List<ReviewModel> list) {
-		for (ReviewModel model : list) {
-			UserModel user = getUserModel(model.getUsername());
-			model.setNickname(user.getNickname());
-			model.setPhotoUrl(user.getPhotoUrl());
 		}
 		return list;
 	}
-	
-	
-	private static boolean isMatch(String target, String where) {
-		System.out.println("isMatch:"+target+","+where);
-		if (target == null) return false;
-		return target.indexOf(where) >= 0; 
-	}
-	
-	
 	public  void deleteDummyData(){
 		SpotModelMeta e = SpotModelMeta.get();
 		ModelQuery q = Datastore.query(e);
@@ -737,8 +656,4 @@ System.out.println("listTimeline:"+map);
 		System.out.println("delete dummy");
 	}
 
-	
-	public String getKana(String kanji) throws IOException {
-		return KakasiLogic.getInstance().toKana(kanji);
-	}
 }

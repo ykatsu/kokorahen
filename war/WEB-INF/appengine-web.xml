@@ -25,5 +25,8 @@
 		<property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
 		<property name="oauth.consumerKey" value="oeFXp2qxgUJkm3d1qTEw" />
 		<property name="oauth.consumerSecret" value="MHDnbqX9TBWr2dGvFNDYAAPz4gG8Y7LhBt2waTqORTk" />
+
+		<property name="kakasi.itaijiDictionary.path" value="kakasi/itaijidict" />
+		<property name="kakasi.kanwaDictionary" value="kakasi/null-kanwadict" />
 	</system-properties>
 </appengine-web-app>

@@ -11,7 +11,9 @@ PCookie.SQL_DELETE = "DELETE FROM cookies";
 PCookie.SQL_INSERT = "INSERT INTO cookies VALUES(?,?)";
 PCookie.SQL_UPDATE = "UPDATE cookies SET value=? WHERE key=?";
 
-PCookie.names = {JSESSIONID:true};
+PCookie.names = {
+	JSESSIONID:true
+};
 
 PCookie.setNames = function(names) {
 	PCookie.names = names;

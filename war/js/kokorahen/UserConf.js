@@ -33,6 +33,13 @@ UserConf.onBeforeShow = function() {
 	//jqt.setPageHeight();
 	ul.listview();
 }
+UserConf.write = function() {
+	var form = document.userConf;
+	Login.user.nickname = form.nickname.value = Login.user.nickname;
+	Login.user.autoTwit = (form.autoTwit.selectedIndex != 0);
+	Kokorahen.writeUser(Login.user);
+	Login.refresh();
+}
 
 UserConf.getListItem = function(username) {
 	var nickname = Login.user.followsNickname[username];
@@ -52,3 +59,4 @@ UserConf.addFollow = function(username) {
 	Kokorahen.writeUser(Login.user);
 	Login.refresh();
 }
+

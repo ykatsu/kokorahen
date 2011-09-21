@@ -16,6 +16,7 @@ public class SpotModel extends ModelBase {
 	private static final long serialVersionUID = 1L;
 
 	private String name;
+	private String furikana;
 	private Date createDate;
 	private Date updateDate;
 	private Double lat;
@@ -24,6 +25,7 @@ public class SpotModel extends ModelBase {
 	private String address;
 	private List<String> tags;
 	private Integer level = 0;
+	private Integer review = 0;
 	private Float appraise = -1.0F;
 	private String image;
 	private String comment;
@@ -40,6 +42,8 @@ public class SpotModel extends ModelBase {
 		return getKey().getId();
 	}
 
+	//-------------------------------------------------
+	// Setter/Getter
 
 	public String getName() {
 		return name;
@@ -233,6 +237,24 @@ public class SpotModel extends ModelBase {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+
+	public Integer getReview() {
+		return review;
+	}
+
+
+	public void setReview(Integer review) {
+		this.review = review;
+	}
+
+	public String getFurikana() {
+		return furikana;
+	}
+
+	public void setFurikana(String furikana) {
+		this.furikana = furikana;
 	}
 
 

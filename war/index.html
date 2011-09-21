@@ -138,9 +138,13 @@ if (location.hash != "" && location.hash != null) {
 	margin-left: 5px;
 	margin-right: 20px;
 }
-.FullSizeInput input, select, textarea, .ui-select{
+.FullSizeInput input, select, textarea, .ui-select {
 	width: 100%!important;
 }
+.ui-input-search {
+	width: 70%!important;
+}
+
 .FullSizeInput .ui-slider-switch {
 	float:right;
 }
@@ -169,6 +173,26 @@ if (location.hash != "" && location.hash != null) {
 
 .ui-icon-submit {
 	background: url("images/icon-submit-w.png") no-repeat scroll 0 0 rgba(0, 0, 0, 0.4);
+}
+
+.UserPhoto {
+	width: 48px;
+	height: 48px;
+}
+
+#timeLineList .ui-link-inherit {
+	min-height: 10px!important;
+	padding-left: 65px!important;	
+	padding-right: 40px!important;	
+}
+#timeLineList .UserPhoto {
+	padding-top: 6px!important;	
+	padding-left: 6px!important;	
+}
+#timeLineList .FaceMark{
+	position: absolute;
+	top:3px;
+	left:3px;
 }
 
 	</style>
@@ -240,6 +264,9 @@ if (location.hash != "" && location.hash != null) {
 				<div class="ui-block-b">
 					<div id="spotNameWrap">
 						<input type="text" name="name" placeholder="名前" />
+					</div>
+					<div id="spotNameWrap">
+						<input type="text" name="furikana" placeholder="ふりかな" />
 					</div>
 					<div id="spotReviewBtn">
 					<a href="#spotReview"  data-role="button" data-icon="arrow-r" data-iconpos="right">Review</a>
@@ -378,9 +405,33 @@ if (location.hash != "" && location.hash != null) {
 <!-- == TimeLine =================================================================== -->
 	<div id="timeline" data-role="page" >
 		<div data-role="header" data-position="fixed" >
-			<h1>TimeLine</h1>
+			<h3>
+				<a href="#" data-role="button" 
+					onclick="SpotTags.open(this,'ジャンル','search')" 
+				>ジャンル</a>
+			</h3>
 		</div>
 		<div data-role="content"  >	
+			<form action="" name="timeline">
+<div  data-role="fieldcontain" align="center"> 
+	<fieldset data-type="horizontal" data-role="controlgroup"> 
+<!--
+		<input type="checkbox" name="tlFollowOnly" id="tlFollowOnly" class="custom" /> 
+		<label for="tlFollowOnly">フォロー</label> 
+		<input type="checkbox" name="tlNearOnly" id="tlNearOnly" class="custom" checked="checked"/> 
+		<label for="tlNearOnly">　周辺　</label> 
+  -->
+  		<input type="radio" name="only" value="follow" id="tlFollowOnly" class="custom" /> 
+		<label for="tlFollowOnly">フォロー</label> 
+		<input type="radio" name="only" value="near" id="tlNearOnly" class="custom" checked="checked"/> 
+		<label for="tlNearOnly">　周辺　</label> 
+  		
+	</fieldset> 
+</div> 
+			<div align="center">
+				<input type="search" name="search" value="" style="width:100%;"/>
+			</div>
+			</form>
 			<div id="timeLineList"></div>
 		</div>
 		<div data-role="footer"  data-position="fixed" >
@@ -452,13 +503,14 @@ if (location.hash != "" && location.hash != null) {
 			<input name="spotId" type="hidden"/>
 			<input name="appraise" type="hidden"/>
 
-			<div class="FullSizeInput">
-				<label>Reviewer:</label>
-				<input type="text" name="nickname"  readonly="readonly" />
-				<a id="reviewAddFollowBtn"
+			<label>Reviewer:</label><br/>
+			<img id="reviewPhoto"  class='UserPhoto' />
+			<input style="vertical-align:top;" type="text" name="nickname"  readonly="readonly" />
+
+			<a id="reviewAddFollowBtn"
 					data-role="button" data-icon=“plus” data-iconpos="right"
 					href="javascript:Review.addFollow()" >この人をフォロー</a>
-			</div>
+
 			<div class="FullSizeInput">
 				<label>Spot:</label>
 				<input type="text" name="name" placeholder="Spot名" style="font-size:20px;width:50%;" />
@@ -490,10 +542,10 @@ if (location.hash != "" && location.hash != null) {
 		</div>
 		<div data-role="content">
 				<form action="" name="user">
-						<input name="username" type="hidden"  readonly="readonly"/>
-					<div class="FullSizeInput">
-						<label ><nobr>ログインユーザ:</nobr></label><br/>
-						<input name="nickname" type="text"  readonly="readonly"/>
+					<input name="username" type="hidden"  readonly="readonly"/>
+					<div>
+					<img id="userPhoto"  class='UserPhoto' src="/images/user.png"/>
+					<input style="vertical-align:top;" name="nickname" type="text"  readonly="readonly"/>
 					</div>
 					<a href="javascript:Login.logout()" data-role="button">Logout</a>
 				</form>
@@ -533,8 +585,9 @@ if (location.hash != "" && location.hash != null) {
 					<div id="userFollowList" >
 					</div>
 
-					<br clear="all"/>
-					<a href="javascript:UserConf.write()" data-role="button">更新</a>
+					<hr clear="all"/>
+					<a data-role="button" data-icon="submit" data-iconpos="right"
+						href="javascript:UserConf.write()">登録</a>
 				</form>
 		</div>
 		<div data-role="footer"  data-position="fixed" >

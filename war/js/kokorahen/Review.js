@@ -3,6 +3,7 @@
 //Review
 function Review() { }
 Review.ID = "#review";
+Review.PHOTO = "#reviewPhoto"
 Review.all = {};
 Review.current = null;
 Review.init = function() {
@@ -29,6 +30,7 @@ Review.onBeforeShow = function() {
 	reviewForm.comment.value   = Review.current.comment;
 	reviewForm.appraise.value  = Review.current.appraise;
 	$.fn.raty.start(Review.current.appraise, "#appraise_raty");
+	$(Review.PHOTO).attr("src", Review.current.photoUrl);
 
 	reviewForm.name.value = Spot.all[Review.current.spotId].data.name;
 	if (Review.current.isNewReview) {
@@ -48,6 +50,11 @@ Review.write = function() {
 	for (var i=0; i<elems.length; i++) {
 		params[elems[i].name] = elems[i].value;
 	}
+	var sd = Spot.all[Review.current.spotId].data;
+	params.lat = sd.lat;
+	params.lng = sd.lng;
+	params.tags = sd.tags;
+
 	var id = Kokorahen.writeReview(params);
 	alert("review id="+id);
 }

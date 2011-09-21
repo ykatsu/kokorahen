@@ -20,6 +20,7 @@ public class UserModel extends ModelBase {
 	//private String username;
 	private String nickname;
 	private String provider;
+	private String photoUrl;
 
 	private Date createDate;
 	private Date updateDate;
@@ -103,6 +104,14 @@ public class UserModel extends ModelBase {
 
 	public void setFollowsNickname(Map<String, String> followsNickname) {
 		this.followsNickname = followsNickname;
+	}
+
+	public String getPhotoUrl() {
+		return photoUrl;
+	}
+
+	public void setPhotoUrl(String photoUrl) {
+		this.photoUrl = photoUrl;
 	}
 
 
