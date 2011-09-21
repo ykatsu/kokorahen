@@ -35,8 +35,9 @@ UserConf.onBeforeShow = function() {
 }
 UserConf.write = function() {
 	var form = document.userConf;
-	Login.user.nickname = form.nickname.value = Login.user.nickname;
+	Login.user.nickname = form.nickname.value;
 	Login.user.autoTwit = (form.autoTwit.selectedIndex != 0);
+	Login.user.comment = form.comment.value;
 	Kokorahen.writeUser(Login.user);
 	Login.refresh();
 }

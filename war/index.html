@@ -47,6 +47,7 @@ if (location.hash != "" && location.hash != null) {
 	<script src="/js/kokorahen/Spot.js"></script>
 	<script src="/js/kokorahen/SpotInfo.js"></script>
 	<script src="/js/kokorahen/SpotReview.js"></script>
+	<script src="/js/kokorahen/UserReview.js"></script>
 	<script src="/js/kokorahen/SpotTags.js"></script>
 	<script src="/js/kokorahen/Timeline.js"></script>
 	<script src="/js/kokorahen/User.js"></script>
@@ -489,6 +490,34 @@ if (location.hash != "" && location.hash != null) {
 		</div>
 		-->
 	</div>
+	
+<!-- == UserReview =================================================================== -->
+	<div id="userReview" data-role="page"  >
+		<div data-role="header" data-position="fixed" data-theme="a">
+			<h1>Userレビュー</h1>
+			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
+			<a data-icon=“plus” href="javascript:SpotReview.onReviewClick()" data-iconpos="notext"></a>
+		</div>
+		<div data-role="content" >
+			<form action="" name="userReview">
+			<div>
+			<img id="userReviewPhoto"  class='UserPhoto'  src="/images/user.png"/>
+			<input style="vertical-align:top;" type="text" name="nickname"  readonly="readonly" />
+			</div>
+			<div class="FullSizeInput">
+				<textarea name="comment"  cols="100%" rows="10" placeholder="コメント" readonly="readonly"  ></textarea>
+			</div>
+			
+			</form>
+			<br/>
+			<div id="userReviewList" >
+			</div>
+		</div>
+		<!--
+		<div data-role="footer"  data-position="fixed" >
+		</div>
+		-->
+	</div>
 
 <!-- == Review =================================================================== -->
 	<div id="review"  data-role="page">
@@ -506,14 +535,31 @@ if (location.hash != "" && location.hash != null) {
 			<label>Reviewer:</label><br/>
 			<img id="reviewPhoto"  class='UserPhoto' />
 			<input style="vertical-align:top;" type="text" name="nickname"  readonly="readonly" />
+			<div class="ui-grid-a">
+				<div class="ui-block-a" >
+					<a id="reviewAddFollowBtn"
+						data-role="button" data-icon=“plus” data-iconpos="right"
+						href="javascript:Review.addFollow()" >フォロー</a>
+				</div>
+				<div class="ui-block-b">
+					<a id="reviewOtherBtn"
+						data-role="button" data-icon="arrow-r" data-iconpos="right"
+						href="javascript:Review.moreUser()" >もっと見る</a>
+				</div>
+			</div>
 
-			<a id="reviewAddFollowBtn"
-					data-role="button" data-icon=“plus” data-iconpos="right"
-					href="javascript:Review.addFollow()" >この人をフォロー</a>
-
+			<label>Spot:</label><br/>
 			<div class="FullSizeInput">
-				<label>Spot:</label>
-				<input type="text" name="name" placeholder="Spot名" style="font-size:20px;width:50%;" />
+				<input type="text" name="name" placeholder="Spot名" />
+			</div>
+			<div class="ui-grid-a">
+				<div class="ui-block-a" >
+				</div>
+				<div class="ui-block-b">
+					<a id="reviewOtherBtn"
+						data-role="button" data-icon="arrow-r" data-iconpos="right"
+						href="javascript:Review.moreSpot()" >もっと見る</a>
+				</div>
 			</div>
 			
 				<label>評価:</label>
@@ -571,6 +617,12 @@ if (location.hash != "" && location.hash != null) {
 						<label ><nobr>Nick name:</nobr></label><br/>
 						<input name="nickname" type="text" />
 					</div>
+
+					<div class="FullSizeInput">
+						<label ><nobr>Comment:</nobr></label><br/>
+						<textarea name="comment"  cols="100%" rows="10" placeholder="自己紹介"  ></textarea>
+					</div>
+
 					<div class="FullSizeInput">
 						<label><nobr style="vertical-align:top;">Auto twit:</nobr></label>
 						<select  name="autoTwit" data-role="slider">
@@ -580,6 +632,7 @@ if (location.hash != "" && location.hash != null) {
 						<br clear="all"/>
 					</div>
 					<br clear="all"/>
+					
 					
 					<label ><nobr>Follow users:</nobr></label><br/>
 					<div id="userFollowList" >

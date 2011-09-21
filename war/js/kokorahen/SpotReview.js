@@ -40,12 +40,10 @@ SpotReview.load = function(spotId) {
 }
 
 SpotReview.getListItem = function(data) {
-	var spot = Spot.all[data.spotId];
-	if (spot != null) spot = spot.data.name;
 	var html =
 "<li><a href='javascript:SpotReview.onReviewClick("+data.id+")'>"
-	+"<div style='font-size:50%;'>"+data.nickname+" @"+spot+"</div>"
-	+"<div>"+data.comment+"</div>"
+	+"<div style='font-size:50%;'>"+data.nickname+" @"+data.spotName+"</div>"
+	+"<span>"+data.comment+"</span>"
 "</a></li>";
 	return html;
 }

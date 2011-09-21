@@ -21,6 +21,7 @@ public class UserModel extends ModelBase {
 	private String nickname;
 	private String provider;
 	private String photoUrl;
+	private String comment;
 
 	private Date createDate;
 	private Date updateDate;
@@ -112,6 +113,14 @@ public class UserModel extends ModelBase {
 
 	public void setPhotoUrl(String photoUrl) {
 		this.photoUrl = photoUrl;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 
 

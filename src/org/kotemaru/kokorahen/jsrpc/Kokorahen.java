@@ -237,6 +237,11 @@ System.out.println("logour:"+provider);
 			return null;
 		}
 	}
+	public UserModel getUserModelPublic(String name) {
+		UserModel user = getUserModel(name);
+		// TODO: 非公開データをマスク。
+		return user;
+	}
 	public  void writeUser(Map map) throws Exception {
 		Params params = new Params(map);
 		String name = params.toString("username");
@@ -246,6 +251,7 @@ System.out.println("logour:"+provider);
 		user.setUpdateDate(new Date());
 		user.setAutoTwit(params.toBoolean("autoTwit"));
 		user.setFollows((List<String>)params.get("follows"));
+		user.setComment(params.toString("comment"));
 		Datastore.put(user);
 		cacheUserModel.remove(name);
 		
@@ -458,6 +464,15 @@ System.out.println("--->"+map);
 		return list;
 	}
 ---*/
+	public SpotModel getSpot(Long id){
+		try {
+			Key key = Datastore.createKey(SpotModel.class, id);
+			SpotModel model = Datastore.get(SpotModel.class, key);
+			return model;
+		} catch (EntityNotFoundRuntimeException e) {
+			return null;
+		}
+	}
 	public List<SpotModel> getSpots(Map map){
 		Params params = new Params(map);
 		double latMin =  params.toDouble("latMin");
@@ -574,6 +589,7 @@ System.out.println("--->"+map);
 System.out.println("listTimeline:"+map);
 		Params params = new Params(map);
 		String tag = params.toString("tag");
+		String username = params.toString("username");
 		Integer limit = params.toInteger("limit");
 		Double lat =  params.toDouble("lat");
 		Double lng =  params.toDouble("lng");
@@ -583,11 +599,12 @@ System.out.println("listTimeline:"+map);
 		if (lat == null && follows == null) {
 			ModelQuery q = Datastore.query(e);
 			if (tag != null) q.filter(e.tags.in(tag));
+			if (username != null) q.filter(e.username.equal(username));
 			q.sort(e.updateDate.desc);
 			if (limit != null) q.limit(limit);
 			List<ReviewModel> list = q.asList();
 			System.out.println("review=" + list);
-			return list;
+			return collectReviewModels(list);
 		} else if (lat != null && follows == null) {
 			return listTimeline(params, lat, lng, limit);
 		} else if (lat == null && follows != null) {

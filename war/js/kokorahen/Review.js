@@ -43,6 +43,14 @@ Review.onBeforeShow = function() {
 Review.addFollow = function() {
 	UserConf.addFollow(Review.current.username);
 }
+Review.moreUser = function() {
+	UserReview.setUsername(Review.current.username);
+	Util.changePage(UserReview.ID);
+}
+Review.moreSpot = function() {
+	SpotInfo.setCurrent(Spot.getSpotForId(Review.current.spotId));
+	Util.changePage(SpotReview.ID);
+}
 
 Review.write = function() {
 	var params = {};

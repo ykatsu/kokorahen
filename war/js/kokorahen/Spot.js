@@ -64,6 +64,14 @@ Spot.currentZoom = 0;
 Spot.LIMIT = 30;
 Spot.visibleStack = 0;
 
+
+Spot.getSpotForId = function(id) {
+	if (Spot.all[id]) return Spot.all[id];
+	var data = kokorahen.getSpot(id);
+	if (data == null) return null;
+	return Spot.getSpot(data);
+}
+
 Spot.getSpot = function(data) {
 	if (Spot.all[data.id]) return Spot.all[data.id];
 	var spot = new Spot(data);

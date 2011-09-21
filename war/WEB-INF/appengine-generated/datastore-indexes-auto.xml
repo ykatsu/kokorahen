@@ -1,26 +1,20 @@
-<!-- Indices written at Wed, 21 Sep 2011 05:40:32 UTC -->
+<!-- Indices written at Wed, 21 Sep 2011 09:26:47 UTC -->
 
 <datastore-indexes>
 
-    <!-- Used 398 times in query history -->
+    <!-- Used 32 times in query history -->
     <datastore-index kind="SpotModel" ancestor="false" source="auto">
         <property name="areas" direction="asc"/>
         <property name="appraise" direction="desc"/>
     </datastore-index>
 
-    <!-- Used 1044 times in query history -->
+    <!-- Used 36 times in query history -->
     <datastore-index kind="ReviewModel" ancestor="false" source="auto">
         <property name="area" direction="asc"/>
         <property name="updateDate" direction="desc"/>
     </datastore-index>
 
-    <!-- Used 2 times in query history -->
-    <datastore-index kind="ReviewModel" ancestor="false" source="auto">
-        <property name="spotId" direction="asc"/>
-        <property name="updateDate" direction="desc"/>
-    </datastore-index>
-
-    <!-- Used 3 times in query history -->
+    <!-- Used 1 time in query history -->
     <datastore-index kind="ReviewModel" ancestor="false" source="auto">
         <property name="username" direction="asc"/>
         <property name="updateDate" direction="desc"/>

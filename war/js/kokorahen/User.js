@@ -1,7 +1,9 @@
 
 function User() { }
-User.ID = "#user"
-User.PHOTO = "#userPhoto"
+User.ID = "#user";
+User.PHOTO = "#userPhoto";
+User.all = {};
+	
 User.init = function()  {
 	//$(".UserPhoto").error(function(ev){
 	//	$(this).attr("src","/images/user.png");
@@ -17,4 +19,11 @@ User.onBeforeShow = function() {
 }
 User.setDefaultPhoto = function(img)  {
 	img.src = "/images/user.png";
+}
+
+User.getUser = function(name) {
+	if (User.all[name] != null) return User.all[name];
+	var user = Kokorahen.getUserModelPublic(name);
+	User.all[name] = user;
+	return user;
 }
