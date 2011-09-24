@@ -3,7 +3,7 @@
 //Login
 function Login() { }
 Login.ID = "#login";
-Login.user = {username: null};
+Login.user = {userId: null};
 
 Login.init = function() {
 	//Login.user = Kokorahen.getLoginUser();

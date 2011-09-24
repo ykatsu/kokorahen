@@ -3,6 +3,7 @@
 //Review
 function Review() { }
 Review.ID = "#review";
+Review.USER_PHOTO = "#reviewUserPhoto"
 Review.PHOTO = "#reviewPhoto"
 Review.all = {};
 Review.current = null;
@@ -30,21 +31,30 @@ Review.onBeforeShow = function() {
 	reviewForm.comment.value   = Review.current.comment;
 	reviewForm.appraise.value  = Review.current.appraise;
 	$.fn.raty.start(Review.current.appraise, "#appraise_raty");
+	
+	if (Review.current.userPhotoUrl == null) Review.current.photoUrl = "/images/user.png";
+	$(Review.USER_PHOTO).attr("src", Review.current.userPhotoUrl);
+	if (Review.current.photoUrl == null) Review.current.photoUrl = "/images/noimage.gif";
 	$(Review.PHOTO).attr("src", Review.current.photoUrl);
+		
 
 	reviewForm.name.value = Spot.all[Review.current.spotId].data.name;
 	if (Review.current.isNewReview) {
 		$("#reviewAddFollowBtn").hide();
+		$("#reviewMoreUserBtn").hide();
+		$("#reviewMoreSpotBtn").hide();
 	} else {
 		$("#reviewAddFollowBtn").show();
+		$("#reviewMoreUserBtn").show();
+		$("#reviewMoreSpotBtn").show();
 	}
 }
 
 Review.addFollow = function() {
-	UserConf.addFollow(Review.current.username);
+	UserConf.addFollow(Review.current.userId);
 }
 Review.moreUser = function() {
-	UserReview.setUsername(Review.current.username);
+	UserReview.setUsername(Review.current.userId);
 	Util.changePage(UserReview.ID);
 }
 Review.moreSpot = function() {
@@ -62,6 +72,8 @@ Review.write = function() {
 	params.lat = sd.lat;
 	params.lng = sd.lng;
 	params.tags = sd.tags;
+	params.photoUrl = $(Review.PHOTO).attr("src");
+	if (params.photoUrl.match(/^[/]images/)) params.photoUrl = null;
 
 	var id = Kokorahen.writeReview(params);
 	alert("review id="+id);

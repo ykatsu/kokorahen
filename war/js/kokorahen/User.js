@@ -13,7 +13,9 @@ User.onBeforeShow = function() {
 	Util.setNavbar(User.ID);
 
 	if (Login.user == null) return;
-	document.user.username.value = Login.user.username;
+	//document.user.userId.value = Login.user.userId;
+	//document.user.googleName.value = Login.user.googleName;
+	//document.user.twitterName.value = Login.user.twitterName;
 	document.user.nickname.value = Login.user.nickname;
 	$(User.PHOTO).attr("src", Login.user.photoUrl);
 }

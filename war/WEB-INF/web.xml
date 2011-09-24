@@ -37,7 +37,7 @@
 
 	<servlet>
 		<servlet-name>Image</servlet-name>
-		<servlet-class>org.kotemaru.ichimemo.servlet.ImageServlet</servlet-class>
+		<servlet-class>org.kotemaru.kokorahen.servlet.ImageServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>Image</servlet-name>

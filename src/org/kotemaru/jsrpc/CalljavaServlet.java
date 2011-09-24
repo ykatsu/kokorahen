@@ -3,10 +3,13 @@ package org.kotemaru.jsrpc;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
 
@@ -24,6 +27,8 @@ public class CalljavaServlet extends HttpServlet {
 	private static final String MIME_TEXT = "text/plain";
 	private static final String MIME_MULTIPART = "multipart/form-data";
 	private static final String JSRPC_KEEP = JsrpcEnvironment.class.getName();
+	
+	private boolean isDebug = false;
 
 	//private static final ThreadLocal<HttpRequestContext> httpRequestContext
 	//	= new ThreadLocal<HttpRequestContext>();
@@ -32,10 +37,20 @@ public class CalljavaServlet extends HttpServlet {
 	//	return httpRequestContext.get();
 	//}
 
-
+	private void setupDebug(HttpServletRequest req) {
+		try {
+			URL url = new URL(req.getRequestURL().toString());
+			isDebug = "localhost".equals(url.getHost());
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-
+		setupDebug(req);
 		//httpRequestContext.set(new HttpRequestContext(this, req, resp));
 
 		String pinfo = req.getPathInfo();
@@ -54,7 +69,7 @@ public class CalljavaServlet extends HttpServlet {
 
 	public void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		//httpRequestContext.set(new HttpRequestContext(this, req, resp));
+		setupDebug(req);
 
 		try {
 			String ctype = req.getContentType();
@@ -197,6 +212,10 @@ public class CalljavaServlet extends HttpServlet {
 		List params = (List) map.get("params");
 		int argc = params.size();
 
+		if (isDebug) {
+			System.out.println("call:"+mname+params);
+		}
+		
 		String pinfo = req.getPathInfo();
 		String cname = pinfo.substring(1).replace('/','.');
 
@@ -231,6 +250,10 @@ public class CalljavaServlet extends HttpServlet {
 		saveInstance(req, obj);
 
 		if (resp.isCommitted()) return;
+		
+		if (isDebug) {
+			System.out.println("res:"+result);
+		}
 
 		OutputStream out = resp.getOutputStream();
 		resp.setContentType(MIME_JSON);

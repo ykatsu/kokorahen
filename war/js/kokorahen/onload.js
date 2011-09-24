@@ -14,7 +14,7 @@ $(function(){
 	
 	var modules = [Login, User, Map, Timeline, List, Memo, Spot, SpotInfo,
 	               SpotReview, Review, SpotTags, ClosedDays, Util, UserConf,
-	               UserReview];
+	               UserReview, PicasaAlbum];
 
 	function init(m) {
 		if (m.init != undefined) m.init();

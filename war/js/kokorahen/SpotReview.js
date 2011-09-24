@@ -40,11 +40,18 @@ SpotReview.load = function(spotId) {
 }
 
 SpotReview.getListItem = function(data) {
+	var appraise = Math.floor(data.appraise);
+	if (appraise<=0) appraise = 1;
+	var photo = data.photoUrl;
+	if (photo == null || photo == "") photo = "/images/noimage.gif";
+	
 	var html =
 "<li><a href='javascript:SpotReview.onReviewClick("+data.id+")'>"
-	+"<div style='font-size:50%;'>"+data.nickname+" @"+data.spotName+"</div>"
-	+"<span>"+data.comment+"</span>"
-"</a></li>";
+	+"<img class='UserPhoto' src='"+photo+"' onerror='User.setDefaultPhoto(this)' />"
+	+"<img class='FaceMark' src='/images/face-"+appraise+".png' />"
+	+"<span style='font-size:50%;'>"+data.nickname+" @"+data.spotName+"</span>"
+	+"<br/><span>"+data.comment+"</span>"
++"</a></li>";
 	return html;
 }
 

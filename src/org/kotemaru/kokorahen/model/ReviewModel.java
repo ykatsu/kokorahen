@@ -15,7 +15,7 @@ import com.google.appengine.api.datastore.Key;
 public class ReviewModel extends ModelBase {
 	private static final long serialVersionUID = 1L;
 
-	private String username;
+	private Long userId;
 	private Long spotId;
 	private String spotName;
 	private String spotKana;
@@ -25,23 +25,27 @@ public class ReviewModel extends ModelBase {
 	private Float appraise;
 	private List<String> tags;
 	private String area; // 1Km
-	
+	private String photoUrl;
+
 	@Attribute(persistent = false)
 	private String nickname;
 	@Attribute(persistent = false)
-	private String photoUrl;
+	private String userPhotoUrl;
 
 	public long getId() {
 		return getKey().getId();
 	}
 
-	public String getUsername() {
-		return username;
+
+	public Long getUserId() {
+		return userId;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
+
 
 	public String getNickname() {
 		return nickname;
@@ -123,9 +127,19 @@ public class ReviewModel extends ModelBase {
 		this.spotKana = spotKana;
 	}
 
+	public String getUserPhotoUrl() {
+		return userPhotoUrl;
+	}
+
+	public void setUserPhotoUrl(String photoUrl) {
+		this.userPhotoUrl = photoUrl;
+	}
+
+
 	public String getPhotoUrl() {
 		return photoUrl;
 	}
+
 
 	public void setPhotoUrl(String photoUrl) {
 		this.photoUrl = photoUrl;

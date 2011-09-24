@@ -38,6 +38,7 @@ if (location.hash != "" && location.hash != null) {
 
 	<!-- This apps -->
 	<script src="/InfoBox.js" ></script>
+	<script src="/js/Picasa.js" ></script>
 	<script src="/js/kokorahen/ClosedDays.js"></script>
 	<script src="/js/kokorahen/List.js"></script>
 	<script src="/js/kokorahen/Login.js"></script>
@@ -53,6 +54,7 @@ if (location.hash != "" && location.hash != null) {
 	<script src="/js/kokorahen/User.js"></script>
 	<script src="/js/kokorahen/UserConf.js"></script>
 	<script src="/js/kokorahen/Util.js"></script>
+	<script src="/js/kokorahen/PicasaAlbum.js"></script>
 	<script src="/js/kokorahen/onload.js"></script>
 	
 
@@ -196,6 +198,66 @@ if (location.hash != "" && location.hash != null) {
 	left:3px;
 }
 
+
+#spotReviewList .ui-link-inherit {
+	min-height: 10px!important;
+	padding-left: 65px!important;	
+	padding-right: 40px!important;	
+}
+#spotReviewList .UserPhoto {
+	padding-top: 6px!important;	
+	padding-left: 6px!important;	
+}
+#spotReviewList .FaceMark{
+	position: absolute;
+	top:3px;
+	left:3px;
+}
+
+
+#userReviewList .ui-link-inherit {
+	min-height: 10px!important;
+	padding-left: 65px!important;	
+	padding-right: 40px!important;	
+}
+#userReviewList .UserPhoto {
+	padding-top: 6px!important;	
+	padding-left: 6px!important;	
+}
+#userReviewList .FaceMark{
+	position: absolute;
+	top:3px;
+	left:3px;
+}
+
+#picasaAlbumDiv img {
+	width:   96px;
+	height:  96px;
+	padding: 0px;
+	margin:  8px 16px;
+	background: transparent;
+}
+#picasaPhotoDiv > div{
+	background: white;
+}
+#picasaPhotoDiv > div> span{
+	width:72px;
+	height:72px;
+	display: inline-block;
+	margin: 6px;
+	overflow: hidden;
+}
+#picasaPhotoDiv > div> span > p {
+	width: 72px;
+	height: 72px!important;
+	line-height: 70%;
+	display: table-cell;
+	padding: 0px;
+	margin: 0px;
+	background: black;
+	text-align: center;
+    vertical-align: middle;
+}
 	</style>
 
 </head>
@@ -250,19 +312,21 @@ if (location.hash != "" && location.hash != null) {
 
 			<div class="ui-grid-a">
 
-				<div class="ui-block-a" >
-					<div align="center" style="margin-right:10px;border:1px solid black" >
-					<img id="spotImage" src="/images/Home.png" 
-					 	style="width:100%;" align="center" 
-					 	onclick="$('#spotImageUrl').focus()"/>
-						<div class="FullSizeInput">
-						<input id="spotImageUrl" type="url" name="image" placeholder="画像URL"
-							style="font-size:12px;width:100%;;"
-							onchange="$('#spotImage').attr('src', this.value)" />
+					<div class="ui-block-a">
+						<div align="center"
+							style="margin-right: 10px; border: 1px solid black">
+							<img id="spotImage" src="/images/Home.png" style="width: 100%;"
+								align="center" onclick="PicasaAlbum.go(this)" />
+								<!--
+							<div class="FullSizeInput">
+								<input id="spotImageUrl" type="url" name="image"
+									placeholder="画像URL" style="font-size: 12px; width: 100%;"
+									onchange="$('#spotImage').attr('src', this.value)" />
+							</div>
+								-->
 						</div>
 					</div>
-				</div>
-				<div class="ui-block-b">
+					<div class="ui-block-b">
 					<div id="spotNameWrap">
 						<input type="text" name="name" placeholder="名前" />
 					</div>
@@ -496,7 +560,6 @@ if (location.hash != "" && location.hash != null) {
 		<div data-role="header" data-position="fixed" data-theme="a">
 			<h1>Userレビュー</h1>
 			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
-			<a data-icon=“plus” href="javascript:SpotReview.onReviewClick()" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content" >
 			<form action="" name="userReview">
@@ -533,7 +596,7 @@ if (location.hash != "" && location.hash != null) {
 			<input name="appraise" type="hidden"/>
 
 			<label>Reviewer:</label><br/>
-			<img id="reviewPhoto"  class='UserPhoto' />
+			<img id="reviewUserPhoto"  class='UserPhoto' />
 			<input style="vertical-align:top;" type="text" name="nickname"  readonly="readonly" />
 			<div class="ui-grid-a">
 				<div class="ui-block-a" >
@@ -542,7 +605,7 @@ if (location.hash != "" && location.hash != null) {
 						href="javascript:Review.addFollow()" >フォロー</a>
 				</div>
 				<div class="ui-block-b">
-					<a id="reviewOtherBtn"
+					<a id="reviewMoreUserBtn"
 						data-role="button" data-icon="arrow-r" data-iconpos="right"
 						href="javascript:Review.moreUser()" >もっと見る</a>
 				</div>
@@ -556,7 +619,7 @@ if (location.hash != "" && location.hash != null) {
 				<div class="ui-block-a" >
 				</div>
 				<div class="ui-block-b">
-					<a id="reviewOtherBtn"
+					<a id="reviewMoreSpotBtn"
 						data-role="button" data-icon="arrow-r" data-iconpos="right"
 						href="javascript:Review.moreSpot()" >もっと見る</a>
 				</div>
@@ -567,6 +630,12 @@ if (location.hash != "" && location.hash != null) {
 			<div class="FullSizeInput">
 				<textarea name="comment"  cols="100%" rows="10" placeholder="コメント" ></textarea>
 			</div>
+			
+				<label>画像:</label>
+			<div align="center">
+				<img id="reviewPhoto" border=1 src="/images/noimage.gif" width="144" onclick="PicasaAlbum.go(this)" />
+			</div>
+			
 		</form>
 			<a data-role="button" data-icon="submit" data-iconpos="right"
 					href="javascript:Review.write()">登録</a>
@@ -588,7 +657,7 @@ if (location.hash != "" && location.hash != null) {
 		</div>
 		<div data-role="content">
 				<form action="" name="user">
-					<input name="username" type="hidden"  readonly="readonly"/>
+					<input name="userId" type="hidden"  readonly="readonly"/>
 					<div>
 					<img id="userPhoto"  class='UserPhoto' src="/images/user.png"/>
 					<input style="vertical-align:top;" name="nickname" type="text"  readonly="readonly"/>
@@ -605,13 +674,20 @@ if (location.hash != "" && location.hash != null) {
 		<div data-role="header" data-position="fixed">
 			<h1>User設定</h1>
 			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
-			<a data-icon="submit" href="javascript:User.write()" data-iconpos="notext"></a>
+			<a data-icon="submit" href="javascript:UserConf.write()" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content">
 				<form action="" name="userConf">
+					<input  name="userId" type="hidden" readonly="true"/>
+					<img id="userConfPhoto"  class='UserPhoto' src="/images/user.png"
+						onclick="PicasaAlbum.go(this)" />
 					<div class="FullSizeInput">
-						<label ><nobr>User name:</nobr></label><br/>
-						<input  name="username" type="text" readonly="true"/>
+						<label ><nobr>Google user:</nobr></label><br/>
+						<input  name="googleUser" type="text" />
+					</div>
+					<div class="FullSizeInput">
+						<label ><nobr>Twitter user:</nobr></label><br/>
+						<input  name="twitterUser" type="text" />
 					</div>
 					<div class="FullSizeInput">
 						<label ><nobr>Nick name:</nobr></label><br/>
@@ -647,17 +723,32 @@ if (location.hash != "" && location.hash != null) {
 		</div>
 	</div>
 	
-<!-- == Login =================================================================== -->
-<!-- 
-	<div id="login" data-role="page">
-		<div data-role="header" data-position="fixed">
-			<h1>Login</h1>
+	<!-- == PicasaAlbum =================================================================== -->
+	<div id="picasaAlbum" data-role="dialog" >
+		<div data-role="header" data-position="fixed" data-theme="a">
+			<h3>画像選択</h3>
+			<a id="picasaAlbumBack" data-icon="back" href="javascript:PicasaAlbum.showAlbums()" data-iconpos="notext"></a>
 		</div>
 		<div data-role="content">
-			<a href="javascript:Login.login('google')" data-role="button" >Google</a>
-			<a href="javascript:Login.login('twitter')" data-role="button" >Twitter</a>
+			<div id="picasaAlbumDiv">
+				<h4><a href="https://picasaweb.google.com">Picasa</a>アルバム<br/><font size=1>※画像の登録は<a href="https://picasaweb.google.com">Picasa</a>から行ってください。</font></h4>
+				<div></div>
+			</div>
+			<div id="picasaPhotoDiv">
+				<h4><a href="https://picasaweb.google.com">Picasa</a>写真</h4>
+				<div></div>
+			</div>
+			<div id="picasaAreatDiv">
+				<h4>Picasa</h4>
+				<div>
+				画像は<a href="https://picasaweb.google.com">Picasa</a>に登録済のものを参照します。
+				Googleユーザを設定してください。
+				<a href="#userConf">ユーザ設定</a>
+				</div>
+			</div>
+
 		</div>
 	</div>
--->
+	
 </body>
 </html>

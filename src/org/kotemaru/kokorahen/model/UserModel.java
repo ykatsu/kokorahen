@@ -17,7 +17,8 @@ import com.google.appengine.api.datastore.Key;
 public class UserModel extends ModelBase {
 	private static final long serialVersionUID = 1L;
 
-	//private String username;
+	private String googleUser;
+	private String twitterUser;
 	private String nickname;
 	private String provider;
 	private String photoUrl;
@@ -28,19 +29,32 @@ public class UserModel extends ModelBase {
 	private Date lastLogin;
 
 	private boolean autoTwit = false;
-	private List<String> follows = null;
+	private List<Long> follows = null;
 
 	@Attribute(persistent = false)
-	private Map<String,String> followsNickname = null;
+	private Map<Long,String> followsNickname = null;
 
-	public String getUsername() {
-		Key key = super.getKey();
-		return key.getName();
+	public Long getUserId() {
+		return getKey().getId();
+	}
+	public void setUserId(Long id) {
+		throw new RuntimeException("Unsuported.");
+	}
+	
+	public String getGoogleUser() {
+		return googleUser;
 	}
 
-	public void setUsername(String username) {
-		Key key = Datastore.createKey(UserModel.class, username);
-		super.setKey(key);
+	public void setGoogleUser(String googleUser) {
+		this.googleUser = googleUser;
+	}
+
+	public String getTwitterUser() {
+		return twitterUser;
+	}
+
+	public void setTwitterUser(String twitterUser) {
+		this.twitterUser = twitterUser;
 	}
 
 	public String getNickname() {
@@ -91,19 +105,21 @@ public class UserModel extends ModelBase {
 		this.lastLogin = lastLogin;
 	}
 
-	public List<String> getFollows() {
+
+	public List<Long> getFollows() {
 		return follows;
 	}
 
-	public void setFollows(List<String> follows) {
+	public void setFollows(List<Long> follows) {
 		this.follows = follows;
 	}
 
-	public Map<String, String> getFollowsNickname() {
+
+	public Map<Long, String> getFollowsNickname() {
 		return followsNickname;
 	}
 
-	public void setFollowsNickname(Map<String, String> followsNickname) {
+	public void setFollowsNickname(Map<Long, String> followsNickname) {
 		this.followsNickname = followsNickname;
 	}
 
