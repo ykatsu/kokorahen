@@ -20,7 +20,6 @@ public class UserModel extends ModelBase {
 	private String googleUser;
 	private String twitterUser;
 	private String nickname;
-	private String provider;
 	private String photoUrl;
 	private String comment;
 
@@ -31,6 +30,8 @@ public class UserModel extends ModelBase {
 	private boolean autoTwit = false;
 	private List<Long> follows = null;
 
+	@Attribute(persistent = false)
+	private String provider;
 	@Attribute(persistent = false)
 	private Map<Long,String> followsNickname = null;
 

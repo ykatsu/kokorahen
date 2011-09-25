@@ -1,0 +1,136 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta id="viewport" name="viewport"
+		content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+	<title>Page Title</title> 
+	<!-- This apps Server -->
+	<script src="/js/Jsrpc.js?v=1" ></script>
+	<script src="/stub/org/kotemaru/kokorahen/jsrpc/Kokorahen.js?v=2" ></script>
+	<script src="/js/kokorahen/PCookie.js"></script>
+	
+	<script>
+console.log(document.cookie);
+var __Login_user = Kokorahen.getLoginUser();
+PCookie.setMaxAge("JSESSIONID",1000000);
+
+if (__Login_user == null) {
+	location.href = "login.html";
+}
+
+if (location.hash != "" && location.hash != null) {
+	location.href = "/";
+}
+	</script>
+
+
+	<!-- JQuery -->
+	<link rel="stylesheet" href="/jqm/jquery.mobile-1.0b2.min.css" />
+	<script src="/js/jquery-1.6.2.min.js"></script>
+	<script src="/jq.raty/js/jquery.raty.min.js" ></script>
+	<script src="/jqm/jquery.mobile-1.0b2.js"></script>
+
+
+	<!-- This apps -->
+	<script src="/js/kokorahen/Loader.js"></script>
+	
+
+	<style type="text/css">
+.ui-icon-submit {
+	background: url("images/icon-submit-w.png") no-repeat scroll 0 0 rgba(0, 0, 0, 0.4);
+}
+#imageList img {
+	width:48px;
+	height:48px;
+	padding: 2px;
+	margin: 4px;
+	background: transparent;
+}
+	</style>
+	<script>
+$(function(){
+	Loader.load([Main, Post]);
+});
+	
+	
+function Main() {}
+Main.ID = "#main";
+Main.IMAGE_LIST = "#imageList";
+
+Main.onBeforeShow = function(ev) {
+	var list = Kokorahen.getMyImageIds();
+	var html = "";
+	for (var i=0; i<list.length; i++) {
+		html += "<img class='ui-shadow ui-btn-up-c' src='/image?id="+list[i]+"'/>"
+	}
+	$(Main.IMAGE_LIST).html(html);
+}
+
+function Post() {}
+Post.ID = "#post";
+
+Post.origin = function() {
+	Kokorahen.writeImageOrigin(document.postOrigin.url.value);
+}
+	
+	</script>
+
+
+</head>
+<body
+	onorientationchange="updateOrientation();"
+	onresize="updateOrientation();"
+>
+
+
+
+<!-- == Map =================================================================== -->
+	<div id="main" data-role="page" >
+		<div data-role="header" data-position="fixed" data-theme="a">
+			<h3>サムネイル管理</h3>
+			<a href="#post" data-role="button" data-icon="plus" data-iconpos="notext"></a>
+		</div>
+		<div data-role="content" id="mapCanvas">
+			<div id="imageList"></div>
+		</div>
+		<div data-role="footer" data-position="fixed" >
+		</div>
+	</div>
+
+
+<!-- == Spot =================================================================== -->
+	<div id="post" data-role="page" >
+		<div data-role="header" data-position="fixed" data-theme="a" data-add-back-btn="true">
+			<h1>サムネイル作成</h1>
+			<a data-icon="back" href="javascript:Util.backPage()" data-iconpos="notext"></a>
+			<a data-icon="submit" href="javascript:SpotInfo.write()" data-iconpos="notext"></a>
+		</div>
+		<div data-role="content">
+			<form action="" name="postOrigin">
+				<label>URL:</label>
+				<input name="url" type="url" />
+				<br/>
+				<a data-icon="submit" data-iconpos="right" data-role="button"
+					href="javascript:Post.origin()" 
+				>URLの画像から作成</a>
+			</form>
+			<hr/>
+			<form action="/classes/org/kotemaru/kokorahen/jsrpc/Kokorahen.writeImage"
+					name="postLocal" method="post" enctype="multipart/form-data">
+				<label>ローカルファイル:</label><br/>
+				<input name="file" type="file" /><br/>
+				<a data-icon="submit" data-iconpos="right" data-role="button"
+					href="javascript:document.postLocal.submit()" 
+				>ローカルの画像から作成</a>
+
+				<input name="returnUrl" type="hidden" value="/imageManager.html"/>
+			</form>
+		</div>
+		<!--
+		<div data-role="footer"  data-position="fixed" ></div>
+		-->
+	</div>
+</body>
+</html>
